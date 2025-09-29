@@ -12,6 +12,10 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>The Daily Holler</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXX"
+            crossorigin="anonymous"></script>
     <style>
       body {
         margin: 0;
@@ -194,6 +198,55 @@
       
       .badge-danger {
         background-color: #dc3545;
+      }
+      
+      /* AdSense Styling */
+      .ad-container {
+        margin: 20px 0;
+        text-align: center;
+      }
+      
+      .ad-placeholder {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        text-align: center;
+        color: #666;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+      }
+      
+      .header-ad {
+        margin: 10px 0;
+      }
+      
+      .sidebar-ad {
+        margin: 20px 0;
+      }
+      
+      .in-content-ad {
+        margin: 30px auto;
+        max-width: 300px;
+      }
+      
+      .footer-ad {
+        margin: 20px 0;
+      }
+      
+      .mobile-banner {
+        margin: 15px 0;
+      }
+      
+      /* Responsive ads */
+      @media (max-width: 768px) {
+        .header-ad,
+        .footer-ad {
+          width: 100%;
+          max-width: 320px;
+        }
+        
+        .in-content-ad {
+          max-width: 280px;
+        }
       }
     </style>
   </head>

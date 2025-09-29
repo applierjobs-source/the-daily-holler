@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { generateArticleUrl } from '../utils/slugUtils';
+import { HeaderAd, InContentAd } from './AdBanner';
 
 const Home = () => {
   const [todayArticles, setTodayArticles] = useState([]);
@@ -44,6 +45,7 @@ const Home = () => {
 
   return (
     <div className="home">
+      <HeaderAd />
       <div className="welcome-message">
         <h2>Welcome to The Daily Holler</h2>
         <p>Your source for satirical news and local humor across America's cities.</p>
@@ -58,8 +60,10 @@ const Home = () => {
         {!loading && !error && todayArticles.length > 0 && (
           <div className="articles-scroll-container">
             <div className="articles-scroll">
-              {todayArticles.slice(0, 20).map((article) => (
-                <div key={article.id} className="article-preview">
+              {todayArticles.slice(0, 20).map((article, index) => (
+                <React.Fragment key={article.id}>
+                  {index === 5 && <InContentAd />}
+                  <div className="article-preview">
                   <div className="article-meta">
                     <span className="article-location">📍 {article.cityName}, {article.state}</span>
                     <span className="article-time">{formatDate(article.publishedAt)}</span>
@@ -84,7 +88,8 @@ const Home = () => {
                       View {article.cityName} News →
                     </Link>
                   </div>
-                </div>
+                  </div>
+                </React.Fragment>
               ))}
             </div>
             

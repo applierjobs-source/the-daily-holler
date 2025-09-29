@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { parseCitySlug } from '../utils/slugUtils';
+import { InContentAd } from './AdBanner';
 
 const PostDetail = () => {
   const { id, citySlug, articleSlug } = useParams();
@@ -110,11 +111,24 @@ const PostDetail = () => {
       
       <div className="article-detail-body">
         <div className="article-content">
-          {article.content && article.content.split('\n').map((paragraph, index) => (
-            <p key={index} className="article-paragraph">
-              {paragraph}
-            </p>
-          ))}
+          {article.content && article.content.split('\n').map((paragraph, index) => {
+            // Add ad after 2nd paragraph
+            if (index === 2) {
+              return (
+                <React.Fragment key={index}>
+                  <p className="article-paragraph">
+                    {paragraph}
+                  </p>
+                  <InContentAd />
+                </React.Fragment>
+              );
+            }
+            return (
+              <p key={index} className="article-paragraph">
+                {paragraph}
+              </p>
+            );
+          })}
         </div>
         
         <div className="article-footer">
