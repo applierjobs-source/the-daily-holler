@@ -1,0 +1,655 @@
+[
+  {
+    "title": "2018 Honda Civic - Excellent Condition",
+    "description": "One owner, 45k miles, all maintenance records. No accidents. New tires and brakes. Asking $18,500 or best offer.",
+    "price": "18500",
+    "category": "for-sale",
+    "authorName": "John D.",
+    "id": "89a2a229-6dea-4b70-b73c-a309f9abb5fd",
+    "cityId": 1,
+    "images": [],
+    "contactInfo": {
+      "email": "johnd.@example.com",
+      "phone": "(555) 135-3323"
+    },
+    "createdAt": "2025-09-26T02:25:11.315Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "MacBook Pro 13\" - 2020 Model",
+    "description": "M1 chip, 16GB RAM, 512GB SSD. Barely used, still under warranty. Includes original box and charger.",
+    "price": "1200",
+    "category": "for-sale",
+    "authorName": "Tech Seller",
+    "id": "8565b98a-d6c7-42d7-b8bf-0a7c30269f0b",
+    "cityId": 1,
+    "images": [],
+    "contactInfo": {
+      "email": "techseller@example.com",
+      "phone": "(555) 445-7801"
+    },
+    "createdAt": "2025-09-25T17:48:05.991Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Dining Room Set - Oak Table & 6 Chairs",
+    "description": "Solid oak dining table with 6 matching chairs. Great condition, some minor wear. Moving, must sell quickly.",
+    "price": "400",
+    "category": "for-sale",
+    "authorName": "Moving Sale",
+    "id": "d808feec-75a4-4ed3-96ca-f0cad7a18d6c",
+    "cityId": 1,
+    "images": [],
+    "contactInfo": {
+      "email": "movingsale@example.com",
+      "phone": "(555) 661-5349"
+    },
+    "createdAt": "2025-09-24T21:04:15.517Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Free Moving Boxes",
+    "description": "Various sizes of moving boxes available for free pickup. Used but in good condition. Perfect for your move!",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Neighbor",
+    "id": "7e426f9a-a551-4d93-8b25-59ebd1ce600c",
+    "cityId": 1,
+    "images": [],
+    "contactInfo": {
+      "email": "neighbor@example.com",
+      "phone": "(555) 981-4191"
+    },
+    "createdAt": "2025-09-26T04:05:32.935Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Vintage Antique Dresser",
+    "description": "Beautiful antique oak dresser from 1920s. All original hardware. Perfect condition. $350 obo.",
+    "price": "350",
+    "category": "for-sale",
+    "authorName": "Antique Collector",
+    "id": "83ea7d5a-dfd8-4f0f-af9d-2db4dbed32c2",
+    "cityId": 1,
+    "images": [],
+    "contactInfo": {
+      "email": "antiquecollector@example.com",
+      "phone": "(555) 426-5031"
+    },
+    "createdAt": "2025-09-26T02:02:44.000Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Samsung Refrigerator - Like New",
+    "description": "Stainless steel Samsung refrigerator, 25 cu ft. Energy efficient, ice maker, water dispenser. 2 years old.",
+    "price": "800",
+    "category": "for-sale",
+    "authorName": "Homeowner",
+    "id": "801a3ae2-bfd4-4090-b89a-f89fa4143463",
+    "cityId": 2,
+    "images": [],
+    "contactInfo": {
+      "email": "homeowner@example.com",
+      "phone": "(555) 702-5572"
+    },
+    "createdAt": "2025-09-25T12:20:47.674Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Handmade Pottery Set",
+    "description": "Set of 8 handmade ceramic bowls and plates. Unique designs, food safe glaze. Perfect for entertaining.",
+    "price": "120",
+    "category": "for-sale",
+    "authorName": "Local Potter",
+    "id": "be761928-e9d4-40a7-9dc7-551012b63b53",
+    "cityId": 2,
+    "images": [],
+    "contactInfo": {
+      "email": "localpotter@example.com",
+      "phone": "(555) 280-2125"
+    },
+    "createdAt": "2025-09-22T13:34:00.038Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "2019 Honda ATV - 4WD",
+    "description": "Honda FourTrax ATV, 420cc, 4WD, automatic transmission. Low hours, excellent condition. Great for farm or recreation.",
+    "price": "4500",
+    "category": "for-sale",
+    "authorName": "ATV Owner",
+    "id": "d1cf8b71-1b5d-4945-983c-f08828becdbe",
+    "cityId": 2,
+    "images": [],
+    "contactInfo": {
+      "email": "atvowner@example.com",
+      "phone": "(555) 347-1798"
+    },
+    "createdAt": "2025-09-24T18:50:04.894Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Car Parts - Toyota Camry",
+    "description": "Various parts for 2015-2018 Toyota Camry. Brake pads, filters, belts. All new in boxes.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Auto Mechanic",
+    "id": "8023f042-c6d1-4b6b-9f68-d9a4ef7209eb",
+    "cityId": 2,
+    "images": [],
+    "contactInfo": {
+      "email": "automechanic@example.com",
+      "phone": "(555) 987-2847"
+    },
+    "createdAt": "2025-09-25T21:49:05.737Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Baby Stroller - Lightly Used",
+    "description": "Graco travel system stroller and car seat combo. Lightly used, excellent condition. All safety features working.",
+    "price": "150",
+    "category": "for-sale",
+    "authorName": "Parent",
+    "id": "2926d422-5259-473a-851c-46a07d1e4826",
+    "cityId": 2,
+    "images": [],
+    "contactInfo": {
+      "email": "parent@example.com",
+      "phone": "(555) 443-7926"
+    },
+    "createdAt": "2025-09-25T11:20:52.841Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Professional Hair Dryer",
+    "description": "Dyson Supersonic hair dryer. Professional quality, used in salon. Excellent condition, includes attachments.",
+    "price": "200",
+    "category": "for-sale",
+    "authorName": "Hair Stylist",
+    "id": "c85a2ffb-825a-4f46-8e2c-bf3613bb6aed",
+    "cityId": 3,
+    "images": [],
+    "contactInfo": {
+      "email": "hairstylist@example.com",
+      "phone": "(555) 473-4186"
+    },
+    "createdAt": "2025-09-26T02:22:09.601Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Mountain Bike - Trek",
+    "description": "Trek mountain bike, 27.5\" wheels, 21-speed. Great for trails and commuting. Recently tuned up.",
+    "price": "400",
+    "category": "for-sale",
+    "authorName": "Cyclist",
+    "id": "c9961646-06ba-4549-9c3b-42dc4fa6fdae",
+    "cityId": 3,
+    "images": [],
+    "contactInfo": {
+      "email": "cyclist@example.com",
+      "phone": "(555) 246-6618"
+    },
+    "createdAt": "2025-09-23T13:52:18.029Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Boat Engine Parts",
+    "description": "Various marine engine parts for Johnson/Evinrude outboard motors. Gaskets, seals, impellers.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Boat Mechanic",
+    "id": "8984f641-9fbd-486c-b5d2-b509885d7420",
+    "cityId": 3,
+    "images": [],
+    "contactInfo": {
+      "email": "boatmechanic@example.com",
+      "phone": "(555) 697-2396"
+    },
+    "createdAt": "2025-09-27T16:46:23.648Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Small Fishing Boat",
+    "description": "14' aluminum fishing boat with trailer. 15hp outboard motor included. Great for lakes and rivers.",
+    "price": "2500",
+    "category": "for-sale",
+    "authorName": "Boat Owner",
+    "id": "bc286d58-7eaa-4dea-9504-c271dd8c48c3",
+    "cityId": 3,
+    "images": [],
+    "contactInfo": {
+      "email": "boatowner@example.com",
+      "phone": "(555) 748-3103"
+    },
+    "createdAt": "2025-09-26T01:48:00.846Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Book Collection - Science Fiction",
+    "description": "Large collection of sci-fi books. Asimov, Heinlein, Clarke, and more. Must sell as set.",
+    "price": "100",
+    "category": "for-sale",
+    "authorName": "Book Collector",
+    "id": "a496f4ad-4796-4a50-82e7-61942cbebd47",
+    "cityId": 3,
+    "images": [],
+    "contactInfo": {
+      "email": "bookcollector@example.com",
+      "phone": "(555) 206-9192"
+    },
+    "createdAt": "2025-09-22T04:01:42.009Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Small Business Equipment",
+    "description": "Commercial coffee maker, cash register, display cases. Perfect for coffee shop or retail business.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Business Owner",
+    "id": "9127134d-f89c-4097-9af6-f591d920305b",
+    "cityId": 4,
+    "images": [],
+    "contactInfo": {
+      "email": "businessowner@example.com",
+      "phone": "(555) 467-2837"
+    },
+    "createdAt": "2025-09-22T12:32:23.820Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "iPhone 12 - Unlocked",
+    "description": "iPhone 12, 128GB, unlocked. Excellent condition, includes case and screen protector. No scratches.",
+    "price": "500",
+    "category": "for-sale",
+    "authorName": "Phone Seller",
+    "id": "87517f44-2351-4923-893f-60f5150cf746",
+    "cityId": 4,
+    "images": [],
+    "contactInfo": {
+      "email": "phoneseller@example.com",
+      "phone": "(555) 119-1716"
+    },
+    "createdAt": "2025-09-27T23:26:59.997Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Designer Handbags",
+    "description": "Collection of designer handbags - Coach, Kate Spade, Michael Kors. Authentic, excellent condition.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Fashionista",
+    "id": "1af0fb48-be89-4562-accd-33d610ce725c",
+    "cityId": 4,
+    "images": [],
+    "contactInfo": {
+      "email": "fashionista@example.com",
+      "phone": "(555) 904-2813"
+    },
+    "createdAt": "2025-09-26T21:45:28.720Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Vintage Comic Books",
+    "description": "Collection of vintage comic books from 1970s-80s. Spider-Man, Batman, X-Men. Individually priced.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Comic Collector",
+    "id": "7abe3798-01f5-42d6-9790-df8e06bdf0cf",
+    "cityId": 4,
+    "images": [],
+    "contactInfo": {
+      "email": "comiccollector@example.com",
+      "phone": "(555) 468-7889"
+    },
+    "createdAt": "2025-09-27T22:58:46.595Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Gaming PC - High End",
+    "description": "Custom gaming PC with RTX 3080, 32GB RAM, 1TB SSD. Handles any game at max settings.",
+    "price": "1500",
+    "category": "for-sale",
+    "authorName": "Gamer",
+    "id": "ac6b1174-3365-4eaf-85bb-d3d70e349dd4",
+    "cityId": 4,
+    "images": [],
+    "contactInfo": {
+      "email": "gamer@example.com",
+      "phone": "(555) 260-6101"
+    },
+    "createdAt": "2025-09-22T00:15:20.572Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Garden Tools & Equipment",
+    "description": "Various garden tools, wheelbarrow, hose, sprinklers. All in good condition. Perfect for spring gardening.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Gardener",
+    "id": "075773c6-2bc4-4c29-a61e-ee846b5a9319",
+    "cityId": 5,
+    "images": [],
+    "contactInfo": {
+      "email": "gardener@example.com",
+      "phone": "(555) 515-1861"
+    },
+    "createdAt": "2025-09-22T06:42:25.692Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Leather Sofa Set",
+    "description": "3-piece leather sofa set in excellent condition. Very comfortable, perfect for family room.",
+    "price": "600",
+    "category": "for-sale",
+    "authorName": "Homeowner",
+    "id": "16ad4ade-c27b-4a32-925a-3e471710016d",
+    "cityId": 5,
+    "images": [],
+    "contactInfo": {
+      "email": "homeowner@example.com",
+      "phone": "(555) 320-7034"
+    },
+    "createdAt": "2025-09-26T07:49:25.060Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Garage Sale - Everything Must Go",
+    "description": "Moving sale! Furniture, electronics, tools, books, kitchen items. Everything priced to sell.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Moving Family",
+    "id": "084d2a1d-2711-40cd-9936-9eab61ec3f98",
+    "cityId": 5,
+    "images": [],
+    "contactInfo": {
+      "email": "movingfamily@example.com",
+      "phone": "(555) 309-2916"
+    },
+    "createdAt": "2025-09-27T07:50:28.069Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Heavy Equipment - Tractor",
+    "description": "John Deere compact tractor, 25hp, with loader and mower deck. Perfect for small farm or large property.",
+    "price": "12000",
+    "category": "for-sale",
+    "authorName": "Equipment Dealer",
+    "id": "b3533617-f674-4e6f-b63b-96872feb806e",
+    "cityId": 5,
+    "images": [],
+    "contactInfo": {
+      "email": "equipmentdealer@example.com",
+      "phone": "(555) 516-2770"
+    },
+    "createdAt": "2025-09-24T18:16:11.226Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Kitchen Appliances",
+    "description": "KitchenAid mixer, food processor, coffee grinder. All in excellent working condition.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Kitchen Upgrade",
+    "id": "9b697560-1b65-4786-954a-dcaafe9941ee",
+    "cityId": 5,
+    "images": [],
+    "contactInfo": {
+      "email": "kitchenupgrade@example.com",
+      "phone": "(555) 329-7982"
+    },
+    "createdAt": "2025-09-28T00:55:07.760Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Vintage Jewelry Collection",
+    "description": "Beautiful vintage jewelry pieces. Rings, necklaces, bracelets from 1940s-60s. Estate sale find.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Estate Seller",
+    "id": "792741ba-4ab7-47c6-8041-9bda46c3f0b3",
+    "cityId": 6,
+    "images": [],
+    "contactInfo": {
+      "email": "estateseller@example.com",
+      "phone": "(555) 912-9651"
+    },
+    "createdAt": "2025-09-21T21:01:07.224Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Building Materials",
+    "description": "Lumber, drywall, insulation, electrical supplies. Leftover from renovation project.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Contractor",
+    "id": "3ac466b7-93d9-494b-a42e-2b07d2409b2e",
+    "cityId": 6,
+    "images": [],
+    "contactInfo": {
+      "email": "contractor@example.com",
+      "phone": "(555) 706-5961"
+    },
+    "createdAt": "2025-09-27T01:09:04.821Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Motorcycle Parts",
+    "description": "Parts for Harley Davidson and Honda motorcycles. Tires, chains, filters, brake pads.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Motorcycle Mechanic",
+    "id": "c9363ac0-3947-4fbd-b15b-13e080bcac7a",
+    "cityId": 6,
+    "images": [],
+    "contactInfo": {
+      "email": "motorcyclemechanic@example.com",
+      "phone": "(555) 855-5680"
+    },
+    "createdAt": "2025-09-23T15:04:50.510Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Honda CBR600RR",
+    "description": "2018 Honda CBR600RR sport bike. Low miles, excellent condition. Always garaged, never dropped.",
+    "price": "8500",
+    "category": "for-sale",
+    "authorName": "Motorcycle Owner",
+    "id": "1d2582d1-3af9-4242-9f59-9c6cbdb4c9ea",
+    "cityId": 6,
+    "images": [],
+    "contactInfo": {
+      "email": "motorcycleowner@example.com",
+      "phone": "(555) 838-8692"
+    },
+    "createdAt": "2025-09-24T03:38:35.746Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Piano Lessons Available",
+    "description": "Experienced piano teacher offering lessons for all ages. Classical and contemporary styles. In-home lessons available.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Piano Teacher",
+    "id": "9fca3f5c-d77c-46bb-b500-41f0ea838394",
+    "cityId": 6,
+    "images": [],
+    "contactInfo": {
+      "email": "pianoteacher@example.com",
+      "phone": "(555) 682-6642"
+    },
+    "createdAt": "2025-09-23T20:24:40.656Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "DSLR Camera Kit",
+    "description": "Canon EOS Rebel with 18-55mm lens, tripod, memory cards, camera bag. Perfect for beginners.",
+    "price": "400",
+    "category": "for-sale",
+    "authorName": "Photographer",
+    "id": "71c5d067-f136-4a72-8890-a1e1ecfbbfe8",
+    "cityId": 7,
+    "images": [],
+    "contactInfo": {
+      "email": "photographer@example.com",
+      "phone": "(555) 419-4441"
+    },
+    "createdAt": "2025-09-24T13:34:14.778Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "RV for Sale - Class C",
+    "description": "2005 Winnebago Class C RV. Sleeps 6, full kitchen, bathroom. Perfect for family camping trips.",
+    "price": "35000",
+    "category": "for-sale",
+    "authorName": "RV Owner",
+    "id": "c94c9c6e-9411-4b7e-90d1-92b7dfd5f7f0",
+    "cityId": 7,
+    "images": [],
+    "contactInfo": {
+      "email": "rvowner@example.com",
+      "phone": "(555) 421-2210"
+    },
+    "createdAt": "2025-09-21T12:02:34.972Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Tennis Equipment",
+    "description": "Tennis rackets, balls, court shoes, and accessories. Great for beginners or intermediate players.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Tennis Player",
+    "id": "d30feb22-37ab-4532-afce-9270cd1a34d8",
+    "cityId": 7,
+    "images": [],
+    "contactInfo": {
+      "email": "tennisplayer@example.com",
+      "phone": "(555) 454-6152"
+    },
+    "createdAt": "2025-09-24T11:46:35.885Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Concert Tickets - Taylor Swift",
+    "description": "Two tickets to Taylor Swift concert next month. Great seats, face value. Can't attend due to work.",
+    "price": "400",
+    "category": "for-sale",
+    "authorName": "Concert Goer",
+    "id": "20fc45cc-eb3b-4bab-ad58-e33e183c8e8d",
+    "cityId": 7,
+    "images": [],
+    "contactInfo": {
+      "email": "concertgoer@example.com",
+      "phone": "(555) 334-2417"
+    },
+    "createdAt": "2025-09-21T09:29:24.306Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Tool Set - Craftsman",
+    "description": "Complete Craftsman tool set with case. Wrenches, sockets, screwdrivers, pliers. Professional quality.",
+    "price": "200",
+    "category": "for-sale",
+    "authorName": "Tool Collector",
+    "id": "aa5eafe9-b54e-47c4-a92a-2d4016b8d288",
+    "cityId": 7,
+    "images": [],
+    "contactInfo": {
+      "email": "toolcollector@example.com",
+      "phone": "(555) 113-2318"
+    },
+    "createdAt": "2025-09-23T17:13:34.794Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Board Games Collection",
+    "description": "Large collection of board games - Settlers of Catan, Ticket to Ride, Pandemic, and many more.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Game Enthusiast",
+    "id": "90191335-7e22-4730-96ce-e47dc1bb2bd2",
+    "cityId": 8,
+    "images": [],
+    "contactInfo": {
+      "email": "gameenthusiast@example.com",
+      "phone": "(555) 691-8931"
+    },
+    "createdAt": "2025-09-23T06:25:35.116Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Utility Trailer",
+    "description": "6x10 utility trailer with ramp gate. Perfect for hauling ATVs, motorcycles, or general cargo.",
+    "price": "1200",
+    "category": "for-sale",
+    "authorName": "Trailer Owner",
+    "id": "b93fde58-89a9-4539-9f2c-489708028b2e",
+    "cityId": 8,
+    "images": [],
+    "contactInfo": {
+      "email": "trailerowner@example.com",
+      "phone": "(555) 541-6637"
+    },
+    "createdAt": "2025-09-24T00:07:35.681Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "PlayStation 5 Console",
+    "description": "PS5 console with 2 controllers and 3 games. Barely used, like new condition.",
+    "price": "600",
+    "category": "for-sale",
+    "authorName": "Gamer",
+    "id": "a40e04a3-94e3-40d5-89cc-0e7041191480",
+    "cityId": 8,
+    "images": [],
+    "contactInfo": {
+      "email": "gamer@example.com",
+      "phone": "(555) 102-2527"
+    },
+    "createdAt": "2025-09-24T11:09:06.059Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Wanted: Vintage Vinyl Records",
+    "description": "Looking to buy vintage vinyl records from 1960s-70s. Rock, jazz, and blues preferred.",
+    "price": "0",
+    "category": "for-sale",
+    "authorName": "Vinyl Collector",
+    "id": "78e38160-ec8e-433a-add8-aa712c1d8175",
+    "cityId": 8,
+    "images": [],
+    "contactInfo": {
+      "email": "vinylcollector@example.com",
+      "phone": "(555) 222-1436"
+    },
+    "createdAt": "2025-09-22T13:09:48.562Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "title": "Car Tires - 225/60R16",
+    "description": "Set of 4 all-season tires. Good tread remaining, no repairs. Perfect for Honda Accord or similar.",
+    "price": "200",
+    "category": "for-sale",
+    "authorName": "Tire Shop",
+    "id": "68947b9c-594e-4dd5-a157-94e16ac38684",
+    "cityId": 8,
+    "images": [],
+    "contactInfo": {
+      "email": "tireshop@example.com",
+      "phone": "(555) 416-6530"
+    },
+    "createdAt": "2025-09-23T15:02:21.379Z",
+    "updatedAt": "2025-09-28T01:11:30.203Z"
+  },
+  {
+    "id": "70698c8e-2287-4efa-959a-b770e35305d7",
+    "title": "Test Item - No Subcategory",
+    "description": "This is a test item to verify subcategories are removed",
+    "price": "100",
+    "category": "for-sale",
+    "cityId": "1",
+    "images": [],
+    "contactInfo": {},
+    "authorName": "Test User",
+    "createdAt": "2025-09-28T04:20:23.834Z",
+    "updatedAt": "2025-09-28T04:20:23.834Z"
+  }
+]

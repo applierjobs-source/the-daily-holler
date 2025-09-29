@@ -1,0 +1,30 @@
+{
+  "name": "the-daily-holler",
+  "version": "1.0.0",
+  "description": "The Daily Holler - Satirical news and local humor across America's cities",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "start:prod": "cd server && npm start",
+    "postinstall": "npm run install-all",
+    "heroku-postbuild": "npm run build"
+  },
+  "keywords": [
+    "the-daily-holler",
+    "news",
+    "satire",
+    "local-news"
+  ],
+  "author": "Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "openai": "^5.23.1"
+  }
+}
