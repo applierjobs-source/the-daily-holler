@@ -64,7 +64,7 @@ const Home = () => {
                 <React.Fragment key={article.id}>
                   {index === 5 && <InContentAd />}
                   <div className="article-preview">
-                  <div className="article-meta">
+                    <div className="article-meta">
                     <span className="article-location">📍 {article.cityName}, {article.state}</span>
                     <span className="article-time">{formatDate(article.publishedAt)}</span>
                   </div>
