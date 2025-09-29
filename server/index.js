@@ -1704,7 +1704,7 @@ app.get('/api/articles/:id', async (req, res) => {
     const data = await fs.readFile(ARTICLES_FILE, 'utf8');
     const articles = JSON.parse(data);
     
-    const article = articles.find(a => a.id.toString() === id);
+    const article = articles.articles.find(a => a.id.toString() === id);
     
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
@@ -1726,7 +1726,7 @@ app.get('/api/articles/by-slug/:slug', async (req, res) => {
     
     // Find article by matching slug (for now, we'll use a simple approach)
     // In a real implementation, you'd want to store slugs in the database
-    const article = articles.find(a => {
+    const article = articles.articles.find(a => {
       const articleSlug = a.headline
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
