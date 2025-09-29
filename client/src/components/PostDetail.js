@@ -110,7 +110,7 @@ const PostDetail = () => {
       
       <div className="article-detail-body">
         <div className="article-content">
-          {article.body && article.body.split('\n').map((paragraph, index) => (
+          {article.content && article.content.split('\n').map((paragraph, index) => (
             <p key={index} className="article-paragraph">
               {paragraph}
             </p>
