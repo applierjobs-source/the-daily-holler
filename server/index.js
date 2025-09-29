@@ -30,7 +30,7 @@ if (isProduction) {
 // Data storage paths
 const DATA_DIR = path.join(__dirname, 'data');
 const CITIES_FILE = path.join(DATA_DIR, 'cities.json');
-const ARTICLES_FILE = path.join(DATA_DIR, 'articles.json');
+const ARTICLES_FILE = path.join(DATA_DIR, process.env.NODE_ENV === 'production' ? 'articles_sample_production.json' : 'articles.json');
 
 // Ensure data directory exists
 async function ensureDataDir() {
