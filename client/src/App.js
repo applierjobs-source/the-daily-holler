@@ -6,6 +6,9 @@ import PostDetail from './components/PostDetail';
 import News from './components/News';
 import CityHub from './components/CityHub';
 import CitySelection from './components/CitySelection';
+import Footer from './components/Footer';
+import Terms from './components/Terms';
+import Privacy from './components/Privacy';
 import './App.css';
 
 function AppContent() {
@@ -66,8 +69,12 @@ function AppContent() {
           <Route path="/article/:id" element={<PostDetail />} />
           <Route path="/news" element={<News cities={cities} />} />
           <Route path="/news/:cityId" element={<News cities={cities} />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
         </Routes>
       </div>
+      
+      <Footer />
     </div>
   );
 }
