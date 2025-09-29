@@ -1,0 +1,21 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "headline": "Austin City Council Votes to Rename All Traffic Lights After Local Musicians",
+      "content": "AUSTIN, TX — In a unanimous decision that left traffic engineers scratching their heads, the Austin City Council voted 11-0 to rename every traffic light in the city after local musicians, effective immediately.\n\n\"We're tired of boring red, yellow, and green,\" declared Mayor Steve Adler during the emergency session. \"Austin is the Live Music Capital of the World, and our traffic infrastructure should reflect that. From now on, drivers will stop at Willie Nelson, proceed with caution at Janis Joplin, and go at Spoon.\"\n\nThe decision comes after months of complaints from residents about the city's increasingly confusing traffic patterns. \"I was already confused about which way to turn on South Congress,\" said local resident Maria Rodriguez. \"Now I have to remember that Stevie Ray Vaughan means 'yield' and Shakey Graves means 'merge right.' It's like learning a new language, but with more honking.\"\n\nCity traffic engineer Dr. Patricia Chen expressed cautious optimism about the change. \"While this is unprecedented in traffic management history, we're confident that Austin drivers will adapt quickly,\" she said. \"After all, they've already mastered the art of parallel parking while listening to live music at Barton Springs.\"\n\nThe new system will be implemented gradually, starting with downtown intersections and expanding to the suburbs. Each traffic light will feature a small plaque with the musician's name and a brief musical history lesson, because apparently, Austin drivers have time to read while waiting for the light to change.\n\nResidents are already planning their routes based on their musical preferences. \"I'm going to take the Willie Nelson route to work every day,\" said local musician Jake Thompson. \"It's a little slower, but the vibe is just better.\"\n\nThe city estimates the rebranding will cost approximately $2.3 million, which will be funded by a new \"Musical Infrastructure Tax\" on all live music venues. Because nothing says 'keeping Austin weird' like taxing musicians to pay for traffic lights named after musicians.",
+      "cityName": "Austin",
+      "cityId": 4,
+      "state": "Texas",
+      "publishedAt": "2025-09-29T00:00:00.000Z",
+      "author": "AI Generated",
+      "category": "Local Government",
+      "tags": ["traffic", "music", "city council", "austin", "infrastructure"],
+      "readTime": 3,
+      "excerpt": "Austin City Council votes to rename traffic lights after local musicians, creating the world's first musical traffic system.",
+      "slug": "austin-city-council-votes-rename-traffic-lights-local-musicians"
+    }
+  ],
+  "generatedAt": "2025-09-29T04:22:48.895Z",
+  "totalCount": 1
+}
