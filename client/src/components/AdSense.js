@@ -79,7 +79,7 @@ const AdSense = ({
       <ins
         className="adsbygoogle"
         style={getAdStyle()}
-        data-ad-client="ca-pub-XXXXXXXXXX"
+        data-ad-client="ca-pub-7915880893226053"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive={responsive ? 'true' : 'false'}
