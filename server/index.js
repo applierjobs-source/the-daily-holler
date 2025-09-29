@@ -22,10 +22,7 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files in production
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-}
+// Static files will be served after API routes
 
 // Data storage paths
 const DATA_DIR = path.join(__dirname, 'data');
@@ -1815,8 +1812,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Production: Serve React app for all non-API routes
+// Serve static files in production (after API routes)
 if (isProduction) {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Serve React app for all non-API routes
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
