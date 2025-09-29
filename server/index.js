@@ -1645,7 +1645,7 @@ app.get('/api/news/today', async (req, res) => {
     const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
     // Filter articles from today
-    const todayArticles = articles.filter(article => {
+    const todayArticles = articles.articles.filter(article => {
       const articleDate = new Date(article.publishedAt).toISOString().split('T')[0];
       return articleDate === todayStr;
     });
@@ -1677,7 +1677,7 @@ app.get('/api/news/city/:cityId', async (req, res) => {
     const articles = JSON.parse(data);
     
     // Filter articles for the specific city
-    const cityArticles = articles.filter(article => article.cityId === cityId);
+    const cityArticles = articles.articles.filter(article => article.cityId === cityId);
     
     // Sort by publishedAt descending (newest first)
     cityArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
