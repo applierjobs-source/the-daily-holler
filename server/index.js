@@ -1726,15 +1726,7 @@ app.get('/api/articles/by-slug/:slug', async (req, res) => {
     
     // Find article by matching slug (for now, we'll use a simple approach)
     // In a real implementation, you'd want to store slugs in the database
-    const article = articles.articles.find(a => {
-      const articleSlug = a.headline
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim('-');
-      return articleSlug === slug;
-    });
+    const article = articles.articles.find(a => a.slug === slug);
     
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
