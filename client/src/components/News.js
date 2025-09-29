@@ -195,7 +195,7 @@ const News = ({ cities }) => {
 
       <div className="news-header">
         <h1>🗞️ Local News</h1>
-        <p>AI-generated satirical news articles for your city</p>
+        <p>Satirical news articles for your city</p>
         
         <div className="news-city-selector">
           <label htmlFor="news-city-select">Select City:</label>

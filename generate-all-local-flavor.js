@@ -9,7 +9,7 @@ const ComprehensiveLocalFlavor = require('./comprehensive-local-flavor');
 
 async function generateAllLocalFlavor() {
   console.log('🚀 Starting comprehensive local flavor generation for all cities');
-  console.log('💰 This will cost approximately $15-25 in AI API calls');
+  console.log('💰 This will cost approximately $15-25 in API calls');
   console.log('⏱️ Estimated time: 30-45 minutes');
   console.log('');
   
