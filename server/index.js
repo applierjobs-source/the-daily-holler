@@ -1886,9 +1886,9 @@ app.post('/api/generate-daily-articles', async (req, res) => {
           INSERT INTO articles (title, content, city, state, slug, theme, is_today)
           VALUES ($1, $2, $3, $4, $5, $6, $7)
         `, [
-          article.title,
+          article.headline || article.title,
           article.content,
-          article.city,
+          article.cityName || article.city,
           article.state,
           article.slug,
           article.theme || null,
