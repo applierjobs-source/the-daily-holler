@@ -1983,25 +1983,35 @@ app.post('/api/generate-daily-articles', async (req, res) => {
       const today = new Date().toISOString().split('T')[0];
       await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
       
-      // Insert new articles into database
-      const insertPromises = result.articles.map(article => 
-        pool.query(`
-          INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `, [
-          article.headline || article.title,
-          article.content,
-          article.cityName || article.city,
-          article.state,
-          article.slug,
-          article.theme || null,
-          true,
-          article.publishedAt || new Date().toISOString()
-        ])
-      );
+      // Insert articles one by one for real-time publishing
+      let insertedCount = 0;
+      for (const article of result.articles) {
+        try {
+          await pool.query(`
+            INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `, [
+            article.headline || article.title,
+            article.content,
+            article.cityName || article.city,
+            article.state,
+            article.slug,
+            article.theme || null,
+            true,
+            article.publishedAt || new Date().toISOString()
+          ]);
+          insertedCount++;
+          
+          // Log progress every 100 articles
+          if (insertedCount % 100 === 0) {
+            console.log(`📝 Published ${insertedCount}/${result.articles.length} articles`);
+          }
+        } catch (error) {
+          console.error(`❌ Error inserting article ${insertedCount + 1}:`, error);
+        }
+      }
       
-      await Promise.all(insertPromises);
-      console.log(`✅ Inserted ${result.articles.length} articles into database`);
+      console.log(`✅ Published ${insertedCount} articles to frontend`);
     } else {
       console.log('❌ No articles generated or result is invalid');
       return res.json({ 
