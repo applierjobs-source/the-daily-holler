@@ -1636,12 +1636,32 @@ app.get('/api/cities/:id', async (req, res) => {
 // In-memory articles storage
 let articlesCache = { articles: [] };
 
+// Auto-regenerate articles if cache is empty
+async function ensureArticlesExist() {
+  if (articlesCache.articles.length === 0) {
+    console.log('🔄 Articles cache is empty, regenerating articles...');
+    try {
+      const { generateDailyNews } = require('../daily-news-generator');
+      const result = await generateDailyNews();
+      if (result && result.articles) {
+        articlesCache = result;
+        console.log(`✅ Regenerated ${articlesCache.articles.length} articles`);
+      }
+    } catch (error) {
+      console.error('❌ Error regenerating articles:', error);
+    }
+  }
+}
+
 // Get all news articles
 app.get('/api/news', async (req, res) => {
   try {
     const { limit = 20, offset = 0 } = req.query;
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
+    
+    // Ensure articles exist
+    await ensureArticlesExist();
     
     // Try to load from file first, fallback to cache
     let articles;
@@ -1673,6 +1693,9 @@ app.get('/api/news', async (req, res) => {
 app.get('/api/news/today', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
+    
+    // Ensure articles exist
+    await ensureArticlesExist();
     
     // Use the same logic as /api/news - try file first, fallback to cache
     let articles;
