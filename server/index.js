@@ -1633,25 +1633,37 @@ app.get('/api/cities/:id', async (req, res) => {
   }
 });
 
-// In-memory articles storage
-let articlesCache = { articles: [] };
+// Database connection
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
-// Auto-regenerate articles if cache is empty
-async function ensureArticlesExist() {
-  if (articlesCache.articles.length === 0) {
-    console.log('🔄 Articles cache is empty, regenerating articles...');
-    try {
-      const { generateDailyNews } = require('../daily-news-generator');
-      const result = await generateDailyNews();
-      if (result && result.articles) {
-        articlesCache = result;
-        console.log(`✅ Regenerated ${articlesCache.articles.length} articles`);
-      }
-    } catch (error) {
-      console.error('❌ Error regenerating articles:', error);
-    }
+// Initialize articles table
+async function initDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS articles (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        city TEXT NOT NULL,
+        state TEXT NOT NULL,
+        slug TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        theme TEXT,
+        is_today BOOLEAN DEFAULT false
+      )
+    `);
+    console.log('✅ Database initialized');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
   }
 }
+
+// Initialize database on startup
+initDatabase();
 
 // Get all news articles
 app.get('/api/news', async (req, res) => {
@@ -1660,28 +1672,22 @@ app.get('/api/news', async (req, res) => {
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     
-    // Ensure articles exist
-    await ensureArticlesExist();
+    // Get articles from database
+    const result = await pool.query(`
+      SELECT * FROM articles 
+      ORDER BY created_at DESC 
+      LIMIT $1 OFFSET $2
+    `, [limitNum, offsetNum]);
     
-    // Try to load from file first, fallback to cache
-    let articles;
-    try {
-      const articlesData = await fs.readFile(path.join(__dirname, 'data/articles.json'), 'utf8');
-      articles = JSON.parse(articlesData);
-      articlesCache = articles; // Update cache
-    } catch (error) {
-      console.log('Using in-memory articles cache');
-      articles = articlesCache;
-    }
-    
-    const paginatedArticles = articles.articles.slice(offsetNum, offsetNum + limitNum);
+    const totalResult = await pool.query('SELECT COUNT(*) FROM articles');
+    const total = parseInt(totalResult.rows[0].count);
     
     res.json({
-      articles: paginatedArticles,
-      total: articles.articles.length,
+      articles: result.rows,
+      total: total,
       limit: limitNum,
       offset: offsetNum,
-      hasMore: offsetNum + limitNum < articles.articles.length
+      hasMore: offsetNum + limitNum < total
     });
   } catch (error) {
     console.error('Error fetching news:', error);
@@ -1694,41 +1700,29 @@ app.get('/api/news/today', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
     
-    // Ensure articles exist
-    await ensureArticlesExist();
-    
-    // Use the same logic as /api/news - try file first, fallback to cache
-    let articles;
-    try {
-      const articlesData = await fs.readFile(path.join(__dirname, 'data/articles.json'), 'utf8');
-      articles = JSON.parse(articlesData);
-      articlesCache = articles; // Update cache
-    } catch (error) {
-      console.log('Using in-memory articles cache for today endpoint');
-      articles = articlesCache;
-    }
-    
     // Get today's date
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    // Filter articles from today
-    const todayArticles = articles.articles.filter(article => {
-      const articleDate = new Date(article.publishedAt).toISOString().split('T')[0];
-      return articleDate === todayStr;
-    });
+    // Get articles from today from database
+    const result = await pool.query(`
+      SELECT * FROM articles 
+      WHERE DATE(created_at) = $1
+      ORDER BY created_at DESC 
+      LIMIT $2
+    `, [todayStr, parseInt(limit)]);
     
-    // Sort by publishedAt descending (newest first)
-    todayArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-    
-    // Limit results
-    const limitedArticles = todayArticles.slice(0, parseInt(limit));
+    const totalResult = await pool.query(`
+      SELECT COUNT(*) FROM articles 
+      WHERE DATE(created_at) = $1
+    `, [todayStr]);
+    const total = parseInt(totalResult.rows[0].count);
     
     res.json({
-      articles: limitedArticles,
-      count: limitedArticles.length,
+      articles: result.rows,
+      count: result.rows.length,
       date: todayStr,
-      totalToday: todayArticles.length
+      totalToday: total
     });
   } catch (error) {
     console.error('Error fetching today\'s articles:', error);
@@ -1881,15 +1875,35 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const { generateDailyNews } = require('../daily-news-generator');
     const result = await generateDailyNews();
     
-    // Update the in-memory cache
     if (result && result.articles) {
-      articlesCache = result;
+      // Clear existing articles for today
+      const today = new Date().toISOString().split('T')[0];
+      await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
+      
+      // Insert new articles into database
+      const insertPromises = result.articles.map(article => 
+        pool.query(`
+          INSERT INTO articles (title, content, city, state, slug, theme, is_today)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [
+          article.title,
+          article.content,
+          article.city,
+          article.state,
+          article.slug,
+          article.theme || null,
+          true
+        ])
+      );
+      
+      await Promise.all(insertPromises);
+      console.log(`✅ Inserted ${result.articles.length} articles into database`);
     }
     
     res.json({ 
       success: true, 
       message: 'Daily articles generated successfully',
-      totalArticles: articlesCache.articles.length,
+      totalArticles: result.articles.length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
