@@ -1875,7 +1875,9 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const { generateDailyNews } = require('../daily-news-generator');
     const result = await generateDailyNews();
     
-    if (result && result.articles) {
+    console.log('Result from generateDailyNews:', result);
+    
+    if (result && result.articles && result.articles.length > 0) {
       // Clear existing articles for today
       const today = new Date().toISOString().split('T')[0];
       await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
@@ -1898,6 +1900,14 @@ app.post('/api/generate-daily-articles', async (req, res) => {
       
       await Promise.all(insertPromises);
       console.log(`✅ Inserted ${result.articles.length} articles into database`);
+    } else {
+      console.log('❌ No articles generated or result is invalid');
+      return res.json({ 
+        success: false, 
+        error: 'No articles generated',
+        result: result,
+        timestamp: new Date().toISOString()
+      });
     }
     
     res.json({ 
