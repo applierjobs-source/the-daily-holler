@@ -1652,6 +1652,7 @@ async function initDatabase() {
         state TEXT NOT NULL,
         slug TEXT UNIQUE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        published_at TIMESTAMP,
         theme TEXT,
         is_today BOOLEAN DEFAULT false
       )
@@ -1693,8 +1694,8 @@ app.get('/api/news', async (req, res) => {
     if (articleCount === 0) {
       console.log('No articles found, inserting test article...');
       await pool.query(`
-        INSERT INTO articles (title, content, city, state, slug, theme, is_today)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
         'Test Article - Database Working!',
         'This is a test article to verify the database is working correctly.',
@@ -1702,14 +1703,15 @@ app.get('/api/news', async (req, res) => {
         'Test State',
         'test-article-database-working',
         'test',
-        true
+        true,
+        new Date().toISOString()
       ]);
       console.log('Test article inserted successfully');
     }
     
     // Get articles from database
     const result = await pool.query(`
-      SELECT * FROM articles 
+      SELECT *, published_at as "publishedAt" FROM articles 
       ORDER BY created_at DESC 
       LIMIT $1 OFFSET $2
     `, [limitNum, offsetNum]);
@@ -1741,7 +1743,7 @@ app.get('/api/news/today', async (req, res) => {
     
     // Get articles from today from database
     const result = await pool.query(`
-      SELECT * FROM articles 
+      SELECT *, published_at as "publishedAt" FROM articles 
       WHERE DATE(created_at) = $1
       ORDER BY created_at DESC 
       LIMIT $2
@@ -1984,8 +1986,8 @@ app.post('/api/generate-daily-articles', async (req, res) => {
       // Insert new articles into database
       const insertPromises = result.articles.map(article => 
         pool.query(`
-          INSERT INTO articles (title, content, city, state, slug, theme, is_today)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `, [
           article.headline || article.title,
           article.content,
@@ -1993,7 +1995,8 @@ app.post('/api/generate-daily-articles', async (req, res) => {
           article.state,
           article.slug,
           article.theme || null,
-          true
+          true,
+          article.publishedAt || new Date().toISOString()
         ])
       );
       
