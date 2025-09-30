@@ -2043,8 +2043,8 @@ app.post('/api/generate-daily-articles', async (req, res) => {
           ]);
           insertedCount++;
           
-          // Log progress every 100 articles
-          if (insertedCount % 100 === 0) {
+          // Log progress every 25 articles
+          if (insertedCount % 25 === 0) {
             console.log(`📝 Published ${insertedCount}/${result.articles.length} articles`);
           }
         } catch (error) {

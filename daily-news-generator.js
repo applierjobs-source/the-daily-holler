@@ -1,25 +1,21 @@
 const OpenAI = require('openai');
-const { Pool } = require('pg');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Initialize database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
 // Load cities data
 async function loadCities() {
   try {
-    const result = await pool.query('SELECT * FROM cities ORDER BY id');
-    console.log(`✅ Loaded ${result.rows.length} cities from database`);
-    return result.rows;
+    const citiesData = await fs.readFile(path.join(__dirname, 'server/data/cities.json'), 'utf8');
+    const cities = JSON.parse(citiesData);
+    console.log(`✅ Loaded ${cities.length} cities`);
+    return cities;
   } catch (error) {
-    console.error('Error loading cities from database:', error);
+    console.error('Error loading cities:', error);
     return [];
   }
 }
@@ -283,28 +279,9 @@ async function generateDailyNews() {
       return { articles: [] };
     }
 
-    // Check if articles already exist for today
+    // Check if articles already exist for today (simplified check)
     const today = new Date().toISOString().split('T')[0];
-    const existingCount = await pool.query(
-      'SELECT COUNT(*) FROM articles WHERE DATE(created_at) = $1',
-      [today]
-    );
-    
-    console.log(`📅 Articles already generated today: ${existingCount.rows[0].count}`);
-    
-    if (parseInt(existingCount.rows[0].count) >= cities.length) {
-      console.log('✅ All articles for today already generated!');
-      const result = await pool.query(`
-        SELECT *, published_at as "publishedAt" FROM articles 
-        WHERE DATE(created_at) = $1
-        ORDER BY created_at DESC
-      `, [today]);
-      return { articles: result.rows };
-    }
-
-    // Clear existing articles for today
-    console.log('🗑️ Clearing existing articles for today...');
-    await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
+    console.log(`📅 Generating articles for today: ${today}`);
 
     // Generate 2 unique base articles for testing
     console.log('🎨 Generating 2 unique base articles for testing...');
@@ -330,54 +307,25 @@ async function generateDailyNews() {
     console.log(`🌍 Distributing articles to first 50 cities for testing...`);
     let totalGenerated = 0;
     const testCities = cities.slice(0, 50);
-    const BATCH_SIZE = 10; // Process 10 cities at a time
+    const generatedArticles = [];
     
     for (let i = 0; i < baseArticles.length; i++) {
       const baseArticle = baseArticles[i];
-      console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to all cities...`);
+      console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to test cities...`);
       
-      // Process cities in batches
-      for (let batchStart = 0; batchStart < testCities.length; batchStart += BATCH_SIZE) {
-        const batchEnd = Math.min(batchStart + BATCH_SIZE, testCities.length);
-        const batch = testCities.slice(batchStart, batchEnd);
+      for (let j = 0; j < testCities.length; j++) {
+        const city = testCities[j];
+        const customizedArticle = customizeArticleForCity(baseArticle, city);
         
-        console.log(`📦 Processing batch ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(testCities.length/BATCH_SIZE)} (cities ${batchStart + 1}-${batchEnd})`);
-        
-        for (let j = 0; j < batch.length; j++) {
-          const city = batch[j];
-          const customizedArticle = customizeArticleForCity(baseArticle, city);
+        if (customizedArticle) {
+          generatedArticles.push(customizedArticle);
+          totalGenerated++;
           
-          if (customizedArticle) {
-            // Insert directly into database
-            try {
-              await pool.query(`
-                INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-              `, [
-                customizedArticle.headline,
-                customizedArticle.content,
-                customizedArticle.city,
-                customizedArticle.state,
-                customizedArticle.slug,
-                customizedArticle.theme,
-                true,
-                customizedArticle.publishedAt
-              ]);
-              
-              totalGenerated++;
-              
-              // Progress reporting every 500 articles
-              if (totalGenerated % 500 === 0) {
-                console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
-              }
-            } catch (error) {
-              console.error(`❌ Error inserting article for ${city.city}:`, error);
-            }
+          // Progress reporting every 25 articles
+          if (totalGenerated % 25 === 0) {
+            console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
           }
         }
-        
-        // Small delay between batches to avoid overwhelming the database
-        await new Promise(resolve => setTimeout(resolve, 100));
       }
       
       console.log(`✅ Article ${i + 1} distributed to ${testCities.length} cities`);
@@ -386,17 +334,10 @@ async function generateDailyNews() {
     console.log(`\n🎉 Daily news generation complete!`);
     console.log(`✅ Generated: ${totalGenerated} total articles`);
     console.log(`📊 Base articles: ${baseArticles.length}`);
-    console.log(`🏙️ Cities covered: ${cities.length}`);
-    console.log(`💰 Estimated cost: ~$50-80 (10 base articles + 16,820 customizations)`);
+    console.log(`🏙️ Cities covered: ${testCities.length}`);
+    console.log(`💰 Estimated cost: ~$2-5 (2 base articles + 100 customizations)`);
     
-    // Return the generated articles
-    const result = await pool.query(`
-      SELECT *, published_at as "publishedAt" FROM articles 
-      WHERE DATE(created_at) = $1
-      ORDER BY created_at DESC
-    `, [today]);
-    
-    return { articles: result.rows };
+    return { articles: generatedArticles };
     
   } catch (error) {
     console.error('❌ Error in generateDailyNews:', error);
