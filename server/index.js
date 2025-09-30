@@ -1922,7 +1922,7 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     res.json({ 
       success: true, 
       message: 'Daily articles generated successfully',
-      totalArticles: result.articles.length,
+      totalArticles: result ? result.articles.length : 0,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
