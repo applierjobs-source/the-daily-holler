@@ -10,7 +10,6 @@ server/data/articles_sample_small.json
 server/data/articles_subset.json
 
 # Build outputs
-client/build/
 dist/
 
 # Environment variables
