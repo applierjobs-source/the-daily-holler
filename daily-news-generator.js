@@ -2,6 +2,19 @@ const OpenAI = require('openai');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Import slug generation function
+function generateUniqueArticleSlug(title, city) {
+  if (!title || !city) return '';
+  const citySlug = city.toLowerCase().replace(/\s+/g, '-');
+  const titleSlug = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+  return `${citySlug}-${titleSlug}`;
+}
+
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -303,7 +316,7 @@ function customizeArticleForCity(baseArticle, city) {
     content: cityContent,
     city: city.name,
     state: city.stateName,
-    slug: `${city.name.toLowerCase().replace(/\s+/g, '-')}-${baseArticle.theme}`,
+    slug: generateUniqueArticleSlug(baseArticle.headline, city.name),
     theme: baseArticle.theme,
     publishedAt: new Date().toISOString()
   };
