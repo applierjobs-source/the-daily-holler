@@ -59,56 +59,57 @@ const Home = () => {
         {error && <div className="error">Error: {error}</div>}
         
         {!loading && !error && todayArticles.length > 0 && (
-          <div className="articles-scroll-container">
-            <div className="articles-scroll">
-              {todayArticles.slice(0, 20).map((article, index) => (
+          <div className="articles-stream-container">
+            <div className="articles-stream">
+              {todayArticles.slice(0, 10).map((article, index) => (
                 <React.Fragment key={article.id}>
-                  {index === 5 && <InContentAd />}
+                  {index === 3 && <InContentAd />}
                   <div className="article-preview">
                     <div className="article-meta">
-                    <span className="article-location">📍 {article.cityName}, {article.state}</span>
-                    <span className="article-time">{formatDate(article.publishedAt)}</span>
-                  </div>
-                  
-                  <h4 className="article-headline">
-                    <Link to={generateArticleUrl(article)}>
-                      {article.headline}
-                    </Link>
-                  </h4>
-                  
-                  <p className="article-excerpt">
-                    {article.body ? article.body.substring(0, 200) + '...' : 'Read more about this story.'}
-                  </p>
-                  
-                  <div className="article-footer">
-                    <span className="article-author">By {article.author}</span>
-                    {article.cityName && (
-                      <Link 
-                        to={`/cities/${getCitySlug(article.cityName, article.state)}`}
-                        className="city-link"
-                      >
-                        View {article.cityName} News →
+                      <span className="article-location">📍 {article.city}, {article.state}</span>
+                      <span className="article-time">{formatDate(article.publishedAt)}</span>
+                    </div>
+                    
+                    <h4 className="article-headline">
+                      <Link to={generateArticleUrl(article)}>
+                        {article.title}
                       </Link>
-                    )}
-                  </div>
+                    </h4>
+                    
+                    <p className="article-excerpt">
+                      {article.content ? article.content.substring(0, 200) + '...' : 'Read more about this story.'}
+                    </p>
+                    
+                    <div className="article-footer">
+                      <span className="article-author">By The Daily Holler</span>
+                      {article.city && (
+                        <Link 
+                          to={`/cities/${getCitySlug(article.city, article.state)}`}
+                          className="city-link"
+                        >
+                          View {article.city} News →
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </React.Fragment>
               ))}
             </div>
             
-            {todayArticles.length > 20 && (
-              <div className="view-more">
-                <Link to="/news" className="btn btn-outline">
-                  View All {todayArticles.length} Articles Today
-                </Link>
-              </div>
-            )}
+            <div className="view-more">
+              <Link to="/news" className="btn btn-primary">
+                View All {todayArticles.length} Articles Today →
+              </Link>
+            </div>
           </div>
         )}
         
         {!loading && !error && todayArticles.length === 0 && (
           <div className="no-articles">
             <p>No articles published today yet. Check back later!</p>
+            <Link to="/news" className="btn btn-outline">
+              Browse All News
+            </Link>
           </div>
         )}
       </div>

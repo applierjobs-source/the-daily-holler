@@ -1,276 +1,176 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { generateArticleUrl } from '../utils/slugUtils';
+import { HeaderAd, InContentAd } from './AdBanner';
 
-const News = ({ cities }) => {
-  const { cityId } = useParams();
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [article, setArticle] = useState(null);
-  const [articleHistory, setArticleHistory] = useState([]);
-  const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+const News = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalArticles, setTotalArticles] = useState(0);
 
-  const loadArticleHistory = useCallback(async (cityId) => {
-    try {
-      const response = await fetch(`/api/news/city/${cityId}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Filter articles to only show those for the selected city
-        const cityArticles = data.articles.filter(article => article.cityId === cityId.toString());
-        setArticleHistory(cityArticles);
-        setCurrentArticleIndex(0);
-      }
-    } catch (err) {
-      console.error('Failed to load article history:', err);
-    }
+  const ARTICLES_PER_PAGE = 20;
+
+  useEffect(() => {
+    loadArticles();
   }, []);
 
-  const generateArticle = useCallback(async (cityId) => {
-    setLoading(true);
-    setError(null);
+  const loadArticles = async (pageNum = 1, append = false) => {
     try {
-      const response = await fetch(`/api/news/${cityId}`);
-      if (!response.ok) {
-        // If the response fails, try to load from history instead of showing error
-        // This handles cases where the article was generated but server restarted
-        console.log('Response failed, checking if article was saved...');
-        const historyResponse = await fetch(`/api/news/city/${cityId}`);
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json();
-          if (historyData.articles && historyData.articles.length > 0) {
-            setArticle(historyData.articles[0]);
-            setArticleHistory(historyData.articles);
-            setCurrentArticleIndex(0);
-            console.log('Using latest article from history');
-            return;
-          }
-        }
-        throw new Error('Failed to generate article');
-      } else {
+      setLoading(true);
+      const response = await fetch(`/api/news?limit=${ARTICLES_PER_PAGE}&offset=${(pageNum - 1) * ARTICLES_PER_PAGE}`);
+      
+      if (response.ok) {
         const data = await response.json();
-        setArticle(data);
-        // Reload article history to include the new article
-        const historyResponse = await fetch(`/api/news/city/${cityId}`);
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json();
-          // Filter articles to only show those for the selected city
-          const cityArticles = historyData.articles.filter(article => article.cityId === cityId.toString());
-          setArticleHistory(cityArticles);
-          setCurrentArticleIndex(0);
+        
+        if (append) {
+          setArticles(prev => [...prev, ...data.articles]);
+        } else {
+          setArticles(data.articles);
         }
+        
+        setTotalArticles(data.total);
+        setHasMore(data.articles.length === ARTICLES_PER_PAGE);
+        setPage(pageNum);
+      } else {
+        setError('Failed to load articles');
       }
     } catch (err) {
-      // Try to load from history one more time
-      try {
-        const response = await fetch(`/api/news/city/${cityId}`);
-        if (response.ok) {
-          const data = await response.json();
-          // Filter articles to only show those for the selected city
-          const cityArticles = data.articles.filter(article => article.cityId === cityId.toString());
-          if (cityArticles.length > 0) {
-            setArticle(cityArticles[0]);
-            setArticleHistory(cityArticles);
-            setCurrentArticleIndex(0);
-            console.log('Successfully loaded from history after error');
-            return; // Don't show error
-          }
-        }
-      } catch (historyErr) {
-        console.log('Could not load from history either');
-      }
-      // Don't show error message - just log it
-      console.log('Error generating article:', err.message);
-      // Try to load any existing articles instead of showing error
-      try {
-        const response = await fetch(`/api/news/city/${cityId}`);
-        if (response.ok) {
-          const data = await response.json();
-          // Filter articles to only show those for the selected city
-          const cityArticles = data.articles.filter(article => article.cityId === cityId.toString());
-          if (cityArticles.length > 0) {
-            setArticle(cityArticles[0]);
-            setArticleHistory(cityArticles);
-            setCurrentArticleIndex(0);
-            console.log('Loaded existing article instead of showing error');
-            return;
-          }
-        }
-      } catch (finalErr) {
-        console.log('No articles available');
-      }
+      console.error('Error fetching articles:', err);
+      setError('Failed to load articles');
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    if (cities.length > 0) {
-      // Default to first city if no cityId specified
-      const defaultCity = cityId ? cities.find(c => c.id === cityId) : cities[0];
-      if (defaultCity) {
-        setSelectedCity(defaultCity);
-        loadArticleHistory(defaultCity.id);
-        generateArticle(defaultCity.id);
-      }
-    }
-  }, [cityId, cities, loadArticleHistory, generateArticle]);
-
-  const generateNewArticle = () => {
-    if (selectedCity) {
-      generateArticle(selectedCity.id);
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      loadArticles(page + 1, true);
     }
   };
 
-  const navigateToArticle = (index) => {
-    if (index >= 0 && index < articleHistory.length) {
-      setCurrentArticleIndex(index);
-      setArticle(articleHistory[index]);
-    }
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const goToPreviousArticle = () => {
-    if (currentArticleIndex > 0) {
-      navigateToArticle(currentArticleIndex - 1);
-    }
+  const getCitySlug = (cityName, state) => {
+    if (!cityName || !state) return '';
+    return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
   };
 
-  const goToNextArticle = () => {
-    if (currentArticleIndex < articleHistory.length - 1) {
-      navigateToArticle(currentArticleIndex + 1);
-    }
-  };
-
-  const handleCityChange = (city) => {
-    setSelectedCity(city);
-    setArticle(null); // Clear current article
-    setError(null); // Clear any errors
-    loadArticleHistory(city.id);
-    generateArticle(city.id);
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Politics': '#e74c3c',
+      'Business': '#3498db',
+      'Sports': '#2ecc71',
+      'Entertainment': '#9b59b6',
+      'Technology': '#f39c12',
+      'Health': '#1abc9c',
+      'Education': '#34495e',
+      'General': '#95a5a6'
+    };
+    return colors[category] || colors['General'];
   };
 
   return (
     <div className="news-page">
-      {error && (
-        <div className="alert alert-danger">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {loading && (
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Generating your Onion-style news...</p>
-        </div>
-      )}
-
-      {article && !loading && (
-        <div className="news-article">
-          <div className="article-header">
-            <h2 className="article-headline">{article.headline}</h2>
-            <div className="article-meta">
-              <span className="article-location">📍 {article.cityName}, {article.state}</span>
-              <span className="article-author">By {article.author}</span>
-              <span className="article-date">
-                {new Date(article.publishedAt).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-          
-          
-          <div className="article-body">
-            {article.body.split('\n').map((paragraph, index) => (
-              <p key={index} className="article-paragraph">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!article && !loading && !error && (
-        <div className="no-article">
-          <p>Click "Generate New News" to get started!</p>
-        </div>
-      )}
-
+      <HeaderAd />
+      
       <div className="news-header">
-        <h1>🗞️ Local News</h1>
-        <p>Satirical news articles for your city</p>
-        
-        <div className="news-city-selector">
-          <label htmlFor="news-city-select">Select City:</label>
-          <select 
-            id="news-city-select"
-            value={selectedCity?.id || ''} 
-            onChange={(e) => {
-              const city = cities.find(c => c.id === e.target.value);
-              if (city) {
-                handleCityChange(city);
-              }
-            }}
-            className="form-select news-city-dropdown"
-            disabled={loading}
-          >
-            {cities.map(city => (
-              <option key={city.id} value={city.id}>
-                {city.name}, {city.state}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="news-controls">
-        <button 
-          onClick={generateNewArticle}
-          disabled={loading}
-          className="btn btn-primary generate-btn"
-        >
-          {loading ? 'Generating...' : 'Generate New News'}
-        </button>
-      </div>
-
-      {/* News History and Navigation */}
-      {articleHistory.length > 0 && (
-        <div className="article-history">
-          <h3>📚 News History for {selectedCity?.name}</h3>
-          <div className="article-navigation">
-            <button 
-              onClick={goToPreviousArticle}
-              disabled={currentArticleIndex === 0}
-              className="btn btn-outline-primary nav-btn"
-            >
-              ← Previous
-            </button>
-            <span className="article-counter">
-              {currentArticleIndex + 1} of {articleHistory.length} news
-            </span>
-            <button 
-              onClick={goToNextArticle}
-              disabled={currentArticleIndex === articleHistory.length - 1}
-              className="btn btn-outline-primary nav-btn"
-            >
-              Next →
-            </button>
+        <h1>📰 Today's Latest News</h1>
+        <p>All the latest satirical news from cities across America</p>
+        {totalArticles > 0 && (
+          <div className="news-stats">
+            <span>{totalArticles} articles available</span>
           </div>
-          
-          <div className="article-list">
-            {articleHistory.map((histArticle, index) => (
-              <div 
-                key={histArticle.id}
-                className={`article-item ${index === currentArticleIndex ? 'active' : ''}`}
-                onClick={() => navigateToArticle(index)}
-              >
-                <h4 className="article-item-title">{histArticle.headline}</h4>
-                <div className="article-item-meta">
-                  <span className="article-item-date">
-                    {new Date(histArticle.publishedAt).toLocaleDateString()}
+        )}
+      </div>
+
+      {loading && articles.length === 0 && (
+        <div className="loading">Loading articles...</div>
+      )}
+
+      {error && (
+        <div className="error">Error: {error}</div>
+      )}
+
+      {!loading && !error && articles.length === 0 && (
+        <div className="no-articles">
+          <h3>No articles available yet</h3>
+          <p>Check back later for the latest satirical news!</p>
+        </div>
+      )}
+
+      {articles.length > 0 && (
+        <div className="articles-stream">
+          {articles.map((article, index) => (
+            <React.Fragment key={article.id}>
+              {index === 5 && <InContentAd />}
+              {index === 15 && <InContentAd />}
+              {index === 25 && <InContentAd />}
+              
+              <div className="article-card">
+                <div className="article-meta">
+                  <span 
+                    className="article-category"
+                    style={{ backgroundColor: getCategoryColor(article.category) }}
+                  >
+                    {article.category || 'General'}
                   </span>
-                  <span className="article-item-author">By {histArticle.author}</span>
+                  <span className="article-location">📍 {article.city}, {article.state}</span>
+                  <span className="article-time">{formatDate(article.publishedAt)}</span>
+                </div>
+                
+                <h2 className="article-headline">
+                  <Link to={generateArticleUrl(article)}>
+                    {article.title}
+                  </Link>
+                </h2>
+                
+                <p className="article-excerpt">
+                  {article.content ? article.content.substring(0, 300) + '...' : 'Read more about this story.'}
+                </p>
+                
+                <div className="article-footer">
+                  <span className="article-author">By {article.author || 'The Daily Holler'}</span>
+                  {article.city && (
+                    <Link 
+                      to={`/cities/${getCitySlug(article.city, article.state)}`}
+                      className="city-link"
+                    >
+                      View {article.city} News →
+                    </Link>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+            </React.Fragment>
+          ))}
+
+          {hasMore && (
+            <div className="load-more-container">
+              <button 
+                onClick={loadMore}
+                disabled={loading}
+                className="btn btn-outline load-more-btn"
+              >
+                {loading ? 'Loading...' : 'Load More Articles'}
+              </button>
+            </div>
+          )}
+
+          {!hasMore && articles.length > 0 && (
+            <div className="end-of-articles">
+              <p>You've reached the end! That's all {totalArticles} articles.</p>
+            </div>
+          )}
         </div>
       )}
     </div>

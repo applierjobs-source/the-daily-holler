@@ -51,12 +51,12 @@ export const parseCitySlug = (slug) => {
  * @returns {string} - Full article URL
  */
 export const generateArticleUrl = (article) => {
-  if (!article || !article.headline || !article.cityName || !article.state) {
+  if (!article || !article.title || !article.city || !article.state) {
     return `/article/${article?.id || ''}`;
   }
   
-  const citySlug = generateCitySlug(article.cityName, article.state);
-  const articleSlug = generateArticleSlug(article.headline);
+  const citySlug = generateCitySlug(article.city, article.state);
+  const articleSlug = generateArticleSlug(article.title);
   
   return `/cities/${citySlug}/article/${articleSlug}`;
 };

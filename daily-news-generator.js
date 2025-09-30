@@ -22,7 +22,7 @@ async function loadCities() {
 
 // Generate a base article (generic, not city-specific)
 async function generateBaseArticle(themeNumber) {
-  const prompt = `You are a satirical news writer for a site like *The Onion*. Your job is to create a unique, hilarious fake news article.
+  const prompt = `You are a satirical news writer for a site like *The Onion*. Your job is to create a unique, hilarious fake news article for a generic city.
 
 ### STYLE REQUIREMENTS
 - Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
@@ -30,6 +30,14 @@ async function generateBaseArticle(themeNumber) {
 - Headline: Punchy, 8–12 words, must set up the absurd premise.
 - Length: 250–400 words.
 - Format: [HEADLINE] + [ARTICLE BODY with 3–4 short paragraphs].
+
+### IMPORTANT: Use generic placeholders ONLY
+- Use "LOCAL" instead of specific city names (NOT Springfield, NOT any real city)
+- Use "residents" instead of specific city residents
+- Use "town" or "city" instead of specific place names
+- Use "STATE" instead of specific state names
+- Do NOT use any real city names like Springfield, Chicago, New York, etc.
+- Do NOT use any real state names like Illinois, California, etc.
 
 ### THEMES (rotate for diversity)
 Choose **one theme** for this article. Distribute themes so no single idea feels overused.
@@ -242,14 +250,48 @@ function customizeArticleForCity(baseArticle, city) {
   if (!baseArticle || !city) return null;
 
   // Create city-specific headline
-  const cityHeadline = baseArticle.headline.replace(/Local|Town|City/g, city.name);
-  
-  // Create city-specific content
-  let cityContent = baseArticle.content
+  const cityHeadline = baseArticle.headline
     .replace(/Local|Town|City/g, city.name)
+    .replace(/LOCAL/g, city.name);
+  
+  // Create city-specific content - use a more comprehensive approach
+  let cityContent = baseArticle.content;
+  
+  // Replace any city name pattern with the actual city name
+  // This regex matches city names followed by common patterns
+  cityContent = cityContent.replace(/\*\*[A-Z][A-Za-z\s]+, [A-Z]{2}\*\*/g, `**${city.name}, ${city.stateName}**`);
+  cityContent = cityContent.replace(/\*\*[A-Z][A-Za-z\s]+, USA\*\*/g, `**${city.name}, ${city.stateName}**`);
+  cityContent = cityContent.replace(/\*\*[A-Z][A-Za-z\s]+, [A-Z]{2}\*\*/g, `**${city.name}, ${city.stateName}**`);
+  
+  // Also handle patterns without ** markers
+  cityContent = cityContent.replace(/[A-Z][A-Za-z\s]+, [A-Z]{2}—/g, `${city.name}, ${city.stateName}—`);
+  cityContent = cityContent.replace(/[A-Z][A-Za-z\s]+, USA—/g, `${city.name}, ${city.stateName}—`);
+  cityContent = cityContent.replace(/[A-Z][A-Za-z\s]+, [A-Z]{2}—/g, `${city.name}, ${city.stateName}—`);
+  
+  // Replace common patterns
+  cityContent = cityContent
+    .replace(/Local|Town|City/g, city.name)
+    .replace(/LOCAL/g, city.name)
     .replace(/residents/gi, `${city.name} residents`)
     .replace(/town/gi, city.name)
-    .replace(/city/gi, city.name);
+    .replace(/city/gi, city.name)
+    .replace(/STATE/g, city.stateName)
+    .replace(/MILFOURD/g, city.name)
+    .replace(/USA/g, city.stateName)
+    .replace(/Springfield/g, city.name)
+    .replace(/Shady Hollow/g, city.name)
+    .replace(/Northfield/g, city.name)
+    .replace(/Elmville/g, city.name)
+    .replace(/Elmsville/g, city.name)
+    .replace(/Plumborough/g, city.name)
+    .replace(/Willow Creek/g, city.name)
+    .replace(/Timeridge/g, city.name)
+    .replace(/MN/g, city.stateName)
+    .replace(/Illinois/g, city.stateName)
+    .replace(/California/g, city.stateName)
+    .replace(/Texas/g, city.stateName)
+    .replace(/Florida/g, city.stateName)
+    .replace(/New York/g, city.stateName);
 
   // Add some local flavor
   if (city.stateName) {

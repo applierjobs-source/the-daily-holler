@@ -184,16 +184,17 @@ const CityHub = ({ cities }) => {
                 
                 <h3 className="article-title">
                   <Link to={generateArticleUrl(article)}>
-                    {article.headline}
+                    {article.title || article.headline}
                   </Link>
                 </h3>
                 
                 <p className="article-excerpt">
-                  {article.body ? article.body.substring(0, 150) + '...' : 'Read more about this story.'}
+                  {article.content ? article.content.substring(0, 150) + '...' : 
+                   article.body ? article.body.substring(0, 150) + '...' : 'Read more about this story.'}
                 </p>
                 
                 <div className="article-footer">
-                  <span className="article-author">By {article.author}</span>
+                  <span className="article-author">By {article.author || 'The Daily Holler'}</span>
                   <Link to={generateArticleUrl(article)} className="read-more">
                     Read More →
                   </Link>
