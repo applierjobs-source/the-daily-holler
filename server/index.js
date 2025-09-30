@@ -2039,6 +2039,65 @@ app.get('/api/test-cities', async (req, res) => {
   }
 });
 
+// Test base article generation
+app.post('/api/test-base-article', async (req, res) => {
+  try {
+    const OpenAI = require('openai');
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    const prompt = `You are a satirical news writer for a site like *The Onion*. Your job is to create a unique, hilarious fake news article.
+
+### STYLE REQUIREMENTS
+- Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
+- Humor: Mix of exaggeration, surrealism, and playful cultural references.
+- Headline: Punchy, 8–12 words, must set up the absurd premise.
+- Length: 250–400 words.
+- Format: [HEADLINE] + [ARTICLE BODY with 3–4 short paragraphs].
+
+### THEMES
+Choose **one theme** for this article: Local thrift store introduces bizarre membership rules
+
+### WRITING REQUIREMENTS
+- Include at least one fake quote from a resident, official, or expert.
+- Weave in 1–2 real local facts to ground the absurdity.
+- Make the article feel distinct — no recycled setups.
+
+### OUTPUT
+Return only the satirical article in this format:
+[HEADLINE]
+[ARTICLE BODY]`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 800,
+      temperature: 0.9
+    });
+
+    const content = response.choices[0].message.content.trim();
+    const lines = content.split('\n');
+    const headline = lines[0];
+    const body = lines.slice(1).join('\n').trim();
+
+    res.json({ 
+      success: true, 
+      message: 'Base article generated successfully',
+      article: {
+        headline,
+        content: body,
+        theme: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Fix database schema endpoint
 app.post('/api/fix-db', async (req, res) => {
   try {
