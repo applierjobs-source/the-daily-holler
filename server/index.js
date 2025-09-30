@@ -1689,18 +1689,11 @@ app.get('/api/news/today', async (req, res) => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    console.log('Today string:', todayStr);
-    console.log('Total articles:', articles.articles.length);
-    console.log('Sample article date:', articles.articles[0]?.publishedAt);
-    
     // Filter articles from today
     const todayArticles = articles.articles.filter(article => {
       const articleDate = new Date(article.publishedAt).toISOString().split('T')[0];
-      console.log('Comparing:', articleDate, '===', todayStr, '?', articleDate === todayStr);
       return articleDate === todayStr;
     });
-    
-    console.log('Today articles found:', todayArticles.length);
     
     // Sort by publishedAt descending (newest first)
     todayArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
