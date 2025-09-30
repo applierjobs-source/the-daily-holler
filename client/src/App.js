@@ -18,7 +18,7 @@ function AppContent() {
 
   useEffect(() => {
     // Load cities
-    fetch('/api/cities?limit=10000')
+    fetch('/api/cities?limit=1000')
       .then(res => res.json())
       .then(citiesResponse => {
         setCities(citiesResponse.cities);
@@ -26,8 +26,9 @@ function AppContent() {
       })
       .catch(err => {
         console.error('Failed to load initial data:', err);
-        setError('Failed to load application data');
+        setError('Failed to load application data. Please refresh the page.');
         setLoading(false);
+        // Don't crash the app, just show error
       });
   }, []);
 
