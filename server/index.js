@@ -1907,10 +1907,19 @@ app.get('/api/health', (req, res) => {
 app.get('/api/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT COUNT(*) FROM articles');
+    
+    // Check if published_at column exists
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'articles' AND column_name = 'published_at'
+    `);
+    
     res.json({ 
       success: true, 
       message: 'Database connected successfully',
-      articleCount: parseInt(result.rows[0].count)
+      articleCount: parseInt(result.rows[0].count),
+      hasPublishedAtColumn: columnCheck.rows.length > 0
     });
   } catch (error) {
     res.status(500).json({ 
@@ -1934,8 +1943,8 @@ app.post('/api/test-article', async (req, res) => {
     };
     
     await pool.query(`
-      INSERT INTO articles (title, content, city, state, slug, theme, is_today)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `, [
       testArticle.title,
       testArticle.content,
@@ -1943,7 +1952,8 @@ app.post('/api/test-article', async (req, res) => {
       testArticle.state,
       testArticle.slug,
       testArticle.theme,
-      testArticle.is_today
+      testArticle.is_today,
+      new Date().toISOString()
     ]);
     
     res.json({ 
