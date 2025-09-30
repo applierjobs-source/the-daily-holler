@@ -2016,6 +2016,29 @@ app.post('/api/test-simple', async (req, res) => {
   }
 });
 
+// Test cities loading
+app.get('/api/test-cities', async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    const citiesData = await fs.readFile(path.join(__dirname, 'data/cities.json'), 'utf8');
+    const cities = JSON.parse(citiesData);
+    
+    res.json({ 
+      success: true, 
+      message: 'Cities loaded successfully',
+      count: cities.length,
+      sample: cities.slice(0, 3)
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Fix database schema endpoint
 app.post('/api/fix-db', async (req, res) => {
   try {
