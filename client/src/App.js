@@ -9,6 +9,7 @@ import CitySelection from './components/CitySelection';
 import Footer from './components/Footer';
 import Terms from './components/Terms';
 import Privacy from './components/Privacy';
+import TestArticle from './components/TestArticle';
 import './App.css';
 
 function AppContent() {
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/cities/:citySlug/all" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug/article/:articleSlug" element={<PostDetail />} />
           <Route path="/article/:id" element={<PostDetail />} />
+          <Route path="/test-article/:id" element={<TestArticle />} />
           <Route path="/news" element={<News cities={cities} />} />
           <Route path="/news/:cityId" element={<News cities={cities} />} />
           <Route path="/terms" element={<Terms />} />
