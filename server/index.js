@@ -1873,9 +1873,18 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     
     // Import and run the daily news generator
     const { generateDailyNews } = require('../daily-news-generator');
-    const result = await generateDailyNews();
-    
-    console.log('Result from generateDailyNews:', result);
+    let result;
+    try {
+      result = await generateDailyNews();
+      console.log('Result from generateDailyNews:', result);
+    } catch (error) {
+      console.error('Error in generateDailyNews:', error);
+      return res.json({ 
+        success: false, 
+        error: `generateDailyNews failed: ${error.message}`,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     if (result && result.articles && result.articles.length > 0) {
       // Clear existing articles for today
