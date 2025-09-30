@@ -10,14 +10,14 @@ const AdSense = ({
 }) => {
   useEffect(() => {
     try {
-      // Check if adsbygoogle is available
-      if (window.adsbygoogle) {
+      // Check if adsbygoogle is available and slot is provided
+      if (window.adsbygoogle && slot) {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       }
     } catch (err) {
       console.error('AdSense error:', err);
     }
-  }, []);
+  }, [slot]);
 
   // Different ad sizes based on type
   const getAdStyle = () => {

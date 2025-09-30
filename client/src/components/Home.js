@@ -40,6 +40,7 @@ const Home = () => {
   };
 
   const getCitySlug = (cityName, state) => {
+    if (!cityName || !state) return '';
     return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
   };
 
@@ -81,12 +82,14 @@ const Home = () => {
                   
                   <div className="article-footer">
                     <span className="article-author">By {article.author}</span>
-                    <Link 
-                      to={`/cities/${getCitySlug(article.cityName, article.state)}`}
-                      className="city-link"
-                    >
-                      View {article.cityName} News →
-                    </Link>
+                    {article.cityName && (
+                      <Link 
+                        to={`/cities/${getCitySlug(article.cityName, article.state)}`}
+                        className="city-link"
+                      >
+                        View {article.cityName} News →
+                      </Link>
+                    )}
                   </div>
                   </div>
                 </React.Fragment>
