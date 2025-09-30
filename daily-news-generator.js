@@ -190,8 +190,10 @@ async function generateDailyNews() {
   console.log(`📅 Articles already generated today: ${todayArticles.length}`);
   
   if (todayArticles.length >= cities.length) {
-    console.log('✅ All articles for today already generated!');
-    return existingArticles;
+    console.log('🗑️ Clearing existing articles for today to regenerate...');
+    existingArticles.articles = existingArticles.articles.filter(article => 
+      !article.publishedAt.startsWith(today)
+    );
   }
   
   // Generate 10 unique base articles
