@@ -1974,6 +1974,27 @@ app.post('/api/test-article', async (req, res) => {
   }
 });
 
+// Fix database schema endpoint
+app.post('/api/fix-db', async (req, res) => {
+  try {
+    // Add published_at column if it doesn't exist
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS published_at TIMESTAMP
+    `);
+    
+    res.json({ 
+      success: true, 
+      message: 'Database schema fixed - published_at column added'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Article generation endpoint for cron job
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
