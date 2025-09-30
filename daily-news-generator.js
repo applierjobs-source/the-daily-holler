@@ -306,12 +306,12 @@ async function generateDailyNews() {
     console.log('🗑️ Clearing existing articles for today...');
     await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
 
-    // Generate 10 unique base articles
-    console.log('🎨 Generating 10 unique base articles...');
+    // Generate 2 unique base articles for testing
+    console.log('🎨 Generating 2 unique base articles for testing...');
     const baseArticles = [];
     
-    for (let i = 0; i < 10; i++) {
-      console.log(`📝 Generating base article ${i + 1}/10...`);
+    for (let i = 0; i < 2; i++) {
+      console.log(`📝 Generating base article ${i + 1}/2...`);
       const baseArticle = await generateBaseArticle(i + 1);
       if (baseArticle) {
         baseArticles.push(baseArticle);
@@ -326,48 +326,61 @@ async function generateDailyNews() {
     
     console.log(`🎉 Generated ${baseArticles.length} base articles`);
     
-    // Distribute each base article to all cities
-    console.log(`🌍 Distributing articles to all ${cities.length} cities...`);
+    // Distribute each base article to first 50 cities for testing
+    console.log(`🌍 Distributing articles to first 50 cities for testing...`);
     let totalGenerated = 0;
+    const testCities = cities.slice(0, 50);
+    const BATCH_SIZE = 10; // Process 10 cities at a time
     
     for (let i = 0; i < baseArticles.length; i++) {
       const baseArticle = baseArticles[i];
       console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to all cities...`);
       
-      for (let j = 0; j < cities.length; j++) {
-        const city = cities[j];
-        const customizedArticle = customizeArticleForCity(baseArticle, city);
+      // Process cities in batches
+      for (let batchStart = 0; batchStart < testCities.length; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, testCities.length);
+        const batch = testCities.slice(batchStart, batchEnd);
         
-        if (customizedArticle) {
-          // Insert directly into database
-          try {
-            await pool.query(`
-              INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            `, [
-              customizedArticle.headline,
-              customizedArticle.content,
-              customizedArticle.city,
-              customizedArticle.state,
-              customizedArticle.slug,
-              customizedArticle.theme,
-              true,
-              customizedArticle.publishedAt
-            ]);
-            
-            totalGenerated++;
-            
-            // Progress reporting every 1000 articles
-            if (totalGenerated % 1000 === 0) {
-              console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
+        console.log(`📦 Processing batch ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(testCities.length/BATCH_SIZE)} (cities ${batchStart + 1}-${batchEnd})`);
+        
+        for (let j = 0; j < batch.length; j++) {
+          const city = batch[j];
+          const customizedArticle = customizeArticleForCity(baseArticle, city);
+          
+          if (customizedArticle) {
+            // Insert directly into database
+            try {
+              await pool.query(`
+                INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              `, [
+                customizedArticle.headline,
+                customizedArticle.content,
+                customizedArticle.city,
+                customizedArticle.state,
+                customizedArticle.slug,
+                customizedArticle.theme,
+                true,
+                customizedArticle.publishedAt
+              ]);
+              
+              totalGenerated++;
+              
+              // Progress reporting every 500 articles
+              if (totalGenerated % 500 === 0) {
+                console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
+              }
+            } catch (error) {
+              console.error(`❌ Error inserting article for ${city.city}:`, error);
             }
-          } catch (error) {
-            console.error(`❌ Error inserting article for ${city.city}:`, error);
           }
         }
+        
+        // Small delay between batches to avoid overwhelming the database
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
       
-      console.log(`✅ Article ${i + 1} distributed to ${cities.length} cities`);
+      console.log(`✅ Article ${i + 1} distributed to ${testCities.length} cities`);
     }
     
     console.log(`\n🎉 Daily news generation complete!`);
