@@ -1866,6 +1866,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Test endpoint to check database connection
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT COUNT(*) FROM articles');
+    res.json({ 
+      success: true, 
+      message: 'Database connected successfully',
+      articleCount: parseInt(result.rows[0].count)
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Article generation endpoint for cron job
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
