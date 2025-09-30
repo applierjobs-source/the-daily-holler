@@ -11,7 +11,9 @@ const openai = new OpenAI({
 async function loadCities() {
   try {
     const citiesData = await fs.readFile(path.join(__dirname, 'server/data/cities.json'), 'utf8');
-    return JSON.parse(citiesData);
+    const cities = JSON.parse(citiesData);
+    console.log(`✅ Loaded ${cities.length} cities`);
+    return cities;
   } catch (error) {
     console.error('Error loading cities:', error);
     return [];
@@ -178,18 +180,18 @@ async function generateDailyNews() {
   const existingArticles = await loadArticles();
   
   console.log(`📊 Found ${cities.length} cities`);
-  console.log(`📰 Current articles: ${existingArticles.articles.length}`);
+  console.log(`📰 Current articles: ${existingArticles.articles ? existingArticles.articles.length : 0}`);
   
   const today = new Date().toISOString().split('T')[0];
-  const todayArticles = existingArticles.articles.filter(article => 
+  const todayArticles = existingArticles.articles ? existingArticles.articles.filter(article => 
     article.publishedAt.startsWith(today)
-  );
+  ) : [];
   
   console.log(`📅 Articles already generated today: ${todayArticles.length}`);
   
   if (todayArticles.length >= cities.length) {
     console.log('✅ All articles for today already generated!');
-    return;
+    return existingArticles;
   }
   
   // Generate 10 unique base articles
