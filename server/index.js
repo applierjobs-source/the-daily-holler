@@ -2083,7 +2083,10 @@ async function checkAndRunDailyGeneration() {
 }
 
 // Initialize data and start server
-initializeData().then(() => {
+initializeData().then(async () => {
+  // Initialize database
+  await initDatabase();
+  
   app.listen(PORT, () => {
     console.log(`🚀 The Daily Holler Server running on port ${PORT}`);
     console.log(`📡 API available at http://localhost:${PORT}/api`);
