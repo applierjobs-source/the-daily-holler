@@ -1883,6 +1883,44 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+// Test endpoint to insert a sample article
+app.post('/api/test-article', async (req, res) => {
+  try {
+    const testArticle = {
+      title: 'Test Article - Database Working!',
+      content: 'This is a test article to verify the database is working correctly.',
+      city: 'Test City',
+      state: 'Test State',
+      slug: 'test-article-database-working',
+      theme: 'test',
+      is_today: true
+    };
+    
+    await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      testArticle.title,
+      testArticle.content,
+      testArticle.city,
+      testArticle.state,
+      testArticle.slug,
+      testArticle.theme,
+      testArticle.is_today
+    ]);
+    
+    res.json({ 
+      success: true, 
+      message: 'Test article inserted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Article generation endpoint for cron job
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
