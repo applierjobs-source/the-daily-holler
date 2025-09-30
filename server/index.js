@@ -1781,7 +1781,7 @@ app.get('/api/news/city/:cityId', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching city articles:', error);
-    res.status(500).json({ error: 'Failed to fetch city articles' });
+    res.status(500).json({ error: 'Failed to fetch city articles', details: error.message });
   }
 });
 

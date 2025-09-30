@@ -59,3 +59,23 @@ export const generateArticleUrl = (article) => {
   return `/article/${article.id}`;
 };
 
+/**
+ * Generate article slug with city name for uniqueness
+ * @param {string} title - The article title
+ * @param {string} city - The city name
+ * @returns {string} - Unique article slug
+ */
+export const generateUniqueArticleSlug = (title, city) => {
+  if (!title || !city) return '';
+  
+  const citySlug = city.toLowerCase().replace(/\s+/g, '-');
+  const titleSlug = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim('-'); // Remove leading/trailing hyphens
+  
+  return `${citySlug}-${titleSlug}`;
+};
+
