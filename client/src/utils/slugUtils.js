@@ -51,13 +51,11 @@ export const parseCitySlug = (slug) => {
  * @returns {string} - Full article URL
  */
 export const generateArticleUrl = (article) => {
-  if (!article || !article.title || !article.city || !article.state) {
-    return `/article/${article?.id || ''}`;
+  if (!article || !article.id) {
+    return '/';
   }
   
-  const citySlug = generateCitySlug(article.city, article.state);
-  const articleSlug = generateArticleSlug(article.title);
-  
-  return `/cities/${citySlug}/article/${articleSlug}`;
+  // Use simple ID-based URLs for now - much more reliable
+  return `/article/${article.id}`;
 };
 
