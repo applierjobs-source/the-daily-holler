@@ -1640,6 +1640,19 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Generate unique article slug
+function generateUniqueArticleSlug(title, city) {
+  if (!title || !city) return '';
+  const citySlug = city.toLowerCase().replace(/\s+/g, '-');
+  const titleSlug = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+  return `${citySlug}-${titleSlug}`;
+}
+
 // Initialize articles table
 async function initDatabase() {
   try {
@@ -1936,6 +1949,32 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
+});
+
+// Update article slugs endpoint
+app.post('/api/update-slugs', async (req, res) => {
+  try {
+    console.log('🔄 Updating article slugs...');
+    
+    // Get all articles
+    const result = await pool.query('SELECT id, title, city FROM articles ORDER BY id DESC LIMIT 10');
+    
+    for (const article of result.rows) {
+      const newSlug = generateUniqueArticleSlug(article.title, article.city);
+      console.log(`Updating article ${article.id}: "${article.title}" -> slug: "${newSlug}"`);
+      
+      await pool.query(
+        'UPDATE articles SET slug = $1 WHERE id = $2',
+        [newSlug, article.id]
+      );
+    }
+    
+    console.log('✅ Article slugs updated successfully!');
+    res.json({ success: true, message: 'Article slugs updated successfully!' });
+  } catch (error) {
+    console.error('❌ Error updating article slugs:', error);
+    res.status(500).json({ error: 'Failed to update article slugs' });
+  }
 });
 
 // Test endpoint to check database connection
