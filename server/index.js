@@ -1657,6 +1657,12 @@ async function initDatabase() {
         is_today BOOLEAN DEFAULT false
       )
     `);
+    
+    // Add published_at column if it doesn't exist
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS published_at TIMESTAMP
+    `);
     console.log('✅ Database initialized');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
