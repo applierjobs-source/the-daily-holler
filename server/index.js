@@ -1663,7 +1663,21 @@ async function initDatabase() {
 }
 
 // Initialize database on startup
-initDatabase();
+initDatabase().catch(error => {
+  console.error('Database initialization failed:', error);
+  // Don't crash the server if database init fails
+});
+
+// Global error handler to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process
+});
 
 // Get all news articles
 app.get('/api/news', async (req, res) => {
