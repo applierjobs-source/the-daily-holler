@@ -1633,6 +1633,29 @@ app.get('/api/cities/:id', async (req, res) => {
   }
 });
 
+// Get all news articles
+app.get('/api/news', async (req, res) => {
+  try {
+    const { limit = 20, offset = 0 } = req.query;
+    const limitNum = parseInt(limit);
+    const offsetNum = parseInt(offset);
+    
+    const articles = await loadArticles();
+    const paginatedArticles = articles.articles.slice(offsetNum, offsetNum + limitNum);
+    
+    res.json({
+      articles: paginatedArticles,
+      total: articles.articles.length,
+      limit: limitNum,
+      offset: offsetNum,
+      hasMore: offsetNum + limitNum < articles.articles.length
+    });
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    res.status(500).json({ error: 'Failed to fetch news' });
+  }
+});
+
 // Get today's articles
 app.get('/api/news/today', async (req, res) => {
   try {
