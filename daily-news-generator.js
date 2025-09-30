@@ -193,11 +193,11 @@ async function generateDailyNews() {
   }
   
   // Generate 10 unique base articles
-  console.log('🎨 Generating 10 unique base articles...');
+  console.log('🎨 Generating 2 unique base articles for testing...');
   const baseArticles = [];
   
-  for (let i = 0; i < 10; i++) {
-    console.log(`📝 Generating base article ${i + 1}/10...`);
+  for (let i = 0; i < 2; i++) {
+    console.log(`📝 Generating base article ${i + 1}/2...`);
     const baseArticle = await generateBaseArticle(i + 1);
     if (baseArticle) {
       baseArticles.push(baseArticle);
@@ -212,31 +212,26 @@ async function generateDailyNews() {
   
   console.log(`🎉 Generated ${baseArticles.length} base articles`);
   
-  // Distribute each base article to all cities
-  console.log('🌍 Distributing articles to all cities...');
+  // Distribute each base article to first 5 cities for testing
+  console.log('🌍 Distributing articles to first 5 cities for testing...');
   let totalGenerated = 0;
+  const testCities = cities.slice(0, 5);
   
   for (let i = 0; i < baseArticles.length; i++) {
     const baseArticle = baseArticles[i];
-    console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to all cities...`);
+    console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to test cities...`);
     
-    for (let j = 0; j < cities.length; j++) {
-      const city = cities[j];
+    for (let j = 0; j < testCities.length; j++) {
+      const city = testCities[j];
       const customizedArticle = customizeArticleForCity(baseArticle, city);
       
       if (customizedArticle) {
         existingArticles.articles.unshift(customizedArticle);
         totalGenerated++;
       }
-      
-      // Save progress every 1000 articles
-      if (totalGenerated % 1000 === 0) {
-        await saveArticles(existingArticles);
-        console.log(`💾 Saved progress: ${totalGenerated} articles generated`);
-      }
     }
     
-    console.log(`✅ Article ${i + 1} distributed to all ${cities.length} cities`);
+    console.log(`✅ Article ${i + 1} distributed to ${testCities.length} test cities`);
   }
   
   // Final save
