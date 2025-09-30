@@ -1728,7 +1728,7 @@ app.get('/api/news', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching news:', error);
-    res.status(500).json({ error: 'Failed to fetch news' });
+    res.status(500).json({ error: 'Failed to fetch news', details: error.message });
   }
 });
 
@@ -1763,7 +1763,7 @@ app.get('/api/news/today', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching today\'s articles:', error);
-    res.status(500).json({ error: 'Failed to fetch today\'s articles' });
+    res.status(500).json({ error: 'Failed to fetch today\'s articles', details: error.message });
   }
 });
 
@@ -1967,8 +1967,12 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const { generateDailyNews } = require('../daily-news-generator');
     let result;
     try {
+      console.log('🚀 Starting article generation...');
       result = await generateDailyNews();
       console.log('Result from generateDailyNews:', result);
+      console.log('Result type:', typeof result);
+      console.log('Result.articles:', result?.articles);
+      console.log('Articles length:', result?.articles?.length);
     } catch (error) {
       console.error('Error in generateDailyNews:', error);
       return res.json({ 
