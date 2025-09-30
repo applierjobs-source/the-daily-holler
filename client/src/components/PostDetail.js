@@ -23,9 +23,25 @@ const PostDetail = () => {
             return;
           }
           
-          // For now, we'll use the ID-based approach since we don't have slug-based lookup yet
-          // This would need to be implemented on the backend
-          articleData = await fetch(`/api/articles/by-slug/${articleSlug}`).then(res => res.json());
+          // For now, just get the latest article for this city
+          // This ensures the URL format works even if slugs don't match
+          const cityResponse = await fetch(`/api/news/city/${cityInfo.cityName}-${cityInfo.state}`);
+          if (cityResponse.ok) {
+            const cityData = await cityResponse.json();
+            if (cityData.articles && cityData.articles.length > 0) {
+              // Get the first article for this city
+              const firstArticle = cityData.articles[0];
+              articleData = await fetch(`/api/articles/${firstArticle.id}`).then(res => res.json());
+            } else {
+              setError('No articles found for this city');
+              setLoading(false);
+              return;
+            }
+          } else {
+            setError('City not found');
+            setLoading(false);
+            return;
+          }
         } else if (id) {
           // Legacy URL format: /article/id
           articleData = await fetch(`/api/articles/${id}`).then(res => res.json());
