@@ -1633,6 +1633,9 @@ app.get('/api/cities/:id', async (req, res) => {
   }
 });
 
+// In-memory articles storage
+let articlesCache = { articles: [] };
+
 // Get all news articles
 app.get('/api/news', async (req, res) => {
   try {
@@ -1640,7 +1643,17 @@ app.get('/api/news', async (req, res) => {
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     
-    const articles = await loadArticles();
+    // Try to load from file first, fallback to cache
+    let articles;
+    try {
+      const articlesData = await fs.readFile(path.join(__dirname, 'data/articles.json'), 'utf8');
+      articles = JSON.parse(articlesData);
+      articlesCache = articles; // Update cache
+    } catch (error) {
+      console.log('Using in-memory articles cache');
+      articles = articlesCache;
+    }
+    
     const paginatedArticles = articles.articles.slice(offsetNum, offsetNum + limitNum);
     
     res.json({
@@ -1834,11 +1847,17 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     
     // Import and run the daily news generator
     const { generateDailyNews } = require('../daily-news-generator');
-    await generateDailyNews();
+    const result = await generateDailyNews();
+    
+    // Update the in-memory cache
+    if (result && result.articles) {
+      articlesCache = result;
+    }
     
     res.json({ 
       success: true, 
       message: 'Daily articles generated successfully',
+      totalArticles: articlesCache.articles.length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
