@@ -1673,8 +1673,17 @@ app.get('/api/news', async (req, res) => {
 app.get('/api/news/today', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8');
-    const articles = JSON.parse(data);
+    
+    // Use the same logic as /api/news - try file first, fallback to cache
+    let articles;
+    try {
+      const articlesData = await fs.readFile(path.join(__dirname, 'data/articles.json'), 'utf8');
+      articles = JSON.parse(articlesData);
+      articlesCache = articles; // Update cache
+    } catch (error) {
+      console.log('Using in-memory articles cache for today endpoint');
+      articles = articlesCache;
+    }
     
     // Get today's date
     const today = new Date();
