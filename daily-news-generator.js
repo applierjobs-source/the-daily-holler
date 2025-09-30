@@ -242,26 +242,26 @@ function customizeArticleForCity(baseArticle, city) {
   if (!baseArticle || !city) return null;
 
   // Create city-specific headline
-  const cityHeadline = baseArticle.headline.replace(/Local|Town|City/g, city.city);
+  const cityHeadline = baseArticle.headline.replace(/Local|Town|City/g, city.name);
   
   // Create city-specific content
   let cityContent = baseArticle.content
-    .replace(/Local|Town|City/g, city.city)
-    .replace(/residents/gi, `${city.city} residents`)
-    .replace(/town/gi, city.city)
-    .replace(/city/gi, city.city);
+    .replace(/Local|Town|City/g, city.name)
+    .replace(/residents/gi, `${city.name} residents`)
+    .replace(/town/gi, city.name)
+    .replace(/city/gi, city.name);
 
   // Add some local flavor
-  if (city.state) {
-    cityContent = cityContent.replace(/state/gi, city.state);
+  if (city.stateName) {
+    cityContent = cityContent.replace(/state/gi, city.stateName);
   }
 
   return {
     headline: cityHeadline,
     content: cityContent,
-    city: city.city,
-    state: city.state,
-    slug: `${city.city.toLowerCase().replace(/\s+/g, '-')}-${baseArticle.theme}`,
+    city: city.name,
+    state: city.stateName,
+    slug: `${city.name.toLowerCase().replace(/\s+/g, '-')}-${baseArticle.theme}`,
     theme: baseArticle.theme,
     publishedAt: new Date().toISOString()
   };
