@@ -1672,6 +1672,27 @@ app.get('/api/news', async (req, res) => {
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     
+    // Check if we have any articles, if not, insert a test article
+    const countResult = await pool.query('SELECT COUNT(*) FROM articles');
+    const articleCount = parseInt(countResult.rows[0].count);
+    
+    if (articleCount === 0) {
+      console.log('No articles found, inserting test article...');
+      await pool.query(`
+        INSERT INTO articles (title, content, city, state, slug, theme, is_today)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [
+        'Test Article - Database Working!',
+        'This is a test article to verify the database is working correctly.',
+        'Test City',
+        'Test State',
+        'test-article-database-working',
+        'test',
+        true
+      ]);
+      console.log('Test article inserted successfully');
+    }
+    
     // Get articles from database
     const result = await pool.query(`
       SELECT * FROM articles 
