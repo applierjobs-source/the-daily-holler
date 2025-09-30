@@ -1758,22 +1758,25 @@ app.get('/api/news/city/:cityId', async (req, res) => {
   try {
     const { cityId } = req.params;
     const { limit = 20 } = req.query;
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8');
-    const articles = JSON.parse(data);
     
-    // Filter articles for the specific city
-    const cityArticles = articles.articles.filter(article => article.cityId === cityId);
+    // Get city name from cities data
+    const city = cities.find(c => c.id.toString() === cityId);
+    if (!city) {
+      return res.status(404).json({ error: 'City not found' });
+    }
     
-    // Sort by publishedAt descending (newest first)
-    cityArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-    
-    // Limit results
-    const limitedArticles = cityArticles.slice(0, parseInt(limit));
+    // Get articles from database for this city
+    const result = await pool.query(`
+      SELECT *, published_at as "publishedAt" FROM articles 
+      WHERE city = $1 AND state = $2
+      ORDER BY created_at DESC 
+      LIMIT $3
+    `, [city.name, city.state, parseInt(limit)]);
     
     res.json({
-      articles: limitedArticles,
-      count: limitedArticles.length,
-      totalCount: cityArticles.length,
+      articles: result.rows,
+      count: result.rows.length,
+      totalCount: result.rows.length,
       cityId: cityId
     });
   } catch (error) {
@@ -1786,16 +1789,38 @@ app.get('/api/news/city/:cityId', async (req, res) => {
 app.get('/api/articles/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8');
-    const articles = JSON.parse(data);
     
-    const article = articles.articles.find(a => a.id.toString() === id);
+    // Get article from database
+    const result = await pool.query(`
+      SELECT *, published_at as "publishedAt" FROM articles 
+      WHERE id = $1
+    `, [id]);
     
-    if (!article) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Article not found' });
     }
     
-    res.json(article);
+    const article = result.rows[0];
+    
+    // Transform the article to match expected format
+    const transformedArticle = {
+      id: article.id,
+      title: article.title,
+      headline: article.title, // Use title as headline for compatibility
+      content: article.content,
+      body: article.content, // Use content as body for compatibility
+      city: article.city,
+      cityName: article.city, // Use city as cityName for compatibility
+      state: article.state,
+      slug: article.slug,
+      author: article.author || 'The Daily Holler',
+      publishedAt: article.publishedAt,
+      created_at: article.created_at,
+      theme: article.theme,
+      is_today: article.is_today
+    };
+    
+    res.json(transformedArticle);
   } catch (error) {
     console.error('Error fetching article:', error);
     res.status(500).json({ error: 'Failed to fetch article' });
@@ -1806,18 +1831,38 @@ app.get('/api/articles/:id', async (req, res) => {
 app.get('/api/articles/by-slug/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8');
-    const articles = JSON.parse(data);
     
-    // Find article by matching slug (for now, we'll use a simple approach)
-    // In a real implementation, you'd want to store slugs in the database
-    const article = articles.articles.find(a => a.slug === slug);
+    // Get article from database by slug
+    const result = await pool.query(`
+      SELECT *, published_at as "publishedAt" FROM articles 
+      WHERE slug = $1
+    `, [slug]);
     
-    if (!article) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Article not found' });
     }
     
-    res.json(article);
+    const article = result.rows[0];
+    
+    // Transform the article to match expected format
+    const transformedArticle = {
+      id: article.id,
+      title: article.title,
+      headline: article.title, // Use title as headline for compatibility
+      content: article.content,
+      body: article.content, // Use content as body for compatibility
+      city: article.city,
+      cityName: article.city, // Use city as cityName for compatibility
+      state: article.state,
+      slug: article.slug,
+      author: article.author || 'The Daily Holler',
+      publishedAt: article.publishedAt,
+      created_at: article.created_at,
+      theme: article.theme,
+      is_today: article.is_today
+    };
+    
+    res.json(transformedArticle);
   } catch (error) {
     console.error('Error fetching article by slug:', error);
     res.status(500).json({ error: 'Failed to fetch article' });
