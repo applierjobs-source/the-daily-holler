@@ -1974,6 +1974,48 @@ app.post('/api/test-article', async (req, res) => {
   }
 });
 
+// Simple test endpoint without external dependencies
+app.post('/api/test-simple', async (req, res) => {
+  try {
+    // Generate a simple test article
+    const testArticle = {
+      headline: 'Test Article - Simple Generation Working!',
+      content: 'This is a simple test article to verify the basic functionality is working correctly.',
+      city: 'Test City',
+      state: 'Test State',
+      slug: 'test-simple-generation',
+      theme: 'test',
+      publishedAt: new Date().toISOString()
+    };
+    
+    // Insert into database
+    await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [
+      testArticle.headline,
+      testArticle.content,
+      testArticle.city,
+      testArticle.state,
+      testArticle.slug,
+      testArticle.theme,
+      true,
+      testArticle.publishedAt
+    ]);
+    
+    res.json({ 
+      success: true, 
+      message: 'Simple test article generated and inserted successfully',
+      article: testArticle
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Fix database schema endpoint
 app.post('/api/fix-db', async (req, res) => {
   try {
