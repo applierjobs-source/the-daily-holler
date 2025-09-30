@@ -2025,11 +2025,6 @@ app.post('/api/generate-daily-articles', async (req, res) => {
   }
 });
 
-// Serve static files in production (after API routes)
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-}
-
 // Check if it's time to run daily article generation
 function shouldRunDailyGeneration() {
   const now = new Date();
@@ -2073,8 +2068,11 @@ initializeData().then(() => {
   });
 }).catch(console.error);
 
-// Serve React app for all non-API routes (MUST be last)
+// Serve static files in production (before catch-all route)
 if (isProduction) {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Serve React app for all non-API routes (MUST be last)
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
