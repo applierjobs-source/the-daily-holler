@@ -1759,6 +1759,10 @@ app.get('/api/news/city/:cityId', async (req, res) => {
     const { cityId } = req.params;
     const { limit = 20 } = req.query;
     
+    // Get cities data from file
+    const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
+    const cities = JSON.parse(citiesData);
+    
     // Get city name from cities data
     const city = cities.find(c => c.id.toString() === cityId);
     if (!city) {
