@@ -248,6 +248,8 @@ async function generateDailyNews() {
   console.log(`🏙️ Cities covered: ${cities.length}`);
   console.log(`💰 Estimated cost: ~$3-5`);
   console.log(`📈 Total articles in database: ${existingArticles.articles.length}`);
+  
+  return existingArticles;
 }
 
 // Run if called directly
