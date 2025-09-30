@@ -1804,6 +1804,30 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Article generation endpoint for cron job
+app.post('/api/generate-daily-articles', async (req, res) => {
+  try {
+    console.log('🚀 Cron job triggered: Starting daily article generation...');
+    
+    // Import and run the daily news generator
+    const { generateDailyNews } = require('../daily-news-generator');
+    await generateDailyNews();
+    
+    res.json({ 
+      success: true, 
+      message: 'Daily articles generated successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error generating daily articles:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Serve static files in production (after API routes)
 if (isProduction) {
   app.use(express.static(path.join(__dirname, '../client/build')));
@@ -1812,6 +1836,30 @@ if (isProduction) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
+}
+
+// Check if it's time to run daily article generation
+function shouldRunDailyGeneration() {
+  const now = new Date();
+  const hour = now.getUTCHours();
+  const minute = now.getUTCMinutes();
+  
+  // Run if it's between 2:00 AM and 2:59 AM UTC
+  return hour === 2 && minute < 60;
+}
+
+// Run daily article generation if it's the right time
+async function checkAndRunDailyGeneration() {
+  if (shouldRunDailyGeneration()) {
+    console.log('🕐 It\'s 2 AM UTC - time for daily article generation!');
+    try {
+      const { generateDailyNews } = require('../daily-news-generator');
+      await generateDailyNews();
+      console.log('✅ Daily article generation completed!');
+    } catch (error) {
+      console.error('❌ Error running daily article generation:', error);
+    }
+  }
 }
 
 // Initialize data and start server
@@ -1824,5 +1872,11 @@ initializeData().then(() => {
     if (isProduction) {
       console.log(`🌐 Production mode: Serving React app`);
     }
+    
+    // Check if we should run daily generation on startup
+    checkAndRunDailyGeneration();
+    
+    // Set up a timer to check every hour
+    setInterval(checkAndRunDailyGeneration, 60 * 60 * 1000); // Check every hour
   });
 }).catch(console.error);

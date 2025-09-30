@@ -10,7 +10,9 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "start:prod": "cd server && npm start",
-    "heroku-postbuild": "npm run build"
+    "heroku-postbuild": "npm run build",
+    "generate-daily": "node run-daily-generation.js",
+    "cron:articles": "node run-daily-generation.js"
   },
   "keywords": [
     "the-daily-holler",

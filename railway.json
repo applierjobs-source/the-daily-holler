@@ -10,5 +10,11 @@
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
+  },
+  "cron": {
+    "daily-news": {
+      "schedule": "0 2 * * *",
+      "command": "node daily-news-generator.js"
+    }
   }
 }
