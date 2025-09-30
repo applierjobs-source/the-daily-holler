@@ -24,11 +24,8 @@ async function loadArticles() {
     const articlesData = await fs.readFile(path.join(__dirname, 'server/data/articles.json'), 'utf8');
     return JSON.parse(articlesData);
   } catch (error) {
-    console.log('Articles file not found, creating new one...');
-    // Create empty articles file if it doesn't exist
-    const emptyArticles = { articles: [] };
-    await saveArticles(emptyArticles);
-    return emptyArticles;
+    console.error('Error loading articles:', error);
+    return { articles: [] };
   }
 }
 

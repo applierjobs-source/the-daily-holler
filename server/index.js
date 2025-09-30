@@ -1831,15 +1831,6 @@ app.post('/api/generate-daily-articles', async (req, res) => {
 // Serve static files in production (after API routes)
 if (isProduction) {
   app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  // Serve React app for all non-API routes (but not API routes)
-  app.get('*', (req, res) => {
-    // Don't serve React app for API routes
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
-    }
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
 }
 
 // Check if it's time to run daily article generation
@@ -1884,3 +1875,10 @@ initializeData().then(() => {
     setInterval(checkAndRunDailyGeneration, 60 * 60 * 1000); // Check every hour
   });
 }).catch(console.error);
+
+// Serve React app for all non-API routes (MUST be last)
+if (isProduction) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
