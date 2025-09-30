@@ -195,11 +195,11 @@ async function generateDailyNews() {
   }
   
   // Generate 10 unique base articles
-  console.log('🎨 Generating 2 unique base articles for testing...');
+  console.log('🎨 Generating 10 unique base articles...');
   const baseArticles = [];
   
-  for (let i = 0; i < 2; i++) {
-    console.log(`📝 Generating base article ${i + 1}/2...`);
+  for (let i = 0; i < 10; i++) {
+    console.log(`📝 Generating base article ${i + 1}/10...`);
     const baseArticle = await generateBaseArticle(i + 1);
     if (baseArticle) {
       baseArticles.push(baseArticle);
