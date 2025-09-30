@@ -2070,10 +2070,14 @@ initializeData().then(() => {
 
 // Serve static files in production (before catch-all route)
 if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  const staticPath = path.join(__dirname, '../client/build');
+  console.log('Static files path:', staticPath);
+  console.log('Static files exist:', require('fs').existsSync(staticPath));
+  app.use(express.static(staticPath));
   
   // Serve React app for all non-API routes (MUST be last)
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+    console.log('Catch-all route hit for:', req.path);
+    res.sendFile(path.join(staticPath, 'index.html'));
   });
 }
