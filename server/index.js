@@ -1717,7 +1717,7 @@ app.get('/api/news', async (req, res) => {
     
     // Get articles from database
     const result = await pool.query(`
-      SELECT *, created_at as "publishedAt" FROM articles 
+      SELECT *, published_at as "publishedAt" FROM articles 
       ORDER BY created_at DESC 
       LIMIT $1 OFFSET $2
     `, [limitNum, offsetNum]);
@@ -1749,7 +1749,7 @@ app.get('/api/news/today', async (req, res) => {
     
     // Get articles from today from database
     const result = await pool.query(`
-      SELECT *, created_at as "publishedAt" FROM articles 
+      SELECT *, published_at as "publishedAt" FROM articles 
       WHERE DATE(created_at) = $1
       ORDER BY created_at DESC 
       LIMIT $2
