@@ -309,9 +309,13 @@ async function generateDailyNews() {
     const testCities = cities.slice(0, 50);
     const generatedArticles = [];
     
+    console.log(`📊 Base articles count: ${baseArticles.length}`);
+    console.log(`📊 Test cities count: ${testCities.length}`);
+    
     for (let i = 0; i < baseArticles.length; i++) {
       const baseArticle = baseArticles[i];
       console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to test cities...`);
+      console.log(`📤 Base article headline: ${baseArticle.headline}`);
       
       for (let j = 0; j < testCities.length; j++) {
         const city = testCities[j];
@@ -325,11 +329,15 @@ async function generateDailyNews() {
           if (totalGenerated % 25 === 0) {
             console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
           }
+        } else {
+          console.log(`❌ Failed to customize article for city: ${city.name}`);
         }
       }
       
       console.log(`✅ Article ${i + 1} distributed to ${testCities.length} cities`);
     }
+    
+    console.log(`📊 Total generated articles: ${generatedArticles.length}`);
     
     console.log(`\n🎉 Daily news generation complete!`);
     console.log(`✅ Generated: ${totalGenerated} total articles`);
