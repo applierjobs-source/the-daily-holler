@@ -214,26 +214,30 @@ async function generateDailyNews() {
   
   console.log(`🎉 Generated ${baseArticles.length} base articles`);
   
-  // Distribute each base article to first 5 cities for testing
-  console.log('🌍 Distributing articles to first 5 cities for testing...');
+  // Distribute each base article to all cities
+  console.log(`🌍 Distributing articles to all ${cities.length} cities...`);
   let totalGenerated = 0;
-  const testCities = cities.slice(0, 5);
   
   for (let i = 0; i < baseArticles.length; i++) {
     const baseArticle = baseArticles[i];
-    console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to test cities...`);
+    console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to all cities...`);
     
-    for (let j = 0; j < testCities.length; j++) {
-      const city = testCities[j];
+    for (let j = 0; j < cities.length; j++) {
+      const city = cities[j];
       const customizedArticle = customizeArticleForCity(baseArticle, city);
       
       if (customizedArticle) {
         existingArticles.articles.unshift(customizedArticle);
         totalGenerated++;
+        
+        // Progress reporting every 1000 articles
+        if (totalGenerated % 1000 === 0) {
+          console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
+        }
       }
     }
     
-    console.log(`✅ Article ${i + 1} distributed to ${testCities.length} test cities`);
+    console.log(`✅ Article ${i + 1} distributed to ${cities.length} cities`);
   }
   
   // Final save
@@ -243,7 +247,7 @@ async function generateDailyNews() {
   console.log(`✅ Generated: ${totalGenerated} total articles`);
   console.log(`📊 Base articles: ${baseArticles.length}`);
   console.log(`🏙️ Cities covered: ${cities.length}`);
-  console.log(`💰 Estimated cost: ~$3-5`);
+  console.log(`💰 Estimated cost: ~$50-80 (10 base articles + 16,820 customizations)`);
   console.log(`📈 Total articles in database: ${existingArticles.articles.length}`);
   
   return existingArticles;
