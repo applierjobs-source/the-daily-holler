@@ -19,13 +19,38 @@ export const generateArticleSlug = (headline) => {
 /**
  * Generate a city slug from city name and state
  * @param {string} cityName - The city name
- * @param {string} state - The state abbreviation
+ * @param {string} state - The state (abbreviation or full name)
  * @returns {string} - URL-friendly city slug
  */
 export const generateCitySlug = (cityName, state) => {
   if (!cityName || !state) return '';
   
-  return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+  // Convert state to abbreviation if it's a full name
+  const stateAbbrev = getStateAbbreviation(state);
+  
+  return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}`;
+};
+
+/**
+ * Convert state name to abbreviation
+ * @param {string} state - State name or abbreviation
+ * @returns {string} - State abbreviation
+ */
+export const getStateAbbreviation = (state) => {
+  const stateMap = {
+    'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+    'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+    'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+    'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+    'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+    'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+    'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+    'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+    'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+    'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+  };
+  
+  return stateMap[state] || state;
 };
 
 /**
@@ -55,8 +80,10 @@ export const generateArticleUrl = (article) => {
     return '/';
   }
   
-  // Use simple ID-based URLs for now - much more reliable
-  return `/article/${article.id}`;
+  // Generate city-based URL: /[city-state]/article/[headline-slug]
+  const citySlug = generateCitySlug(article.city, article.state);
+  const articleSlug = generateArticleSlug(article.title || article.headline);
+  return `/${citySlug}/article/${articleSlug}`;
 };
 
 /**

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { generateArticleUrl } from '../utils/slugUtils';
+import { generateArticleUrl, generateCitySlug } from '../utils/slugUtils';
 import { HeaderAd, InContentAd } from './AdBanner';
 
 const News = () => {
@@ -61,10 +61,6 @@ const News = () => {
     });
   };
 
-  const getCitySlug = (cityName, state) => {
-    if (!cityName || !state) return '';
-    return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
-  };
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -143,7 +139,7 @@ const News = () => {
                   <span className="article-author">By {article.author || 'The Daily Holler'}</span>
                   {article.city && (
                     <Link 
-                      to={`/cities/${getCitySlug(article.city, article.state)}`}
+                      to={`/cities/${generateCitySlug(article.city, article.state)}`}
                       className="city-link"
                     >
                       View {article.city} News →

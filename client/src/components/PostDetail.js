@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { parseCitySlug } from '../utils/slugUtils';
+import { parseCitySlug, generateCitySlug } from '../utils/slugUtils';
 import { InContentAd } from './AdBanner';
 
 const PostDetail = () => {
@@ -93,7 +93,7 @@ const PostDetail = () => {
     <div className="article-detail">
       <div className="breadcrumb">
         <Link to="/">Home</Link> → 
-        <Link to={`/cities/${citySlug}`}>{article.cityName}, {article.state}</Link> → 
+        <Link to={`/cities/${generateCitySlug(article.city, article.state)}`}>{article.cityName}, {article.state}</Link> → 
         <span>{article.headline}</span>
       </div>
       
