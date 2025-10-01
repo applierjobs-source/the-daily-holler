@@ -7,27 +7,49 @@ const Home = () => {
   const [todayArticles, setTodayArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalArticles, setTotalArticles] = useState(0);
+
+  const ARTICLES_PER_PAGE = 20;
 
   useEffect(() => {
-    const fetchTodayArticles = async () => {
-      try {
-        const response = await fetch('/api/news/today');
-        if (response.ok) {
-          const data = await response.json();
-          setTodayArticles(data.articles);
-        } else {
-          setError('Failed to load today\'s articles');
-        }
-      } catch (err) {
-        console.error('Error fetching today\'s articles:', err);
-        setError('Failed to load today\'s articles');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTodayArticles();
+    loadArticles();
   }, []);
+
+  const loadArticles = async (pageNum = 1, append = false) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/news/today?limit=${ARTICLES_PER_PAGE}&offset=${(pageNum - 1) * ARTICLES_PER_PAGE}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (append) {
+          setTodayArticles(prev => [...prev, ...data.articles]);
+        } else {
+          setTodayArticles(data.articles);
+        }
+        
+        setTotalArticles(data.totalToday || data.count);
+        setHasMore(data.articles.length === ARTICLES_PER_PAGE);
+        setPage(pageNum);
+      } else {
+        setError('Failed to load today\'s articles');
+      }
+    } catch (err) {
+      console.error('Error fetching today\'s articles:', err);
+      setError('Failed to load today\'s articles');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      loadArticles(page + 1, true);
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -60,15 +82,20 @@ const Home = () => {
       <div className="news-header">
         <h1>📰 Today's Latest News</h1>
         <p>All the latest satirical news from cities across America</p>
-        {todayArticles.length > 0 && (
+        {totalArticles > 0 && (
           <div className="news-stats">
-            <span>{todayArticles.length} articles published today</span>
+            <span>{totalArticles} articles published today</span>
           </div>
         )}
       </div>
 
-      {loading && <div className="loading">Loading today's articles...</div>}
-      {error && <div className="error">Error: {error}</div>}
+      {loading && todayArticles.length === 0 && (
+        <div className="loading">Loading today's articles...</div>
+      )}
+
+      {error && (
+        <div className="error">Error: {error}</div>
+      )}
       
       {!loading && !error && todayArticles.length === 0 && (
         <div className="no-articles">
@@ -121,6 +148,24 @@ const Home = () => {
               </div>
             </React.Fragment>
           ))}
+
+          {hasMore && (
+            <div className="load-more-container">
+              <button 
+                onClick={loadMore}
+                disabled={loading}
+                className="btn btn-outline load-more-btn"
+              >
+                {loading ? 'Loading...' : 'Load More Articles'}
+              </button>
+            </div>
+          )}
+
+          {!hasMore && todayArticles.length > 0 && (
+            <div className="end-of-articles">
+              <p>You've reached the end! That's all {totalArticles} articles.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
