@@ -14,7 +14,7 @@
   "cron": {
     "daily-news": {
       "schedule": "0 2 * * *",
-      "command": "node daily-news-generator.js"
+      "command": "node railway-generation.js"
     }
   }
 }
