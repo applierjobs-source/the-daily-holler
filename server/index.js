@@ -2323,6 +2323,54 @@ app.post('/api/fix-db', async (req, res) => {
   }
 });
 
+// Test endpoint to create a single article
+app.post('/api/test-article', async (req, res) => {
+  try {
+    console.log('🧪 Creating test article...');
+    
+    const testArticle = {
+      title: 'Test Article for October 1st - ' + new Date().toISOString(),
+      content: 'This is a test article to verify the system is working properly.',
+      city: 'Test City',
+      state: 'TS',
+      slug: 'test-city-test-article-' + Date.now(),
+      theme: 'test',
+      is_today: true,
+      published_at: new Date()
+    };
+    
+    await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [
+      testArticle.title,
+      testArticle.content,
+      testArticle.city,
+      testArticle.state,
+      testArticle.slug,
+      testArticle.theme,
+      testArticle.is_today,
+      testArticle.published_at
+    ]);
+    
+    console.log('✅ Test article created successfully');
+    res.json({
+      success: true,
+      message: 'Test article created successfully',
+      article: testArticle,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating test article:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Article generation endpoint for cron job
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
