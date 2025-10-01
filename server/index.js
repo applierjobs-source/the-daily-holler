@@ -2457,30 +2457,15 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const citiesData = await fs.readFile(path.join(__dirname, 'data/cities.json'), 'utf8');
     const cities = JSON.parse(citiesData);
     
-    // Select 20 cities from different states for better geographic diversity
-    const stateGroups = {};
-    cities.forEach(city => {
-      if (!stateGroups[city.state]) {
-        stateGroups[city.state] = [];
-      }
-      stateGroups[city.state].push(city);
-    });
+    // Use all cities for full generation
+    const allCities = cities;
     
-    // Select 1 city from each of 20 different states
-    const testCities = [];
-    const states = Object.keys(stateGroups);
-    for (let i = 0; i < Math.min(20, states.length); i++) {
-      const state = states[i];
-      const city = stateGroups[state][0]; // Take first city from each state
-      testCities.push(city);
-    }
-    
-    console.log(`🌍 Generating articles for ${testCities.length} cities...`);
+    console.log(`🌍 Generating articles for all ${allCities.length} cities...`);
     
     let created = 0;
     let failed = 0;
     
-    for (const city of testCities) {
+    for (const city of allCities) {
       try {
         // Generate article using OpenAI
         const prompt = `You are a satirical news writer for a site like *The Onion*. Create a hilarious fake news article for ${city.name}, ${city.state}.
@@ -2529,7 +2514,7 @@ Make it funny and specific to ${city.name}, ${city.state}.`;
         ]);
         
         created++;
-        console.log(`✅ Created article ${created}/${testCities.length} for ${city.name}`);
+        console.log(`✅ Created article ${created}/${allCities.length} for ${city.name}`);
         
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
