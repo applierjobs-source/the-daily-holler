@@ -2066,91 +2066,46 @@ app.post('/api/update-slugs', async (req, res) => {
 });
 
 // Generate sitemap.xml
-app.get('/sitemap.xml', async (req, res) => {
-  try {
-    const baseUrl = 'https://holler.news';
-    const now = new Date().toISOString();
-    
-    // Build sitemap XML
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
-    // Homepage
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${baseUrl}/</loc>\n`;
-    sitemap += `    <lastmod>${now}</lastmod>\n`;
-    sitemap += '    <changefreq>daily</changefreq>\n';
-    sitemap += '    <priority>1.0</priority>\n';
-    sitemap += '  </url>\n';
-    
-    // News page
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${baseUrl}/news</loc>\n`;
-    sitemap += `    <lastmod>${now}</lastmod>\n`;
-    sitemap += '    <changefreq>hourly</changefreq>\n';
-    sitemap += '    <priority>0.9</priority>\n';
-    sitemap += '  </url>\n';
-    
-    // Cities index
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${baseUrl}/cities</loc>\n`;
-    sitemap += `    <lastmod>${now}</lastmod>\n`;
-    sitemap += '    <changefreq>weekly</changefreq>\n';
-    sitemap += '    <priority>0.8</priority>\n';
-    sitemap += '  </url>\n';
-    
-    try {
-      // Get all articles from database
-      const articlesResult = await pool.query(`
-        SELECT slug, city, state, created_at 
-        FROM articles 
-        ORDER BY created_at DESC
-        LIMIT 1000
-      `);
-      
-      // Add all articles to sitemap
-      for (const article of articlesResult.rows) {
-        if (article.slug && article.city && article.state) {
-          const citySlug = `${article.city.toLowerCase().replace(/\s+/g, '-')}-${article.state.toLowerCase()}`;
-          const articleUrl = `${baseUrl}/${citySlug}/article/${article.slug}`;
-          const lastmod = new Date(article.created_at).toISOString();
-          
-          sitemap += '  <url>\n';
-          sitemap += `    <loc>${articleUrl}</loc>\n`;
-          sitemap += `    <lastmod>${lastmod}</lastmod>\n`;
-          sitemap += '    <changefreq>weekly</changefreq>\n';
-          sitemap += '    <priority>0.6</priority>\n';
-          sitemap += '  </url>\n';
-        }
-      }
-    } catch (dbError) {
-      console.error('Error fetching articles for sitemap:', dbError.message);
-      // Continue without articles if DB fails
-    }
-    
-    // Legal pages
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${baseUrl}/terms</loc>\n`;
-    sitemap += `    <lastmod>${now}</lastmod>\n`;
-    sitemap += '    <changefreq>monthly</changefreq>\n';
-    sitemap += '    <priority>0.3</priority>\n';
-    sitemap += '  </url>\n';
-    
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${baseUrl}/privacy</loc>\n`;
-    sitemap += `    <lastmod>${now}</lastmod>\n`;
-    sitemap += '    <changefreq>monthly</changefreq>\n';
-    sitemap += '    <priority>0.3</priority>\n';
-    sitemap += '  </url>\n';
-    
-    sitemap += '</urlset>';
-    
-    res.header('Content-Type', 'application/xml');
-    res.send(sitemap);
-  } catch (error) {
-    console.error('Error generating sitemap:', error);
-    res.status(500).send('Error generating sitemap');
-  }
+app.get('/sitemap.xml', (req, res) => {
+  const baseUrl = 'https://holler.news';
+  const now = new Date().toISOString();
+  
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/news</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/cities</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/terms</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/privacy</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>`;
+  
+  res.header('Content-Type', 'application/xml');
+  res.send(sitemap);
 });
 
 // Test endpoint to check database connection
