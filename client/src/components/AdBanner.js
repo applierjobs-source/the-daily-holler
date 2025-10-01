@@ -1,21 +1,32 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
+
+// Global tracking for loaded ads
+window.adSenseLoaded = window.adSenseLoaded || {};
 
 // Real AdSense ad components using the actual ad unit ID
 export const HeaderAd = () => {
-  const adLoaded = useRef(false);
-  
   useEffect(() => {
-    try {
-      console.log('HeaderAd: AdSense script available:', !!window.adsbygoogle);
-      
-      // Only load ad once
-      if (window.adsbygoogle && !adLoaded.current) {
-        console.log('HeaderAd: Loading ad...');
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        adLoaded.current = true;
+    const loadAd = () => {
+      try {
+        console.log('HeaderAd: AdSense script available:', !!window.adsbygoogle);
+        
+        // Only load ad once globally
+        if (window.adsbygoogle && !window.adSenseLoaded.headerAd) {
+          console.log('HeaderAd: Loading ad...');
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          window.adSenseLoaded.headerAd = true;
+        }
+      } catch (err) {
+        console.error('HeaderAd: AdSense error:', err);
       }
-    } catch (err) {
-      console.error('HeaderAd: AdSense error:', err);
+    };
+
+    // Wait for AdSense script to be ready
+    if (window.adsbygoogle) {
+      loadAd();
+    } else {
+      // Retry after a delay
+      setTimeout(loadAd, 1000);
     }
   }, []);
 
@@ -138,20 +149,28 @@ export const MobileBanner = () => {
 
 // In-article ad component with the specific ad unit
 export const InArticleAd = () => {
-  const adLoaded = useRef(false);
-  
   useEffect(() => {
-    try {
-      console.log('InArticleAd: AdSense script available:', !!window.adsbygoogle);
-      
-      // Only load ad once
-      if (window.adsbygoogle && !adLoaded.current) {
-        console.log('InArticleAd: Loading ad...');
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        adLoaded.current = true;
+    const loadAd = () => {
+      try {
+        console.log('InArticleAd: AdSense script available:', !!window.adsbygoogle);
+        
+        // Only load ad once globally
+        if (window.adsbygoogle && !window.adSenseLoaded.inArticleAd) {
+          console.log('InArticleAd: Loading ad...');
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          window.adSenseLoaded.inArticleAd = true;
+        }
+      } catch (err) {
+        console.error('InArticleAd: AdSense error:', err);
       }
-    } catch (err) {
-      console.error('InArticleAd: AdSense error:', err);
+    };
+
+    // Wait for AdSense script to be ready
+    if (window.adsbygoogle) {
+      loadAd();
+    } else {
+      // Retry after a delay
+      setTimeout(loadAd, 1000);
     }
   }, []);
 
