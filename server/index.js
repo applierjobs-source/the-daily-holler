@@ -2457,8 +2457,23 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const citiesData = await fs.readFile(path.join(__dirname, 'data/cities.json'), 'utf8');
     const cities = JSON.parse(citiesData);
     
-    // Take first 20 cities for testing
-    const testCities = cities.slice(0, 20);
+    // Select 20 cities from different states for better geographic diversity
+    const stateGroups = {};
+    cities.forEach(city => {
+      if (!stateGroups[city.state]) {
+        stateGroups[city.state] = [];
+      }
+      stateGroups[city.state].push(city);
+    });
+    
+    // Select 1 city from each of 20 different states
+    const testCities = [];
+    const states = Object.keys(stateGroups);
+    for (let i = 0; i < Math.min(20, states.length); i++) {
+      const state = states[i];
+      const city = stateGroups[state][0]; // Take first city from each state
+      testCities.push(city);
+    }
     
     console.log(`🌍 Generating articles for ${testCities.length} cities...`);
     
