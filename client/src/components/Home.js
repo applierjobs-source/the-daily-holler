@@ -54,101 +54,75 @@ const Home = () => {
   };
 
   return (
-    <div className="home">
+    <div className="news-page">
       <HeaderAd />
-      <div className="welcome-message">
-        <h2>Welcome to The Daily Holler</h2>
-        <p>Your source for satirical news and local humor across America's cities.</p>
-      </div>
       
-      {/* Today's Articles Section */}
-      <div className="todays-articles">
-        <div className="news-header">
-          <h1>📰 Today's Latest News</h1>
-          <p>All the latest satirical news from cities across America</p>
-          {todayArticles.length > 0 && (
-            <div className="news-stats">
-              <span>{todayArticles.length} articles published today</span>
-            </div>
-          )}
-        </div>
-
-        {loading && <div className="loading">Loading today's articles...</div>}
-        {error && <div className="error">Error: {error}</div>}
-        
-        {!loading && !error && todayArticles.length > 0 && (
-          <>
-            <div className="articles-stream">
-              {todayArticles.slice(0, 10).map((article, index) => (
-                <React.Fragment key={article.id}>
-                  {index === 3 && <InContentAd />}
-                  {index === 7 && <InContentAd />}
-                  
-                  <div className="article-card">
-                    <div className="article-meta">
-                      <span 
-                        className="article-category"
-                        style={{ backgroundColor: getCategoryColor(article.category) }}
-                      >
-                        {article.category || 'General'}
-                      </span>
-                      <span className="article-location">📍 {article.city}, {article.state}</span>
-                      <span className="article-time">{formatDate(article.publishedAt)}</span>
-                    </div>
-                    
-                    <h2 className="article-headline">
-                      <Link to={generateArticleUrl(article)}>
-                        {article.title}
-                      </Link>
-                    </h2>
-                    
-                    <p className="article-excerpt">
-                      {article.content ? article.content.substring(0, 300) + '...' : 'Read more about this story.'}
-                    </p>
-                    
-                    <div className="article-footer">
-                      <span className="article-author">By {article.author || 'The Daily Holler'}</span>
-                      {article.city && (
-                        <Link 
-                          to={`/cities/${generateCitySlug(article.city, article.state)}`}
-                          className="city-link"
-                        >
-                          View {article.city} News →
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-            
-            <div className="view-more">
-              <Link to="/news" className="btn btn-primary">
-                View All {todayArticles.length} Articles Today →
-              </Link>
-            </div>
-          </>
-        )}
-        
-        {!loading && !error && todayArticles.length === 0 && (
-          <div className="no-articles">
-            <p>No articles published today yet. Check back later!</p>
-            <Link to="/news" className="btn btn-outline">
-              Browse All News
-            </Link>
+      <div className="news-header">
+        <h1>📰 Today's Latest News</h1>
+        <p>All the latest satirical news from cities across America</p>
+        {todayArticles.length > 0 && (
+          <div className="news-stats">
+            <span>{todayArticles.length} articles published today</span>
           </div>
         )}
       </div>
+
+      {loading && <div className="loading">Loading today's articles...</div>}
+      {error && <div className="error">Error: {error}</div>}
       
-      <div className="quick-links">
-        <h3>Quick Links</h3>
-        <div className="quick-links-grid">
-          <Link to="/news" className="quick-link">
-            <strong>📰 Latest News</strong>
-            <span>Browse all satirical articles</span>
-          </Link>
+      {!loading && !error && todayArticles.length === 0 && (
+        <div className="no-articles">
+          <h3>No articles available yet</h3>
+          <p>Check back later for the latest satirical news!</p>
         </div>
-      </div>
+      )}
+
+      {todayArticles.length > 0 && (
+        <div className="articles-stream">
+          {todayArticles.map((article, index) => (
+            <React.Fragment key={article.id}>
+              {index === 5 && <InContentAd />}
+              {index === 15 && <InContentAd />}
+              {index === 25 && <InContentAd />}
+              
+              <div className="article-card">
+                <div className="article-meta">
+                  <span 
+                    className="article-category"
+                    style={{ backgroundColor: getCategoryColor(article.category) }}
+                  >
+                    {article.category || 'General'}
+                  </span>
+                  <span className="article-location">📍 {article.city}, {article.state}</span>
+                  <span className="article-time">{formatDate(article.publishedAt)}</span>
+                </div>
+                
+                <h2 className="article-headline">
+                  <Link to={generateArticleUrl(article)}>
+                    {article.title}
+                  </Link>
+                </h2>
+                
+                <p className="article-excerpt">
+                  {article.content ? article.content.substring(0, 300) + '...' : 'Read more about this story.'}
+                </p>
+                
+                <div className="article-footer">
+                  <span className="article-author">By {article.author || 'The Daily Holler'}</span>
+                  {article.city && (
+                    <Link 
+                      to={`/cities/${generateCitySlug(article.city, article.state)}`}
+                      className="city-link"
+                    >
+                      View {article.city} News →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
