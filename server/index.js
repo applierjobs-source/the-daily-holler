@@ -2071,18 +2071,6 @@ app.get('/sitemap.xml', async (req, res) => {
     const baseUrl = 'https://holler.news';
     const now = new Date().toISOString();
     
-    // Get all cities
-    const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
-    const cities = JSON.parse(citiesData);
-    
-    // Get all articles
-    const articlesResult = await pool.query(`
-      SELECT id, slug, city, state, created_at 
-      FROM articles 
-      ORDER BY created_at DESC
-    `);
-    const articles = articlesResult.rows;
-    
     // Build sitemap XML
     let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
     sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -2111,32 +2099,33 @@ app.get('/sitemap.xml', async (req, res) => {
     sitemap += '    <priority>0.8</priority>\n';
     sitemap += '  </url>\n';
     
-    // All city pages (limit to avoid huge sitemap)
-    const maxCities = 1000; // Google recommends max 50k URLs per sitemap
-    for (let i = 0; i < Math.min(cities.length, maxCities); i++) {
-      const city = cities[i];
-      const citySlug = `${city.name.toLowerCase().replace(/\s+/g, '-')}-${city.stateAbbrev.toLowerCase()}`;
+    try {
+      // Get all articles from database
+      const articlesResult = await pool.query(`
+        SELECT slug, city, state, created_at 
+        FROM articles 
+        ORDER BY created_at DESC
+        LIMIT 1000
+      `);
       
-      sitemap += '  <url>\n';
-      sitemap += `    <loc>${baseUrl}/cities/${citySlug}</loc>\n`;
-      sitemap += `    <lastmod>${now}</lastmod>\n`;
-      sitemap += '    <changefreq>daily</changefreq>\n';
-      sitemap += '    <priority>0.7</priority>\n';
-      sitemap += '  </url>\n';
-    }
-    
-    // All articles
-    for (const article of articles) {
-      const citySlug = `${article.city.toLowerCase().replace(/\s+/g, '-')}-${article.state.toLowerCase()}`;
-      const articleUrl = `${baseUrl}/${citySlug}/article/${article.slug}`;
-      const lastmod = new Date(article.created_at).toISOString();
-      
-      sitemap += '  <url>\n';
-      sitemap += `    <loc>${articleUrl}</loc>\n`;
-      sitemap += `    <lastmod>${lastmod}</lastmod>\n`;
-      sitemap += '    <changefreq>weekly</changefreq>\n';
-      sitemap += '    <priority>0.6</priority>\n';
-      sitemap += '  </url>\n';
+      // Add all articles to sitemap
+      for (const article of articlesResult.rows) {
+        if (article.slug && article.city && article.state) {
+          const citySlug = `${article.city.toLowerCase().replace(/\s+/g, '-')}-${article.state.toLowerCase()}`;
+          const articleUrl = `${baseUrl}/${citySlug}/article/${article.slug}`;
+          const lastmod = new Date(article.created_at).toISOString();
+          
+          sitemap += '  <url>\n';
+          sitemap += `    <loc>${articleUrl}</loc>\n`;
+          sitemap += `    <lastmod>${lastmod}</lastmod>\n`;
+          sitemap += '    <changefreq>weekly</changefreq>\n';
+          sitemap += '    <priority>0.6</priority>\n';
+          sitemap += '  </url>\n';
+        }
+      }
+    } catch (dbError) {
+      console.error('Error fetching articles for sitemap:', dbError.message);
+      // Continue without articles if DB fails
     }
     
     // Legal pages
