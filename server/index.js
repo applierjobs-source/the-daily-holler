@@ -2065,6 +2065,105 @@ app.post('/api/update-slugs', async (req, res) => {
   }
 });
 
+// Generate sitemap.xml
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const baseUrl = 'https://holler.news';
+    const now = new Date().toISOString();
+    
+    // Get all cities
+    const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
+    const cities = JSON.parse(citiesData);
+    
+    // Get all articles
+    const articlesResult = await pool.query(`
+      SELECT id, slug, city, state, created_at 
+      FROM articles 
+      ORDER BY created_at DESC
+    `);
+    const articles = articlesResult.rows;
+    
+    // Build sitemap XML
+    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    
+    // Homepage
+    sitemap += '  <url>\n';
+    sitemap += `    <loc>${baseUrl}/</loc>\n`;
+    sitemap += `    <lastmod>${now}</lastmod>\n`;
+    sitemap += '    <changefreq>daily</changefreq>\n';
+    sitemap += '    <priority>1.0</priority>\n';
+    sitemap += '  </url>\n';
+    
+    // News page
+    sitemap += '  <url>\n';
+    sitemap += `    <loc>${baseUrl}/news</loc>\n`;
+    sitemap += `    <lastmod>${now}</lastmod>\n`;
+    sitemap += '    <changefreq>hourly</changefreq>\n';
+    sitemap += '    <priority>0.9</priority>\n';
+    sitemap += '  </url>\n';
+    
+    // Cities index
+    sitemap += '  <url>\n';
+    sitemap += `    <loc>${baseUrl}/cities</loc>\n`;
+    sitemap += `    <lastmod>${now}</lastmod>\n`;
+    sitemap += '    <changefreq>weekly</changefreq>\n';
+    sitemap += '    <priority>0.8</priority>\n';
+    sitemap += '  </url>\n';
+    
+    // All city pages (limit to avoid huge sitemap)
+    const maxCities = 1000; // Google recommends max 50k URLs per sitemap
+    for (let i = 0; i < Math.min(cities.length, maxCities); i++) {
+      const city = cities[i];
+      const citySlug = `${city.name.toLowerCase().replace(/\s+/g, '-')}-${city.stateAbbrev.toLowerCase()}`;
+      
+      sitemap += '  <url>\n';
+      sitemap += `    <loc>${baseUrl}/cities/${citySlug}</loc>\n`;
+      sitemap += `    <lastmod>${now}</lastmod>\n`;
+      sitemap += '    <changefreq>daily</changefreq>\n';
+      sitemap += '    <priority>0.7</priority>\n';
+      sitemap += '  </url>\n';
+    }
+    
+    // All articles
+    for (const article of articles) {
+      const citySlug = `${article.city.toLowerCase().replace(/\s+/g, '-')}-${article.state.toLowerCase()}`;
+      const articleUrl = `${baseUrl}/${citySlug}/article/${article.slug}`;
+      const lastmod = new Date(article.created_at).toISOString();
+      
+      sitemap += '  <url>\n';
+      sitemap += `    <loc>${articleUrl}</loc>\n`;
+      sitemap += `    <lastmod>${lastmod}</lastmod>\n`;
+      sitemap += '    <changefreq>weekly</changefreq>\n';
+      sitemap += '    <priority>0.6</priority>\n';
+      sitemap += '  </url>\n';
+    }
+    
+    // Legal pages
+    sitemap += '  <url>\n';
+    sitemap += `    <loc>${baseUrl}/terms</loc>\n`;
+    sitemap += `    <lastmod>${now}</lastmod>\n`;
+    sitemap += '    <changefreq>monthly</changefreq>\n';
+    sitemap += '    <priority>0.3</priority>\n';
+    sitemap += '  </url>\n';
+    
+    sitemap += '  <url>\n';
+    sitemap += `    <loc>${baseUrl}/privacy</loc>\n`;
+    sitemap += `    <lastmod>${now}</lastmod>\n`;
+    sitemap += '    <changefreq>monthly</changefreq>\n';
+    sitemap += '    <priority>0.3</priority>\n';
+    sitemap += '  </url>\n';
+    
+    sitemap += '</urlset>';
+    
+    res.header('Content-Type', 'application/xml');
+    res.send(sitemap);
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
 // Test endpoint to check database connection
 app.get('/api/test-db', async (req, res) => {
   try {
