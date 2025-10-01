@@ -1,52 +1,89 @@
 import React from 'react';
-import AdSense from './AdSense';
 
-// Header banner ad
+// Simple ad placeholder components that will work with auto ads
 export const HeaderAd = () => (
-  <AdSense 
-    slot="1234567890" // Replace with your actual ad slot
-    adType="leaderboard"
-    className="header-ad"
-    style={{ margin: '10px 0' }}
-  />
+  <div className="header-ad" style={{ 
+    margin: '10px 0', 
+    minHeight: '90px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
+  }}>
+    <div style={{ color: '#666', fontSize: '14px' }}>
+      Advertisement
+    </div>
+  </div>
 );
 
-// Sidebar ad
 export const SidebarAd = () => (
-  <AdSense 
-    slot="1234567891" // Replace with your actual ad slot
-    adType="rectangle"
-    className="sidebar-ad"
-    style={{ margin: '20px 0' }}
-  />
+  <div className="sidebar-ad" style={{ 
+    margin: '20px 0', 
+    minHeight: '250px',
+    width: '300px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
+  }}>
+    <div style={{ color: '#666', fontSize: '14px' }}>
+      Advertisement
+    </div>
+  </div>
 );
 
-// In-content ad (between paragraphs)
 export const InContentAd = () => (
-  <AdSense 
-    slot="1234567892" // Replace with your actual ad slot
-    adType="rectangle"
-    className="in-content-ad"
-    style={{ margin: '30px auto' }}
-  />
+  <div className="in-content-ad" style={{ 
+    margin: '30px auto', 
+    minHeight: '250px',
+    width: '300px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
+  }}>
+    <div style={{ color: '#666', fontSize: '14px' }}>
+      Advertisement
+    </div>
+  </div>
 );
 
-// Footer ad
 export const FooterAd = () => (
-  <AdSense 
-    slot="1234567893" // Replace with your actual ad slot
-    adType="banner"
-    className="footer-ad"
-    style={{ margin: '20px 0' }}
-  />
+  <div className="footer-ad" style={{ 
+    margin: '20px 0', 
+    minHeight: '90px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
+  }}>
+    <div style={{ color: '#666', fontSize: '14px' }}>
+      Advertisement
+    </div>
+  </div>
 );
 
-// Mobile banner (responsive)
 export const MobileBanner = () => (
-  <AdSense 
-    slot="1234567894" // Replace with your actual ad slot
-    adType="mobile-banner"
-    className="mobile-banner"
-    style={{ margin: '15px 0' }}
-  />
+  <div className="mobile-banner" style={{ 
+    margin: '15px 0', 
+    minHeight: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px'
+  }}>
+    <div style={{ color: '#666', fontSize: '14px' }}>
+      Advertisement
+    </div>
+  </div>
 );
