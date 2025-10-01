@@ -98,7 +98,7 @@ async function generateArticleForCity(cityName, state) {
     
     // Parse headline and body
     const lines = content.split('\n').filter(line => line.trim());
-    const headline = lines[0];
+    const headline = lines[0].replace(/^\[|\]$/g, '').trim(); // Remove brackets
     const body = lines.slice(1).join('\n').trim();
     
     return {

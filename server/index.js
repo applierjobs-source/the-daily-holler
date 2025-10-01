@@ -1951,6 +1951,60 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Remove brackets from article titles endpoint
+app.post('/api/clean-titles', async (req, res) => {
+  try {
+    console.log('🧹 Cleaning article titles...');
+    
+    // Get all articles
+    const result = await pool.query('SELECT id, title FROM articles ORDER BY id ASC');
+    
+    console.log(`Found ${result.rows.length} articles to clean`);
+    
+    let updated = 0;
+    let skipped = 0;
+    
+    for (const article of result.rows) {
+      try {
+        // Remove brackets from title
+        const cleanTitle = article.title.replace(/^\[|\]$/g, '').trim();
+        
+        // Only update if title changed
+        if (cleanTitle !== article.title) {
+          await pool.query(
+            'UPDATE articles SET title = $1 WHERE id = $2',
+            [cleanTitle, article.id]
+          );
+          updated++;
+          
+          if (updated % 20 === 0) {
+            console.log(`Progress: ${updated} titles cleaned...`);
+          }
+        } else {
+          skipped++;
+        }
+      } catch (error) {
+        console.error(`Failed to clean title for article ${article.id}:`, error.message);
+      }
+    }
+    
+    console.log('✅ Article titles cleaned successfully!');
+    console.log(`   Updated: ${updated}`);
+    console.log(`   Skipped (already clean): ${skipped}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Article titles cleaned successfully!',
+      updated: updated,
+      skipped: skipped,
+      total: result.rows.length
+    });
+  } catch (error) {
+    console.error('❌ Error cleaning article titles:', error);
+    res.status(500).json({ error: 'Failed to clean article titles', details: error.message });
+  }
+});
+
 // Update article slugs endpoint
 app.post('/api/update-slugs', async (req, res) => {
   try {
@@ -2180,7 +2234,7 @@ Return only the satirical article in this format:
 
     const content = response.choices[0].message.content.trim();
     const lines = content.split('\n');
-    const headline = lines[0];
+    const headline = lines[0].replace(/^\[|\]$/g, '').trim(); // Remove brackets
     const body = lines.slice(1).join('\n').trim();
 
     res.json({ 

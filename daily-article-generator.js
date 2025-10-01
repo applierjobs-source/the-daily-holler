@@ -104,7 +104,7 @@ Return only the satirical article in this format:
 
     const content = response.choices[0].message.content;
     const lines = content.split('\n');
-    const headline = lines[0];
+    const headline = lines[0].replace(/^\[|\]$/g, '').trim(); // Remove brackets
     const body = lines.slice(1).join('\n').trim();
 
     return {

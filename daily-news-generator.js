@@ -244,7 +244,7 @@ Use theme number ${themeNumber} from the list above.`;
 
     const content = response.choices[0].message.content.trim();
     const lines = content.split('\n');
-    const headline = lines[0];
+    const headline = lines[0].replace(/^\[|\]$/g, '').trim(); // Remove brackets
     const body = lines.slice(1).join('\n').trim();
 
     return {
