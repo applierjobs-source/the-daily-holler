@@ -2487,14 +2487,24 @@ if (isProduction) {
   const staticPath = path.join(__dirname, '../client/build');
   console.log('Static files path:', staticPath);
   console.log('Static files exist:', require('fs').existsSync(staticPath));
-  app.use(express.static(staticPath));
+  
+  // Serve static files but exclude sitemap.xml to let the route handler catch it
+  app.use(express.static(staticPath, {
+    index: false, // Don't serve index.html automatically
+    setHeaders: (res, path) => {
+      if (path.endsWith('.xml')) {
+        res.setHeader('Content-Type', 'application/xml');
+      }
+    }
+  }));
+  
+  // Serve index.html for root
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(staticPath, 'index.html'));
+  });
   
   // Serve React app for all non-API routes (MUST be last)
   app.get('*', (req, res) => {
-    // Skip catch-all for specific routes that should be handled above
-    if (req.path.startsWith('/api') || req.path === '/sitemap.xml' || req.path === '/robots.txt') {
-      return;
-    }
     console.log('Catch-all route hit for:', req.path);
     res.sendFile(path.join(staticPath, 'index.html'));
   });
