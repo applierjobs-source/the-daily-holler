@@ -2330,49 +2330,25 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     
     // Import and run the daily news generator
     const { generateDailyNews } = require('../daily-news-generator');
-    let result;
-    try {
-      console.log('🚀 Starting article generation...');
-      result = await generateDailyNews();
-      console.log('Result from generateDailyNews:', result);
-      console.log('Result type:', typeof result);
-      console.log('Result.articles:', result?.articles);
-      console.log('Articles length:', result?.articles?.length);
-    } catch (error) {
-      console.error('Error in generateDailyNews:', error);
-      return res.json({ 
-        success: false, 
-        error: `generateDailyNews failed: ${error.message}`,
-        timestamp: new Date().toISOString()
-      });
-    }
     
-    // Articles are now published in real-time during generation
-    // The generateDailyNews function handles database insertion directly
+    // Start generation in background and return immediately
+    generateDailyNews().then(result => {
+      console.log('✅ Generation completed:', result);
+    }).catch(error => {
+      console.error('❌ Generation failed:', error);
+    });
     
-    if (result && result.success) {
-      console.log(`✅ All articles published to frontend in real-time`);
-      
-      res.json({ 
-        success: true, 
-        message: 'Daily articles generated and published successfully',
-        totalArticles: result.totalGenerated,
-        failed: result.failed,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      console.log('❌ Generation failed or returned no results');
-      return res.json({ 
-        success: false, 
-        error: 'Article generation failed',
-        result: result,
-        timestamp: new Date().toISOString()
-      });
-    }
+    // Return immediately to prevent timeout
+    res.json({
+      success: true,
+      message: 'Daily article generation started in background',
+      timestamp: new Date().toISOString()
+    });
+    
   } catch (error) {
-    console.error('❌ Error generating daily articles:', error);
-    res.status(500).json({ 
-      success: false, 
+    console.error('❌ Error starting daily articles:', error);
+    res.status(500).json({
+      success: false,
       error: error.message,
       timestamp: new Date().toISOString()
     });
