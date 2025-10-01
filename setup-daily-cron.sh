@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Setup Daily News Generation Cron Job (Cost-Effective Version)
-# This script sets up a cron job to run the daily news generator every day at 2 AM
+# This script sets up a cron job to run the daily news generator every day at 3:50 PM CDT
 # Generates only 10 new articles per day but distributes them to all cities
 
 echo "🚀 Setting up Cost-Effective Daily News Generation Cron Job"
@@ -28,11 +28,11 @@ if [ -z "$NODE_PATH" ]; then
     exit 1
 fi
 
-# Create the cron job entry (runs every day at 2:00 AM)
-CRON_ENTRY="0 2 * * * cd $SCRIPT_DIR && $NODE_PATH $DAILY_SCRIPT >> $SCRIPT_DIR/daily-news.log 2>&1"
+# Create the cron job entry (runs every day at 3:50 PM CDT)
+CRON_ENTRY="50 15 * * * cd $SCRIPT_DIR && $NODE_PATH $DAILY_SCRIPT >> $SCRIPT_DIR/daily-news.log 2>&1"
 
 echo ""
-echo "📅 Cron job will run: Every day at 2:00 AM"
+echo "📅 Cron job will run: Every day at 3:50 PM CDT"
 echo "📝 Command: $CRON_ENTRY"
 echo "💰 Cost: ~$3-5 per day (10 articles × 1,682 cities = 16,820 total articles)"
 echo ""

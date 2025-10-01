@@ -2555,29 +2555,8 @@ Make it funny and specific to ${city.name}, ${city.state}.`;
   }
 });
 
-// Check if it's time to run daily article generation
-function shouldRunDailyGeneration() {
-  const now = new Date();
-  const hour = now.getUTCHours();
-  const minute = now.getUTCMinutes();
-  
-  // Run if it's between 6:00 AM and 6:59 AM UTC (1:00 AM CDT / 12:00 AM CST)
-  return hour === 6 && minute < 60;
-}
-
-// Run daily article generation if it's the right time
-async function checkAndRunDailyGeneration() {
-  if (shouldRunDailyGeneration()) {
-    console.log('🕐 It\'s 6 AM UTC (1 AM CDT) - time for daily article generation!');
-    try {
-      const { generateDailyNews } = require('../daily-news-generator');
-      await generateDailyNews();
-      console.log('✅ Daily article generation completed!');
-    } catch (error) {
-      console.error('❌ Error running daily article generation:', error);
-    }
-  }
-}
+// Daily generation is now handled by Railway cron job at 8:30 PM UTC (3:30 PM CDT)
+// Removed local generation functions to prevent conflicts with cron job
 
 // Serve static files in production (must be before catch-all but after API routes)
 if (isProduction) {
@@ -2622,10 +2601,7 @@ initializeData().then(async () => {
       console.log(`🌐 Production mode: Serving React app`);
     }
     
-    // Check if we should run daily generation on startup
-    checkAndRunDailyGeneration();
-    
-    // Set up a timer to check every hour
-    setInterval(checkAndRunDailyGeneration, 60 * 60 * 1000); // Check every hour
+    // Note: Daily generation is now handled by Railway cron job
+    // Removed automatic startup and hourly checks to prevent duplicate generation
   });
 }).catch(console.error);

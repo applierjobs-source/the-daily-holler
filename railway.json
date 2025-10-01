@@ -13,7 +13,7 @@
   },
   "cron": {
     "daily-news": {
-      "schedule": "0 2 * * *",
+      "schedule": "50 20 * * *",
       "command": "node railway-generation.js"
     }
   }
