@@ -2347,56 +2347,28 @@ app.post('/api/generate-daily-articles', async (req, res) => {
       });
     }
     
-    if (result && result.articles && result.articles.length > 0) {
-      // Clear existing articles for today
-      const today = new Date().toISOString().split('T')[0];
-      await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
+    // Articles are now published in real-time during generation
+    // The generateDailyNews function handles database insertion directly
+    
+    if (result && result.success) {
+      console.log(`✅ All articles published to frontend in real-time`);
       
-      // Insert articles one by one for real-time publishing
-      let insertedCount = 0;
-      for (const article of result.articles) {
-        try {
-          await pool.query(`
-            INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          `, [
-            article.headline || article.title,
-            article.content,
-            article.cityName || article.city,
-            article.state,
-            article.slug,
-            article.theme || null,
-            true,
-            article.publishedAt || new Date().toISOString()
-          ]);
-          insertedCount++;
-          
-          // Log progress every 25 articles
-          if (insertedCount % 25 === 0) {
-            console.log(`📝 Published ${insertedCount}/${result.articles.length} articles`);
-          }
-        } catch (error) {
-          console.error(`❌ Error inserting article ${insertedCount + 1}:`, error);
-        }
-      }
-      
-      console.log(`✅ Published ${insertedCount} articles to frontend`);
+      res.json({ 
+        success: true, 
+        message: 'Daily articles generated and published successfully',
+        totalArticles: result.totalGenerated,
+        failed: result.failed,
+        timestamp: new Date().toISOString()
+      });
     } else {
-      console.log('❌ No articles generated or result is invalid');
+      console.log('❌ Generation failed or returned no results');
       return res.json({ 
         success: false, 
-        error: 'No articles generated',
+        error: 'Article generation failed',
         result: result,
         timestamp: new Date().toISOString()
       });
     }
-    
-    res.json({ 
-      success: true, 
-      message: 'Daily articles generated successfully',
-      totalArticles: result ? result.articles.length : 0,
-      timestamp: new Date().toISOString()
-    });
   } catch (error) {
     console.error('❌ Error generating daily articles:', error);
     res.status(500).json({ 

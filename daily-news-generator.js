@@ -1,6 +1,13 @@
 const OpenAI = require('openai');
 const fs = require('fs').promises;
 const path = require('path');
+const { Pool } = require('pg');
+
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
 // Import slug generation function
 function generateUniqueArticleSlug(title, city) {
@@ -334,13 +341,16 @@ async function generateDailyNews() {
       return { articles: [] };
     }
 
-    // Check if articles already exist for today (simplified check)
+    // Clear existing articles for today BEFORE generating new ones
     const today = new Date().toISOString().split('T')[0];
     console.log(`📅 Generating articles for today: ${today}`);
-
+    console.log(`🗑️  Clearing old articles for ${today}...`);
+    await pool.query('DELETE FROM articles WHERE DATE(created_at) = $1', [today]);
+    console.log(`✅ Old articles cleared`);
+    
     // Generate 1 unique article for EACH city (all 1690 cities)
-    console.log(`🌍 Generating 1 unique article for each of ${cities.length} cities...`);
-    const generatedArticles = [];
+    // Articles are published in REAL-TIME as they're generated
+    console.log(`🌍 Generating & publishing 1 article per city (${cities.length} total)...`);
     let totalGenerated = 0;
     let failed = 0;
     
@@ -370,12 +380,31 @@ async function generateDailyNews() {
             const customizedArticle = customizeArticleForCity(baseArticle, city);
             
             if (customizedArticle) {
-              generatedArticles.push(customizedArticle);
-              totalGenerated++;
-              
-              // Progress every 50 articles
-              if (totalGenerated % 50 === 0) {
-                console.log(`📊 Progress: ${totalGenerated}/${cities.length} (${Math.round(totalGenerated/cities.length*100)}%)`);
+              // IMMEDIATELY INSERT INTO DATABASE (real-time publishing)
+              try {
+                await pool.query(`
+                  INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                `, [
+                  customizedArticle.headline,
+                  customizedArticle.content,
+                  customizedArticle.cityName,
+                  customizedArticle.state,
+                  customizedArticle.slug,
+                  customizedArticle.theme,
+                  true,
+                  customizedArticle.publishedAt
+                ]);
+                
+                totalGenerated++;
+                
+                // Progress every 50 articles
+                if (totalGenerated % 50 === 0) {
+                  console.log(`📊 Published: ${totalGenerated}/${cities.length} (${Math.round(totalGenerated/cities.length*100)}%)`);
+                }
+              } catch (dbError) {
+                console.error(`❌ DB insert failed for ${city.name}: ${dbError.message}`);
+                failed++;
               }
             } else {
               failed++;
@@ -393,16 +422,16 @@ async function generateDailyNews() {
         }
       }
       
-      console.log(`✅ Batch ${batch + 1} complete`);
+      console.log(`✅ Batch ${batch + 1} complete - ${totalGenerated} articles published`);
     }
     
     console.log(`\n🎉 Daily news generation complete!`);
-    console.log(`✅ Generated: ${totalGenerated} articles`);
+    console.log(`✅ Published: ${totalGenerated} articles`);
     console.log(`❌ Failed: ${failed} articles`);
     console.log(`🏙️ All ${cities.length} cities covered`);
-    console.log(`💰 Estimated cost: ~$${Math.round(cities.length * 0.003 * 100) / 100}`);
+    console.log(`💰 Estimated cost: ~$${Math.round(cities.length * 0.0003 * 100) / 100}`);
     
-    return { articles: generatedArticles };
+    return { success: true, totalGenerated, failed };
     
   } catch (error) {
     console.error('❌ Error in generateDailyNews:', error);
