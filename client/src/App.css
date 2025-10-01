@@ -12,36 +12,59 @@
   padding: 0 10px;
 }
 
-/* The Daily The Daily Holler-style header */
+/* Header */
 .header {
-  background-color: #1e3a8a;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
-  padding: 10px 0;
+  padding: 15px 0;
   margin-bottom: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header h1 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Georgia', 'Times New Roman', Times, serif;
   margin: 0;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   text-align: center;
-  border-bottom: 1px solid #1e40af;
+  flex: 1;
+  letter-spacing: -0.5px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
 
-.header p {
-  margin: 5px 0 0 0;
-  font-size: 12px;
-  text-align: center;
-  opacity: 0.9;
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
 }
 
-/* The Daily Holler-style navigation */
+.mobile-menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Navigation */
 .nav {
   background-color: #ffffff;
   padding: 0;
-  margin-bottom: 0;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #3b82f6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .nav ul {
@@ -55,24 +78,99 @@
 
 .nav li {
   margin: 0;
+  flex: 0 0 auto;
 }
 
 .nav a {
   color: #1e3a8a;
   text-decoration: none;
-  padding: 8px 12px;
-  border-right: 1px solid #ccc;
-  font-size: 13px;
+  padding: 14px 24px;
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  border-right: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.nav a:hover,
+.nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.nav a:hover {
+  background-color: #f0f9ff;
+  color: #3b82f6;
+}
+
+.nav a:hover::after,
+.nav a.active::after {
+  width: 100%;
+}
+
 .nav a.active {
-  background-color: #f0f0f0;
-  text-decoration: underline;
+  background-color: #eff6ff;
+  color: #3b82f6;
 }
 
 .nav li:last-child a {
   border-right: none;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 24px;
+    text-align: left;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
+  .nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  
+  .nav.mobile-open {
+    right: 0;
+  }
+  
+  .nav ul {
+    flex-direction: column;
+    padding-top: 60px;
+  }
+  
+  .nav li {
+    width: 100%;
+  }
+  
+  .nav a {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+  
+  .nav a::after {
+    display: none;
+  }
 }
 
 /* The Daily Holler-style city selector */
