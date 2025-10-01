@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { generateArticleUrl } from '../utils/slugUtils';
+import { generateArticleUrl, generateCitySlug } from '../utils/slugUtils';
 import { HeaderAd, InContentAd } from './AdBanner';
 
 const Home = () => {
@@ -39,9 +39,18 @@ const Home = () => {
     });
   };
 
-  const getCitySlug = (cityName, state) => {
-    if (!cityName || !state) return '';
-    return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Politics': '#e74c3c',
+      'Business': '#3498db',
+      'Sports': '#2ecc71',
+      'Entertainment': '#9b59b6',
+      'Technology': '#f39c12',
+      'Health': '#1abc9c',
+      'Education': '#34495e',
+      'General': '#95a5a6'
+    };
+    return colors[category] || colors['General'];
   };
 
   return (
@@ -54,37 +63,54 @@ const Home = () => {
       
       {/* Today's Articles Section */}
       <div className="todays-articles">
-        <h3>📰 Today's Latest News</h3>
+        <div className="news-header">
+          <h1>📰 Today's Latest News</h1>
+          <p>All the latest satirical news from cities across America</p>
+          {todayArticles.length > 0 && (
+            <div className="news-stats">
+              <span>{todayArticles.length} articles published today</span>
+            </div>
+          )}
+        </div>
+
         {loading && <div className="loading">Loading today's articles...</div>}
         {error && <div className="error">Error: {error}</div>}
         
         {!loading && !error && todayArticles.length > 0 && (
-          <div className="articles-stream-container">
+          <>
             <div className="articles-stream">
               {todayArticles.slice(0, 10).map((article, index) => (
                 <React.Fragment key={article.id}>
                   {index === 3 && <InContentAd />}
-                  <div className="article-preview">
+                  {index === 7 && <InContentAd />}
+                  
+                  <div className="article-card">
                     <div className="article-meta">
+                      <span 
+                        className="article-category"
+                        style={{ backgroundColor: getCategoryColor(article.category) }}
+                      >
+                        {article.category || 'General'}
+                      </span>
                       <span className="article-location">📍 {article.city}, {article.state}</span>
                       <span className="article-time">{formatDate(article.publishedAt)}</span>
                     </div>
                     
-                    <h4 className="article-headline">
+                    <h2 className="article-headline">
                       <Link to={generateArticleUrl(article)}>
                         {article.title}
                       </Link>
-                    </h4>
+                    </h2>
                     
                     <p className="article-excerpt">
-                      {article.content ? article.content.substring(0, 200) + '...' : 'Read more about this story.'}
+                      {article.content ? article.content.substring(0, 300) + '...' : 'Read more about this story.'}
                     </p>
                     
                     <div className="article-footer">
-                      <span className="article-author">By The Daily Holler</span>
+                      <span className="article-author">By {article.author || 'The Daily Holler'}</span>
                       {article.city && (
                         <Link 
-                          to={`/cities/${getCitySlug(article.city, article.state)}`}
+                          to={`/cities/${generateCitySlug(article.city, article.state)}`}
                           className="city-link"
                         >
                           View {article.city} News →
@@ -101,7 +127,7 @@ const Home = () => {
                 View All {todayArticles.length} Articles Today →
               </Link>
             </div>
-          </div>
+          </>
         )}
         
         {!loading && !error && todayArticles.length === 0 && (
