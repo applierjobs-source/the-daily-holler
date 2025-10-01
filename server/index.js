@@ -2431,69 +2431,111 @@ app.post('/api/test-generation', async (req, res) => {
   }
 });
 
-// Simple article generation endpoint - creates 10 articles
+// Real article generation endpoint - creates articles using OpenAI
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
-    console.log('🚀 Starting simple article generation...');
+    console.log('🚀 Starting real article generation...');
     
-    const cities = [
-      { name: 'Anchorage', state: 'AK' },
-      { name: 'Fairbanks', state: 'AK' },
-      { name: 'Juneau', state: 'AK' },
-      { name: 'Sitka', state: 'AK' },
-      { name: 'Ketchikan', state: 'AK' },
-      { name: 'Wasilla', state: 'AK' },
-      { name: 'Kenai', state: 'AK' },
-      { name: 'Kodiak', state: 'AK' },
-      { name: 'Bethel', state: 'AK' },
-      { name: 'Barrow', state: 'AK' }
-    ];
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.log('❌ OpenAI API key not available, falling back to simple generation');
+      return res.json({
+        success: false,
+        error: 'OpenAI API key not configured',
+        message: 'Please configure OPENAI_API_KEY environment variable',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const OpenAI = require('openai');
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+    
+    // Load cities data
+    const fs = require('fs').promises;
+    const citiesData = await fs.readFile(path.join(__dirname, 'data/cities.json'), 'utf8');
+    const cities = JSON.parse(citiesData);
+    
+    // Take first 20 cities for testing
+    const testCities = cities.slice(0, 20);
+    
+    console.log(`🌍 Generating articles for ${testCities.length} cities...`);
     
     let created = 0;
-    for (const city of cities) {
-      const testArticle = {
-        title: `Breaking: ${city.name} Residents Discover New Way to Handle Local Issues`,
-        content: `In a surprising turn of events, residents of ${city.name}, ${city.state} have discovered an innovative approach to handling local community issues. The method, which involves creative problem-solving and community collaboration, has been met with enthusiasm by local officials. "This is exactly what we needed," said Mayor Johnson. "The community has really come together on this one." The initiative is expected to be implemented city-wide by next month.`,
-        city: city.name,
-        state: city.state,
-        slug: `${city.name.toLowerCase().replace(/\s+/g, '-')}-residents-discover-new-way-to-handle-local-issues-${Date.now()}`,
-        theme: 'local-news',
-        is_today: true,
-        published_at: new Date()
-      };
-      
+    let failed = 0;
+    
+    for (const city of testCities) {
       try {
+        // Generate article using OpenAI
+        const prompt = `You are a satirical news writer for a site like *The Onion*. Create a hilarious fake news article for ${city.name}, ${city.state}.
+
+### STYLE REQUIREMENTS
+- Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
+- Humor: Mix of exaggeration, surrealism, and playful cultural references.
+- Headline: Punchy, 8–12 words, must set up the absurd premise. Use Title Case (NOT ALL CAPS).
+- Content: 150-200 words, structured like a real news article with quotes and details.
+
+### FORMAT
+Return ONLY a JSON object with this exact structure:
+{
+  "headline": "Your headline here",
+  "content": "Your article content here"
+}
+
+Make it funny and specific to ${city.name}, ${city.state}.`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.8,
+          max_tokens: 500
+        });
+        
+        const response = completion.choices[0].message.content;
+        const articleData = JSON.parse(response);
+        
+        // Generate slug
+        const slug = `${city.name.toLowerCase().replace(/\s+/g, '-')}-${articleData.headline.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim('-')}`;
+        
+        // Insert into database
         await pool.query(`
           INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `, [
-          testArticle.title,
-          testArticle.content,
-          testArticle.city,
-          testArticle.state,
-          testArticle.slug,
-          testArticle.theme,
-          testArticle.is_today,
-          testArticle.published_at
+          articleData.headline,
+          articleData.content,
+          city.name,
+          city.state,
+          slug,
+          'satirical-news',
+          true,
+          new Date()
         ]);
         
         created++;
-        console.log(`✅ Created article ${created}/10 for ${city.name}`);
-      } catch (dbError) {
-        console.error(`❌ Failed to create article for ${city.name}:`, dbError.message);
+        console.log(`✅ Created article ${created}/${testCities.length} for ${city.name}`);
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+      } catch (error) {
+        console.error(`❌ Failed to create article for ${city.name}:`, error.message);
+        failed++;
       }
     }
     
-    console.log(`✅ Simple generation completed - ${created} articles created`);
+    console.log(`✅ Real generation completed - ${created} articles created, ${failed} failed`);
     res.json({
       success: true,
-      message: `Simple generation completed - ${created} articles created`,
+      message: `Real generation completed - ${created} articles created, ${failed} failed`,
       totalCreated: created,
+      totalFailed: failed,
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
-    console.error('❌ Error in simple generation:', error);
+    console.error('❌ Error in real generation:', error);
     res.status(500).json({
       success: false,
       error: error.message,
