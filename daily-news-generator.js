@@ -338,67 +338,69 @@ async function generateDailyNews() {
     const today = new Date().toISOString().split('T')[0];
     console.log(`📅 Generating articles for today: ${today}`);
 
-    // Generate 2 unique base articles for testing
-    console.log('🎨 Generating 2 unique base articles for testing...');
-    const baseArticles = [];
-    
-    for (let i = 0; i < 2; i++) {
-      console.log(`📝 Generating base article ${i + 1}/2...`);
-      const baseArticle = await generateBaseArticle(i + 1);
-      if (baseArticle) {
-        baseArticles.push(baseArticle);
-        console.log(`✅ Generated: ${baseArticle.headline}`);
-      } else {
-        console.log(`❌ Failed to generate base article ${i + 1}`);
-      }
-      
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-    
-    console.log(`🎉 Generated ${baseArticles.length} base articles`);
-    
-    // Distribute each base article to first 50 cities for testing
-    console.log(`🌍 Distributing articles to first 50 cities for testing...`);
-    let totalGenerated = 0;
-    const testCities = cities.slice(0, 50);
+    // Generate 1 unique article for EACH city (all 1690 cities)
+    console.log(`🌍 Generating 1 unique article for each of ${cities.length} cities...`);
     const generatedArticles = [];
+    let totalGenerated = 0;
+    let failed = 0;
     
-    console.log(`📊 Base articles count: ${baseArticles.length}`);
-    console.log(`📊 Test cities count: ${testCities.length}`);
+    // Process cities in batches for better progress tracking
+    const batchSize = 100;
+    const totalBatches = Math.ceil(cities.length / batchSize);
     
-    for (let i = 0; i < baseArticles.length; i++) {
-      const baseArticle = baseArticles[i];
-      console.log(`📤 Distributing article ${i + 1}/${baseArticles.length} to test cities...`);
-      console.log(`📤 Base article headline: ${baseArticle.headline}`);
+    for (let batch = 0; batch < totalBatches; batch++) {
+      const batchStart = batch * batchSize;
+      const batchEnd = Math.min(batchStart + batchSize, cities.length);
+      const batchCities = cities.slice(batchStart, batchEnd);
       
-      for (let j = 0; j < testCities.length; j++) {
-        const city = testCities[j];
-        const customizedArticle = customizeArticleForCity(baseArticle, city);
+      console.log(`\n📦 Batch ${batch + 1}/${totalBatches} (cities ${batchStart + 1}-${batchEnd})`);
+      
+      for (let i = 0; i < batchCities.length; i++) {
+        const city = batchCities[i];
         
-        if (customizedArticle) {
-          generatedArticles.push(customizedArticle);
-          totalGenerated++;
+        try {
+          // Cycle through all 200 themes
+          const themeNumber = ((batchStart + i) % 200) + 1;
           
-          // Progress reporting every 25 articles
-          if (totalGenerated % 25 === 0) {
-            console.log(`📊 Progress: ${totalGenerated} articles generated so far...`);
+          // Generate unique base article for this city
+          const baseArticle = await generateBaseArticle(themeNumber);
+          
+          if (baseArticle) {
+            // Customize for this specific city
+            const customizedArticle = customizeArticleForCity(baseArticle, city);
+            
+            if (customizedArticle) {
+              generatedArticles.push(customizedArticle);
+              totalGenerated++;
+              
+              // Progress every 50 articles
+              if (totalGenerated % 50 === 0) {
+                console.log(`📊 Progress: ${totalGenerated}/${cities.length} (${Math.round(totalGenerated/cities.length*100)}%)`);
+              }
+            } else {
+              failed++;
+            }
+          } else {
+            failed++;
           }
-        } else {
-          console.log(`❌ Failed to customize article for city: ${city.name}`);
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+        } catch (error) {
+          console.error(`❌ Error for ${city.name}: ${error.message}`);
+          failed++;
         }
       }
       
-      console.log(`✅ Article ${i + 1} distributed to ${testCities.length} cities`);
+      console.log(`✅ Batch ${batch + 1} complete`);
     }
     
-    console.log(`📊 Total generated articles: ${generatedArticles.length}`);
-    
     console.log(`\n🎉 Daily news generation complete!`);
-    console.log(`✅ Generated: ${totalGenerated} total articles`);
-    console.log(`📊 Base articles: ${baseArticles.length}`);
-    console.log(`🏙️ Cities covered: ${testCities.length}`);
-    console.log(`💰 Estimated cost: ~$2-5 (2 base articles + 100 customizations)`);
+    console.log(`✅ Generated: ${totalGenerated} articles`);
+    console.log(`❌ Failed: ${failed} articles`);
+    console.log(`🏙️ All ${cities.length} cities covered`);
+    console.log(`💰 Estimated cost: ~$${Math.round(cities.length * 0.003 * 100) / 100}`);
     
     return { articles: generatedArticles };
     
