@@ -4,16 +4,8 @@ import React, { useEffect } from 'react';
 export const HeaderAd = () => {
   useEffect(() => {
     try {
-      console.log('HeaderAd: Attempting to load ad...');
-      console.log('AdSense script available:', !!window.adsbygoogle);
-      
-      if (window.adsbygoogle) {
-        console.log('HeaderAd: Pushing ad to AdSense...');
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        console.log('HeaderAd: Ad pushed successfully');
-      } else {
-        console.warn('HeaderAd: AdSense script not loaded yet');
-      }
+      console.log('HeaderAd: AdSense script available:', !!window.adsbygoogle);
+      // Let the <ins> tag handle ad loading automatically
     } catch (err) {
       console.error('HeaderAd: AdSense error:', err);
     }
@@ -140,16 +132,8 @@ export const MobileBanner = () => {
 export const InArticleAd = () => {
   useEffect(() => {
     try {
-      console.log('InArticleAd: Attempting to load ad...');
-      console.log('AdSense script available:', !!window.adsbygoogle);
-      
-      if (window.adsbygoogle) {
-        console.log('InArticleAd: Pushing ad to AdSense...');
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        console.log('InArticleAd: Ad pushed successfully');
-      } else {
-        console.warn('InArticleAd: AdSense script not loaded yet');
-      }
+      console.log('InArticleAd: AdSense script available:', !!window.adsbygoogle);
+      // Let the <ins> tag handle ad loading automatically
     } catch (err) {
       console.error('InArticleAd: AdSense error:', err);
     }
