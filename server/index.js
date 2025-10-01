@@ -2408,14 +2408,14 @@ function shouldRunDailyGeneration() {
   const hour = now.getUTCHours();
   const minute = now.getUTCMinutes();
   
-  // Run if it's between 2:00 AM and 2:59 AM UTC
-  return hour === 2 && minute < 60;
+  // Run if it's between 6:00 AM and 6:59 AM UTC (1:00 AM CDT / 12:00 AM CST)
+  return hour === 6 && minute < 60;
 }
 
 // Run daily article generation if it's the right time
 async function checkAndRunDailyGeneration() {
   if (shouldRunDailyGeneration()) {
-    console.log('🕐 It\'s 2 AM UTC - time for daily article generation!');
+    console.log('🕐 It\'s 6 AM UTC (1 AM CDT) - time for daily article generation!');
     try {
       const { generateDailyNews } = require('../daily-news-generator');
       await generateDailyNews();
