@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generateCitySlug } from '../utils/slugUtils';
-import { InContentAd } from './AdBanner';
+import { InArticleAd } from './AdBanner';
 
 const PostDetail = () => {
   const { id, citySlug, articleSlug } = useParams();
@@ -131,7 +131,7 @@ const PostDetail = () => {
                   <p className="article-paragraph">
                     {paragraph}
                   </p>
-                  <InContentAd />
+                  <InArticleAd />
                 </React.Fragment>
               );
             }
