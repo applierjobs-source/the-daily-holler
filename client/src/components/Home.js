@@ -20,7 +20,7 @@ const Home = () => {
   const loadArticles = async (pageNum = 1, append = false) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/news/today?limit=${ARTICLES_PER_PAGE}&offset=${(pageNum - 1) * ARTICLES_PER_PAGE}`);
+      const response = await fetch(`/api/news?limit=${ARTICLES_PER_PAGE}&offset=${(pageNum - 1) * ARTICLES_PER_PAGE}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -31,15 +31,15 @@ const Home = () => {
           setTodayArticles(data.articles);
         }
         
-        setTotalArticles(data.totalToday || data.count);
+        setTotalArticles(data.total);
         setHasMore(data.articles.length === ARTICLES_PER_PAGE);
         setPage(pageNum);
       } else {
-        setError('Failed to load today\'s articles');
+        setError('Failed to load articles');
       }
     } catch (err) {
-      console.error('Error fetching today\'s articles:', err);
-      setError('Failed to load today\'s articles');
+      console.error('Error fetching articles:', err);
+      setError('Failed to load articles');
     } finally {
       setLoading(false);
     }
@@ -80,17 +80,17 @@ const Home = () => {
       <HeaderAd />
       
       <div className="news-header">
-        <h1>📰 Today's Latest News</h1>
+        <h1>📰 Latest News</h1>
         <p>All the latest satirical news from cities across America</p>
         {totalArticles > 0 && (
           <div className="news-stats">
-            <span>{totalArticles} articles published today</span>
+            <span>{totalArticles} articles available</span>
           </div>
         )}
       </div>
 
       {loading && todayArticles.length === 0 && (
-        <div className="loading">Loading today's articles...</div>
+        <div className="loading">Loading articles...</div>
       )}
 
       {error && (
