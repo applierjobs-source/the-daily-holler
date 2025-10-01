@@ -1,11 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // Real AdSense ad components using the actual ad unit ID
 export const HeaderAd = () => {
+  const adLoaded = useRef(false);
+  
   useEffect(() => {
     try {
       console.log('HeaderAd: AdSense script available:', !!window.adsbygoogle);
-      // Let the <ins> tag handle ad loading automatically
+      
+      // Only load ad once
+      if (window.adsbygoogle && !adLoaded.current) {
+        console.log('HeaderAd: Loading ad...');
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adLoaded.current = true;
+      }
     } catch (err) {
       console.error('HeaderAd: AdSense error:', err);
     }
@@ -130,10 +138,18 @@ export const MobileBanner = () => {
 
 // In-article ad component with the specific ad unit
 export const InArticleAd = () => {
+  const adLoaded = useRef(false);
+  
   useEffect(() => {
     try {
       console.log('InArticleAd: AdSense script available:', !!window.adsbygoogle);
-      // Let the <ins> tag handle ad loading automatically
+      
+      // Only load ad once
+      if (window.adsbygoogle && !adLoaded.current) {
+        console.log('InArticleAd: Loading ad...');
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adLoaded.current = true;
+      }
     } catch (err) {
       console.error('InArticleAd: AdSense error:', err);
     }
