@@ -2371,6 +2371,66 @@ app.post('/api/test-article', async (req, res) => {
   }
 });
 
+// Test generation endpoint - creates 5 articles
+app.post('/api/test-generation', async (req, res) => {
+  try {
+    console.log('🧪 Starting test generation of 5 articles...');
+    
+    const cities = [
+      { name: 'Test City 1', state: 'TS' },
+      { name: 'Test City 2', state: 'TS' },
+      { name: 'Test City 3', state: 'TS' },
+      { name: 'Test City 4', state: 'TS' },
+      { name: 'Test City 5', state: 'TS' }
+    ];
+    
+    let created = 0;
+    for (const city of cities) {
+      const testArticle = {
+        title: `Test Article for ${city.name} - ${new Date().toISOString()}`,
+        content: `This is a test article for ${city.name} to verify the generation system is working.`,
+        city: city.name,
+        state: city.state,
+        slug: `test-${city.name.toLowerCase().replace(/\s+/g, '-')}-test-article-${Date.now()}`,
+        theme: 'test',
+        is_today: true,
+        published_at: new Date()
+      };
+      
+      await pool.query(`
+        INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `, [
+        testArticle.title,
+        testArticle.content,
+        testArticle.city,
+        testArticle.state,
+        testArticle.slug,
+        testArticle.theme,
+        testArticle.is_today,
+        testArticle.published_at
+      ]);
+      
+      created++;
+      console.log(`✅ Created article ${created}/5 for ${city.name}`);
+    }
+    
+    res.json({
+      success: true,
+      message: `Test generation completed - ${created} articles created`,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Error in test generation:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Article generation endpoint for cron job
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
