@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 // Real AdSense ad components using the actual ad unit ID
 export const HeaderAd = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('HeaderAd: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="header-ad" style={{ margin: '10px 0', textAlign: 'center' }}>
@@ -22,7 +30,15 @@ export const HeaderAd = () => {
 };
 
 export const SidebarAd = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('SidebarAd: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="sidebar-ad" style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -39,7 +55,15 @@ export const SidebarAd = () => {
 };
 
 export const InContentAd = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('InContentAd: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="in-content-ad" style={{ margin: '30px auto', textAlign: 'center' }}>
@@ -56,7 +80,15 @@ export const InContentAd = () => {
 };
 
 export const FooterAd = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('FooterAd: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="footer-ad" style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -73,7 +105,15 @@ export const FooterAd = () => {
 };
 
 export const MobileBanner = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('MobileBanner: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="mobile-banner" style={{ margin: '15px 0', textAlign: 'center' }}>
@@ -91,7 +131,15 @@ export const MobileBanner = () => {
 
 // In-article ad component with the specific ad unit
 export const InArticleAd = () => {
-  // Let AdSense handle ad loading automatically - no manual push needed
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error('InArticleAd: AdSense error:', err);
+    }
+  }, []);
 
   return (
     <div className="in-article-ad" style={{ margin: '30px auto', textAlign: 'center' }}>
