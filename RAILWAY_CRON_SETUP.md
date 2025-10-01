@@ -5,7 +5,7 @@ This guide will help you set up a Railway cron job to generate 1,690 articles (o
 ## What This Does
 
 - **Generates**: 1,690 unique satirical articles (one per city)
-- **Schedule**: Every 24 hours at 9:20 PM UTC (4:20 PM CDT)
+- **Schedule**: Every 24 hours at 9:25 PM UTC (4:25 PM CDT)
 - **Cost**: ~$0.56 per day (very affordable!)
 - **Duration**: ~4-5 hours to complete all articles
 - **Runs independently**: You can close your laptop
@@ -28,7 +28,7 @@ git push origin main
 3. Click "New" → "Cron Job"
 4. Configure:
    - **Name**: `daily-articles`
-   - **Schedule**: `20 21 * * *` (9:20 PM UTC / 4:20 PM CDT daily)
+   - **Schedule**: `25 21 * * *` (9:25 PM UTC / 4:25 PM CDT daily)
    - **Command**: `node run-daily-generation.js`
    - **Working Directory**: `/` (root of your project)
 
@@ -46,7 +46,7 @@ Make sure these are set in Railway:
 
 ## How It Works
 
-### Daily Process (4:20 PM CDT / 9:20 PM UTC)
+### Daily Process (4:25 PM CDT / 9:25 PM UTC)
 1. **Check existing articles** for today
 2. **Generate missing articles** (if any)
 3. **Process all 1,690 cities** with optimized rate limiting
@@ -111,9 +111,9 @@ curl https://your-app.railway.app/api/news | jq '.total'
 
 ## Expected Timeline
 
-- **4:20 PM CDT**: Cron job starts
-- **4:20-8:20 PM CDT**: Generates all 1,690 articles
-- **8:20 PM CDT**: Process complete
+- **4:25 PM CDT**: Cron job starts
+- **4:25-8:25 PM CDT**: Generates all 1,690 articles
+- **8:25 PM CDT**: Process complete
 - **Next day**: Repeats automatically
 
 ## Benefits
