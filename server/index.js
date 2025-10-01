@@ -1734,19 +1734,21 @@ app.get('/api/news', async (req, res) => {
 // Get today's articles
 app.get('/api/news/today', async (req, res) => {
   try {
-    const { limit = 50 } = req.query;
+    const { limit = 20, offset = 0 } = req.query;
+    const limitNum = parseInt(limit);
+    const offsetNum = parseInt(offset);
     
     // Get today's date
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    // Get articles from today from database
+    // Get articles from today from database with pagination
     const result = await pool.query(`
       SELECT *, published_at as "publishedAt" FROM articles 
       WHERE DATE(created_at) = $1
       ORDER BY created_at DESC 
-      LIMIT $2
-    `, [todayStr, parseInt(limit)]);
+      LIMIT $2 OFFSET $3
+    `, [todayStr, limitNum, offsetNum]);
     
     const totalResult = await pool.query(`
       SELECT COUNT(*) FROM articles 
@@ -1758,7 +1760,10 @@ app.get('/api/news/today', async (req, res) => {
       articles: result.rows,
       count: result.rows.length,
       date: todayStr,
-      totalToday: total
+      totalToday: total,
+      limit: limitNum,
+      offset: offsetNum,
+      hasMore: offsetNum + limitNum < total
     });
   } catch (error) {
     console.error('Error fetching today\'s articles:', error);
