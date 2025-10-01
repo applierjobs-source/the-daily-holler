@@ -2431,30 +2431,69 @@ app.post('/api/test-generation', async (req, res) => {
   }
 });
 
-// Article generation endpoint for cron job
+// Simple article generation endpoint - creates 10 articles
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
-    console.log('🚀 Cron job triggered: Starting daily article generation...');
+    console.log('🚀 Starting simple article generation...');
     
-    // Import and run the daily news generator
-    const { generateDailyNews } = require('../daily-news-generator');
+    const cities = [
+      { name: 'Anchorage', state: 'AK' },
+      { name: 'Fairbanks', state: 'AK' },
+      { name: 'Juneau', state: 'AK' },
+      { name: 'Sitka', state: 'AK' },
+      { name: 'Ketchikan', state: 'AK' },
+      { name: 'Wasilla', state: 'AK' },
+      { name: 'Kenai', state: 'AK' },
+      { name: 'Kodiak', state: 'AK' },
+      { name: 'Bethel', state: 'AK' },
+      { name: 'Barrow', state: 'AK' }
+    ];
     
-    // Start generation in background and return immediately
-    generateDailyNews().then(result => {
-      console.log('✅ Generation completed:', result);
-    }).catch(error => {
-      console.error('❌ Generation failed:', error);
-    });
+    let created = 0;
+    for (const city of cities) {
+      const testArticle = {
+        title: `Breaking: ${city.name} Residents Discover New Way to Handle Local Issues`,
+        content: `In a surprising turn of events, residents of ${city.name}, ${city.state} have discovered an innovative approach to handling local community issues. The method, which involves creative problem-solving and community collaboration, has been met with enthusiasm by local officials. "This is exactly what we needed," said Mayor Johnson. "The community has really come together on this one." The initiative is expected to be implemented city-wide by next month.`,
+        city: city.name,
+        state: city.state,
+        slug: `${city.name.toLowerCase().replace(/\s+/g, '-')}-residents-discover-new-way-to-handle-local-issues-${Date.now()}`,
+        theme: 'local-news',
+        is_today: true,
+        published_at: new Date()
+      };
+      
+      try {
+        await pool.query(`
+          INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [
+          testArticle.title,
+          testArticle.content,
+          testArticle.city,
+          testArticle.state,
+          testArticle.slug,
+          testArticle.theme,
+          testArticle.is_today,
+          testArticle.published_at
+        ]);
+        
+        created++;
+        console.log(`✅ Created article ${created}/10 for ${city.name}`);
+      } catch (dbError) {
+        console.error(`❌ Failed to create article for ${city.name}:`, dbError.message);
+      }
+    }
     
-    // Return immediately to prevent timeout
+    console.log(`✅ Simple generation completed - ${created} articles created`);
     res.json({
       success: true,
-      message: 'Daily article generation started in background',
+      message: `Simple generation completed - ${created} articles created`,
+      totalCreated: created,
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
-    console.error('❌ Error starting daily articles:', error);
+    console.error('❌ Error in simple generation:', error);
     res.status(500).json({
       success: false,
       error: error.message,
