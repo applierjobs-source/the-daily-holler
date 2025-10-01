@@ -49,7 +49,7 @@ cd /Users/Developer2/indiesage
 ```
 
 This will:
-- Add a cron job that runs every day at 3:50 PM CDT
+- Add a cron job that runs every day at 4:20 PM CDT
 - Generate 10 new articles and distribute them to all cities
 - Log all output to `daily-news.log`
 
@@ -61,12 +61,12 @@ crontab -l
 
 You should see:
 ```
-50 15 * * * cd /Users/Developer2/indiesage && /usr/local/bin/node daily-news-generator.js >> /Users/Developer2/indiesage/daily-news.log 2>&1
+20 16 * * * cd /Users/Developer2/indiesage && /usr/local/bin/node daily-news-generator.js >> /Users/Developer2/indiesage/daily-news.log 2>&1
 ```
 
 ## Daily Process
 
-1. **3:50 PM CDT**: Cron job triggers
+1. **4:20 PM CDT**: Cron job triggers
 2. **Generate**: Creates 10 new generic articles using OpenAI
 3. **Customize**: Each article is customized for all 1,682 cities
 4. **Save**: All 16,820 new articles are saved to the database
