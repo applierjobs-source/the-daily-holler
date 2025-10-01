@@ -80,10 +80,16 @@ export const generateArticleUrl = (article) => {
     return '/';
   }
   
-  // Generate city-based URL: /[city-state]/article/[headline-slug]
+  // If article already has a slug, use it
+  if (article.slug) {
+    const citySlug = generateCitySlug(article.city, article.state);
+    return `/${citySlug}/article/${article.slug}`;
+  }
+  
+  // Otherwise generate the slug in the same format as the server: city-title
   const citySlug = generateCitySlug(article.city, article.state);
-  const articleSlug = generateArticleSlug(article.title || article.headline);
-  return `/${citySlug}/article/${articleSlug}`;
+  const uniqueSlug = generateUniqueArticleSlug(article.title || article.headline, article.city);
+  return `/${citySlug}/article/${uniqueSlug}`;
 };
 
 /**

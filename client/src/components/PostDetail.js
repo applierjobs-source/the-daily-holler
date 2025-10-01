@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { parseCitySlug, generateCitySlug } from '../utils/slugUtils';
+import { generateCitySlug } from '../utils/slugUtils';
 import { InContentAd } from './AdBanner';
 
 const PostDetail = () => {
@@ -16,45 +16,41 @@ const PostDetail = () => {
         
         if (articleSlug && citySlug) {
           // New URL format: /cities/city-slug/article/article-slug
-          const cityInfo = parseCitySlug(citySlug);
-          if (!cityInfo) {
-            setError('Invalid city in URL');
-            setLoading(false);
-            return;
-          }
+          // Fetch article by slug
+          const response = await fetch(`/api/articles/by-slug/${articleSlug}`);
           
-          // For now, just get the latest article for this city
-          // This ensures the URL format works even if slugs don't match
-          const cityResponse = await fetch(`/api/news/city/${cityInfo.cityName}-${cityInfo.state}`);
-          if (cityResponse.ok) {
-            const cityData = await cityResponse.json();
-            if (cityData.articles && cityData.articles.length > 0) {
-              // Get the first article for this city
-              const firstArticle = cityData.articles[0];
-              articleData = await fetch(`/api/articles/${firstArticle.id}`).then(res => res.json());
-            } else {
-              setError('No articles found for this city');
-              setLoading(false);
-              return;
-            }
+          if (response.ok) {
+            articleData = await response.json();
           } else {
-            setError('City not found');
+            const errorData = await response.json();
+            setError(errorData.error || 'Article not found');
             setLoading(false);
             return;
           }
         } else if (id) {
           // Legacy URL format: /article/id
-          articleData = await fetch(`/api/articles/${id}`).then(res => res.json());
+          const response = await fetch(`/api/articles/${id}`);
+          
+          if (response.ok) {
+            articleData = await response.json();
+          } else {
+            const errorData = await response.json();
+            setError(errorData.error || 'Article not found');
+            setLoading(false);
+            return;
+          }
         } else {
           setError('Invalid article URL');
           setLoading(false);
           return;
         }
         
-        if (articleData.error) {
+        if (articleData && articleData.error) {
           setError(articleData.error);
-        } else {
+        } else if (articleData) {
           setArticle(articleData);
+        } else {
+          setError('Article not found');
         }
       } catch (err) {
         console.error('Failed to fetch article:', err);
