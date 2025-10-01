@@ -16,7 +16,7 @@ const ARTICLE_PROMPT = `You are a satirical news writer for a site like *The Oni
 ### STYLE REQUIREMENTS
 - Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
 - Humor: Mix of exaggeration, surrealism, and playful cultural references.
-- Headline: Punchy, 8–12 words, must set up the absurd premise.
+- Headline: Punchy, 8–12 words, must set up the absurd premise. Use Title Case (NOT ALL CAPS).
 - Length: 250–400 words.
 - Format: [HEADLINE] + [ARTICLE BODY with 3–4 short paragraphs].
 
