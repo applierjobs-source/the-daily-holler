@@ -2482,6 +2482,24 @@ async function checkAndRunDailyGeneration() {
   }
 }
 
+// Serve static files in production (must be before catch-all but after API routes)
+if (isProduction) {
+  const staticPath = path.join(__dirname, '../client/build');
+  console.log('Static files path:', staticPath);
+  console.log('Static files exist:', require('fs').existsSync(staticPath));
+  app.use(express.static(staticPath));
+  
+  // Serve React app for all non-API routes (MUST be last)
+  app.get('*', (req, res) => {
+    // Skip catch-all for specific routes that should be handled above
+    if (req.path.startsWith('/api') || req.path === '/sitemap.xml' || req.path === '/robots.txt') {
+      return;
+    }
+    console.log('Catch-all route hit for:', req.path);
+    res.sendFile(path.join(staticPath, 'index.html'));
+  });
+}
+
 // Initialize data and start server
 initializeData().then(async () => {
   // Initialize database
@@ -2492,6 +2510,7 @@ initializeData().then(async () => {
     console.log(`📡 API available at http://localhost:${PORT}/api`);
     console.log(`🌆 Cities endpoint: http://localhost:${PORT}/api/cities`);
     console.log(`📰 News endpoint: http://localhost:${PORT}/api/news`);
+    console.log(`🗺️  Sitemap: http://localhost:${PORT}/sitemap.xml`);
     if (isProduction) {
       console.log(`🌐 Production mode: Serving React app`);
     }
@@ -2503,17 +2522,3 @@ initializeData().then(async () => {
     setInterval(checkAndRunDailyGeneration, 60 * 60 * 1000); // Check every hour
   });
 }).catch(console.error);
-
-// Serve static files in production (before catch-all route)
-if (isProduction) {
-  const staticPath = path.join(__dirname, '../client/build');
-  console.log('Static files path:', staticPath);
-  console.log('Static files exist:', require('fs').existsSync(staticPath));
-  app.use(express.static(staticPath));
-  
-  // Serve React app for all non-API routes (MUST be last)
-  app.get('*', (req, res) => {
-    console.log('Catch-all route hit for:', req.path);
-    res.sendFile(path.join(staticPath, 'index.html'));
-  });
-}
