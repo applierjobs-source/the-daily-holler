@@ -1,34 +1,8 @@
-import React, { useEffect } from 'react';
-
-// Global tracking for loaded ads
-window.adSenseLoaded = window.adSenseLoaded || {};
+import React from 'react';
 
 // Real AdSense ad components using the actual ad unit ID
 export const HeaderAd = () => {
-  useEffect(() => {
-    const loadAd = () => {
-      try {
-        console.log('HeaderAd: AdSense script available:', !!window.adsbygoogle);
-        
-        // Only load ad once globally
-        if (window.adsbygoogle && !window.adSenseLoaded.headerAd) {
-          console.log('HeaderAd: Loading ad...');
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          window.adSenseLoaded.headerAd = true;
-        }
-      } catch (err) {
-        console.error('HeaderAd: AdSense error:', err);
-      }
-    };
-
-    // Wait for AdSense script to be ready
-    if (window.adsbygoogle) {
-      loadAd();
-    } else {
-      // Retry after a delay
-      setTimeout(loadAd, 1000);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="header-ad" style={{ margin: '10px 0', textAlign: 'center' }}>
@@ -48,15 +22,7 @@ export const HeaderAd = () => {
 };
 
 export const SidebarAd = () => {
-  useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
-    } catch (err) {
-      console.error('AdSense error:', err);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="sidebar-ad" style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -73,15 +39,7 @@ export const SidebarAd = () => {
 };
 
 export const InContentAd = () => {
-  useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
-    } catch (err) {
-      console.error('AdSense error:', err);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="in-content-ad" style={{ margin: '30px auto', textAlign: 'center' }}>
@@ -98,15 +56,7 @@ export const InContentAd = () => {
 };
 
 export const FooterAd = () => {
-  useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
-    } catch (err) {
-      console.error('AdSense error:', err);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="footer-ad" style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -123,15 +73,7 @@ export const FooterAd = () => {
 };
 
 export const MobileBanner = () => {
-  useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
-    } catch (err) {
-      console.error('AdSense error:', err);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="mobile-banner" style={{ margin: '15px 0', textAlign: 'center' }}>
@@ -149,30 +91,7 @@ export const MobileBanner = () => {
 
 // In-article ad component with the specific ad unit
 export const InArticleAd = () => {
-  useEffect(() => {
-    const loadAd = () => {
-      try {
-        console.log('InArticleAd: AdSense script available:', !!window.adsbygoogle);
-        
-        // Only load ad once globally
-        if (window.adsbygoogle && !window.adSenseLoaded.inArticleAd) {
-          console.log('InArticleAd: Loading ad...');
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          window.adSenseLoaded.inArticleAd = true;
-        }
-      } catch (err) {
-        console.error('InArticleAd: AdSense error:', err);
-      }
-    };
-
-    // Wait for AdSense script to be ready
-    if (window.adsbygoogle) {
-      loadAd();
-    } else {
-      // Retry after a delay
-      setTimeout(loadAd, 1000);
-    }
-  }, []);
+  // Let AdSense handle ad loading automatically - no manual push needed
 
   return (
     <div className="in-article-ad" style={{ margin: '30px auto', textAlign: 'center' }}>
