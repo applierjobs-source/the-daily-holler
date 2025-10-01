@@ -2431,7 +2431,7 @@ app.post('/api/test-generation', async (req, res) => {
   }
 });
 
-// Real article generation endpoint - creates articles using OpenAI
+// Real article generation endpoint - creates articles using OpenAI in batches
 app.post('/api/generate-daily-articles', async (req, res) => {
   try {
     console.log('🚀 Starting real article generation...');
@@ -2457,15 +2457,19 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     const citiesData = await fs.readFile(path.join(__dirname, 'data/cities.json'), 'utf8');
     const cities = JSON.parse(citiesData);
     
-    // Use all cities for full generation
-    const allCities = cities;
+    // Get batch parameters from request or use defaults
+    const batchSize = req.body.batchSize || 50;
+    const startIndex = req.body.startIndex || 0;
+    const endIndex = Math.min(startIndex + batchSize, cities.length);
     
-    console.log(`🌍 Generating articles for all ${allCities.length} cities...`);
+    const batchCities = cities.slice(startIndex, endIndex);
+    
+    console.log(`🌍 Generating articles for batch ${startIndex}-${endIndex} (${batchCities.length} cities)...`);
     
     let created = 0;
     let failed = 0;
     
-    for (const city of allCities) {
+    for (const city of batchCities) {
       try {
         // Generate article using OpenAI
         const prompt = `You are a satirical news writer for a site like *The Onion*. Create a hilarious fake news article for ${city.name}, ${city.state}.
@@ -2514,7 +2518,7 @@ Make it funny and specific to ${city.name}, ${city.state}.`;
         ]);
         
         created++;
-        console.log(`✅ Created article ${created}/${allCities.length} for ${city.name}`);
+        console.log(`✅ Created article ${created}/${batchCities.length} for ${city.name}`);
         
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -2525,12 +2529,19 @@ Make it funny and specific to ${city.name}, ${city.state}.`;
       }
     }
     
-    console.log(`✅ Real generation completed - ${created} articles created, ${failed} failed`);
+    console.log(`✅ Batch generation completed - ${created} articles created, ${failed} failed`);
     res.json({
       success: true,
-      message: `Real generation completed - ${created} articles created, ${failed} failed`,
+      message: `Batch generation completed - ${created} articles created, ${failed} failed`,
       totalCreated: created,
       totalFailed: failed,
+      batchInfo: {
+        startIndex,
+        endIndex,
+        batchSize,
+        totalCities: cities.length,
+        remainingCities: cities.length - endIndex
+      },
       timestamp: new Date().toISOString()
     });
     
