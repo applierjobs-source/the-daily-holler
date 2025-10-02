@@ -13,7 +13,7 @@ const About = () => {
           <div className="about-header">
             <h1>About The Daily Holler</h1>
             <p className="about-subtitle">
-              Your trusted source for local events, community happenings, and satirical takes on life across America's cities.
+              Your trusted source for local events, community happenings, and stories about what's happening in America's cities.
             </p>
           </div>
 
@@ -21,14 +21,14 @@ const About = () => {
             <section className="about-section">
               <h2>Our Mission</h2>
               <p>
-                The Daily Holler is dedicated to bringing you the most interesting and entertaining local events, 
-                community activities, and satirical news from cities across the United States. We believe that 
-                every city has its own unique character, and we're here to celebrate and poke fun at the quirks 
-                that make each place special.
+                The Daily Holler is dedicated to bringing you the most interesting and engaging local events, 
+                community activities, and stories from cities across the United States. We believe that 
+                every city has its own unique character, and we're here to celebrate the people, places, 
+                and events that make each community special.
               </p>
               <p>
-                Whether you're looking for real events to attend in your area or just want a good laugh at the 
-                absurdities of modern life, The Daily Holler has something for everyone.
+                Whether you're looking for real events to attend in your area or want to stay informed about 
+                what's happening in your community, The Daily Holler connects you with the local stories that matter.
               </p>
             </section>
 
@@ -43,10 +43,10 @@ const About = () => {
                   </p>
                 </div>
                 <div className="feature-card">
-                  <h3>📰 Satirical News</h3>
+                  <h3>📰 Local Stories</h3>
                   <p>
-                    Enjoy our unique take on local happenings with satirical articles that blend humor 
-                    with community insights. Remember: it's all in good fun!
+                    Read engaging stories about local events, community happenings, and the people 
+                    who make each city unique. We bring you the real stories behind local events.
                   </p>
                 </div>
                 <div className="feature-card">
@@ -70,14 +70,15 @@ const About = () => {
               <h2>Our Story</h2>
               <p>
                 The Daily Holler was born from a simple idea: what if we could create a platform that 
-                celebrates the unique character of every American city while having a little fun along the way? 
-                We started with a handful of cities and a dream to make local news more engaging and entertaining.
+                celebrates the unique character of every American city by highlighting the real events 
+                and stories that matter to local communities? We started with a handful of cities and 
+                a dream to make local news more engaging and accessible.
               </p>
               <p>
-                Today, we're proud to serve communities across all 50 states, bringing you everything from 
-                legitimate local events to satirical takes on the quirks of modern life. We believe that 
-                laughter is the best way to bring communities together, and we're here to provide that 
-                laughter while keeping you informed about what's really happening in your area.
+                Today, we're proud to serve communities across all 50 states, bringing you stories about 
+                real local events, community activities, and the people who make each city special. 
+                We believe that staying connected to your local community is essential, and we're here 
+                to help you discover the events and stories happening right in your neighborhood.
               </p>
             </section>
 
@@ -85,10 +86,10 @@ const About = () => {
               <h2>Our Content Philosophy</h2>
               <div className="philosophy-points">
                 <div className="philosophy-point">
-                  <h4>🎭 Satire with Heart</h4>
+                  <h4>📖 Stories with Heart</h4>
                   <p>
-                    Our satirical content is created with love for the communities we serve. We poke fun 
-                    at the absurdities of life, not the people living it.
+                    Our content is created with genuine care for the communities we serve. We tell stories 
+                    that celebrate local people, events, and the unique character of each place.
                   </p>
                 </div>
                 <div className="philosophy-point">
@@ -102,7 +103,7 @@ const About = () => {
                   <h4>🤝 Community Building</h4>
                   <p>
                     We believe in the power of community. Our platform is designed to bring people together 
-                    through shared experiences and laughter.
+                    through shared experiences and local events that strengthen neighborhood connections.
                   </p>
                 </div>
                 <div className="philosophy-point">
@@ -120,12 +121,13 @@ const About = () => {
               <p>
                 Are you organizing an event in your city? We'd love to hear about it! While we can't 
                 guarantee coverage for every event, we're always looking for interesting local happenings 
-                that would benefit our readers.
+                that would benefit our readers and community members.
               </p>
               <p>
                 Our team regularly searches for events across the country, but if you have something 
                 special happening in your community, feel free to reach out. We're particularly interested 
-                in events that showcase local culture, community spirit, or unique local traditions.
+                in events that showcase local culture, community spirit, or bring people together for 
+                meaningful experiences.
               </p>
             </section>
 
@@ -133,15 +135,14 @@ const About = () => {
               <h2>Disclaimer</h2>
               <div className="disclaimer-box">
                 <p>
-                  <strong>Important:</strong> The Daily Holler publishes both real local events and satirical content. 
-                  We make every effort to clearly distinguish between the two, but please use your best judgment 
-                  when reading our articles. If you're looking for factual information about events, please 
-                  verify details directly with event organizers.
+                  <strong>Important:</strong> The Daily Holler focuses on real local events and community stories. 
+                  We strive to provide accurate information about events and happenings in your area, but we 
+                  always recommend verifying event details directly with organizers before attending.
                 </p>
                 <p>
-                  Our satirical content is created for entertainment purposes only and should not be taken as 
-                  factual news. We respect all communities and individuals, and our humor is intended to be 
-                  light-hearted and inclusive.
+                  Our content is created to inform and connect communities through real local events and stories. 
+                  We respect all communities and individuals, and our goal is to celebrate the unique character 
+                  of each place we cover.
                 </p>
               </div>
             </section>
