@@ -1641,10 +1641,14 @@ console.log('🔍 Environment check:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
 console.log('DATABASE_URL starts with:', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'undefined');
+console.log('PORT:', process.env.PORT || 5001);
+console.log('Railway environment:', process.env.RAILWAY_ENVIRONMENT || 'not set');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://postgres:uFyjKulFQOkfcqvFLKFXEAwLEAfkWMFZ@shortline.proxy.rlwy.net:18373/railway',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000
 });
 
 // Generate unique article slug
