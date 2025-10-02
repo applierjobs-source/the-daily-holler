@@ -2100,7 +2100,7 @@ app.get('/api/news/city/:cityId', async (req, res) => {
       WHERE city = $1 AND state = $2
       ORDER BY created_at DESC 
       LIMIT $3
-    `, [city.name, city.stateName, parseInt(limit)]);
+    `, [city.name, city.state, parseInt(limit)]);
     
     res.json({
       articles: result.rows,
