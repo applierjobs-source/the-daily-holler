@@ -1658,17 +1658,56 @@ async function searchEventbriteEvents(cityName, state) {
     const location = `${cityName}, ${state}`;
     const today = new Date().toISOString().split('T')[0];
     
-    const response = await fetch(`https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&token=${EVENTBRITE_TOKEN}&expand=venue`);
+    // Try different API endpoint formats
+    const url = `https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&expand=venue&token=${EVENTBRITE_TOKEN}`;
+    
+    console.log(`🔍 Searching Eventbrite for: ${location}`);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${EVENTBRITE_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
     
     if (!response.ok) {
-      console.error(`Eventbrite API error: ${response.status}`);
+      console.error(`Eventbrite API error: ${response.status} for ${location}`);
+      // Try alternative search approach
+      return await searchEventbriteAlternative(cityName, state);
+    }
+    
+    const data = await response.json();
+    console.log(`✅ Found ${data.events?.length || 0} events for ${location}`);
+    return data.events || [];
+  } catch (error) {
+    console.error(`Error searching Eventbrite for ${cityName}, ${state}:`, error.message);
+    return [];
+  }
+}
+
+// Alternative Eventbrite search method
+async function searchEventbriteAlternative(cityName, state) {
+  try {
+    const EVENTBRITE_TOKEN = 'PJBZ63OG26WKDPCBYTX5';
+    const location = `${cityName}, ${state}`;
+    
+    // Try searching without date restriction first
+    const url = `https://www.eventbriteapi.com/v3/events/search/?q=${encodeURIComponent(location)}&expand=venue&token=${EVENTBRITE_TOKEN}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${EVENTBRITE_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
       return [];
     }
     
     const data = await response.json();
     return data.events || [];
   } catch (error) {
-    console.error('Error searching Eventbrite:', error);
     return [];
   }
 }
@@ -2518,6 +2557,7 @@ app.post('/api/generate-daily-articles', async (req, res) => {
         // Only generate article if we found real events
         if (eventbriteEvents.length === 0) {
           console.log(`⚠️ No Eventbrite events found for ${city.name}, ${city.state} - skipping`);
+          // TODO: Consider fallback to general city content instead of skipping
           continue;
         }
 
