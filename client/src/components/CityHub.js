@@ -46,9 +46,13 @@ const CityHub = ({ cities }) => {
       setLoading(true);
       
       // Load articles for this city
+      console.log(`🔍 Loading articles for city: ${cityData.name}, ID: ${cityData.id}`);
       const response = await fetch(`/api/news/city/${cityData.id}`);
+      console.log(`📡 API response status: ${response.status}`);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log(`📰 API returned ${data.articles.length} articles:`, data);
         // Articles are already filtered by the API, no need to filter again
         const cityArticles = data.articles;
         
@@ -160,6 +164,13 @@ const CityHub = ({ cities }) => {
             <span className="stat-label">Categories</span>
           </div>
         </div>
+      </div>
+
+      {/* Debug Info */}
+      <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0'}}>
+        <p>Debug: Articles count: {articles.length}</p>
+        <p>Debug: Loading: {loading.toString()}</p>
+        <p>Debug: Error: {error || 'none'}</p>
       </div>
 
       {/* Featured Articles */}
