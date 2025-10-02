@@ -2091,8 +2091,11 @@ app.get('/api/news/city/:cityId', async (req, res) => {
     // Get city name from cities data
     const city = cities.find(c => c.id.toString() === cityId);
     if (!city) {
+      console.log(`❌ City not found for ID: ${cityId}`);
       return res.status(404).json({ error: 'City not found' });
     }
+    
+    console.log(`🔍 Looking for articles for city: "${city.name}", state: "${city.state}"`);
     
     // Get articles from database for this city
     const result = await pool.query(`
@@ -2101,6 +2104,8 @@ app.get('/api/news/city/:cityId', async (req, res) => {
       ORDER BY created_at DESC 
       LIMIT $3
     `, [city.name, city.state, parseInt(limit)]);
+    
+    console.log(`📰 Found ${result.rows.length} articles for ${city.name}, ${city.state}`);
     
     res.json({
       articles: result.rows,
