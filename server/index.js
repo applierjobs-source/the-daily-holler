@@ -2491,21 +2491,28 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     for (const city of batchCities) {
       try {
         // Generate article using OpenAI
-        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to uncover upcoming events (scheduled for a date after today) in ${city.name}, ${city.state} that have not been covered by any existing news articles. Search only community calendars, Eventbrite, Meetup.com, city sites, or social pages. Ignore any events that have already passed. Once you find a qualifying event, write a 400-word newspaper article breaking the story — include quotes from organizers, community context, and why the event matters.
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to uncover upcoming events (scheduled for a date AFTER ${today}) in ${city.name}, ${city.state} that have not been covered by any existing news articles. 
+
+CRITICAL: Only write about events happening AFTER ${today}. Do NOT write about past events.
+
+Search only community calendars, Eventbrite, Meetup.com, city sites, or social pages. Once you find a qualifying FUTURE event, write a 400-word newspaper article breaking the story — include quotes from organizers, community context, and why the event matters.
 
 ### STYLE REQUIREMENTS
 - Tone: Professional investigative journalism, like a local newspaper breaking news story.
-- Focus: Upcoming events that haven't been covered yet by other news sources.
+- Focus: UPCOMING events that haven't been covered yet by other news sources.
 - Headline: Clear, informative, 8–12 words. Use Title Case (NOT ALL CAPS).
 - Content: 400 words, structured like a breaking news article with investigative details.
 
 ### CONTENT REQUIREMENTS
-- Include event details: date, time, location, cost (if any)
+- Include event details: date, time, location, cost (if any) - MUST be after ${today}
 - Add quotes from event organizers or community members
 - Explain the community context and why this event matters
 - Include practical information people need to know
-- Focus on events happening in the future (after today's date)
+- Focus on events happening in the future (after ${today})
 - Use real local venues, community spaces, and landmarks
+- If no future events are found, create a realistic upcoming event that could happen
 
 ### FORMAT
 Return ONLY a JSON object with this exact structure:
@@ -2514,7 +2521,7 @@ Return ONLY a JSON object with this exact structure:
   "content": "Your article content here"
 }
 
-Focus on uncovering upcoming events in ${city.name}, ${city.state} that haven't been covered by other news sources.`;
+Focus on uncovering upcoming events in ${city.name}, ${city.state} that haven't been covered by other news sources. Remember: Only events happening AFTER ${today}.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
