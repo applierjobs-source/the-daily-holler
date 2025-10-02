@@ -1658,7 +1658,7 @@ async function searchEventbriteEvents(cityName, state) {
     const location = `${cityName}, ${state}`;
     const today = new Date().toISOString().split('T')[0];
     
-    // Try different API endpoint formats
+    // Use correct Eventbrite API endpoint
     const url = `https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&expand=venue&token=${EVENTBRITE_TOKEN}`;
     
     console.log(`🔍 Searching Eventbrite for: ${location}`);
@@ -1709,6 +1709,64 @@ async function searchEventbriteAlternative(cityName, state) {
     return data.events || [];
   } catch (error) {
     return [];
+  }
+}
+
+// Generate general city content when no events are found
+async function generateGeneralCityContent(city) {
+  try {
+    const prompt = `You are a local journalist writing about ${city.name}, ${city.state}. Write a helpful article about things to do and local attractions in this city.
+
+### ARTICLE REQUIREMENTS
+- Focus on permanent attractions, parks, museums, restaurants, and local businesses
+- Mention popular activities people can do year-round
+- Include information about local culture and community
+- Write 400 words of helpful, accurate content
+- Do NOT mention specific upcoming events or dates
+
+### STYLE REQUIREMENTS
+- Tone: Professional local journalism
+- Headline: Clear, informative, 8–12 words. Use Title Case.
+- Content: 400 words about local attractions and activities
+
+### FORMAT
+Return ONLY a JSON object with this exact structure:
+{
+  "headline": "Your headline here",
+  "content": "Your article content here"
+}
+
+Write helpful content about ${city.name}, ${city.state} that provides real value to visitors and residents.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.8,
+      max_tokens: 800
+    });
+
+    const response = completion.choices[0].message.content;
+    const articleData = JSON.parse(response);
+
+    // Save the article to database
+    const slug = generateUniqueArticleSlug(articleData.headline, city.name);
+    await pool.query(
+      `INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, created_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())`,
+      [
+        articleData.headline,
+        articleData.content,
+        city.name,
+        city.state,
+        slug,
+        'local-attractions',
+        true
+      ]
+    );
+
+    console.log(`✅ Created general content article for ${city.name}, ${city.state}`);
+  } catch (error) {
+    console.error(`❌ Failed to create general content for ${city.name}, ${city.state}:`, error.message);
   }
 }
 
@@ -2556,8 +2614,10 @@ app.post('/api/generate-daily-articles', async (req, res) => {
         
         // Only generate article if we found real events
         if (eventbriteEvents.length === 0) {
-          console.log(`⚠️ No Eventbrite events found for ${city.name}, ${city.state} - skipping`);
-          // TODO: Consider fallback to general city content instead of skipping
+          console.log(`⚠️ No Eventbrite events found for ${city.name}, ${city.state} - generating general city content`);
+          // Generate general city content instead of skipping
+          await generateGeneralCityContent(city);
+          created++;
           continue;
         }
 
