@@ -2603,8 +2603,14 @@ if (isProduction) {
 
 // Initialize data and start server
 initializeData().then(async () => {
-  // Initialize database
-  await initDatabase();
+  try {
+    // Initialize database
+    await initDatabase();
+    console.log('✅ Database initialized successfully');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    // Continue anyway to prevent app crash
+  }
   
   app.listen(PORT, () => {
     console.log(`🚀 The Daily Holler Server running on port ${PORT}`);
@@ -2619,4 +2625,10 @@ initializeData().then(async () => {
     // Note: Daily generation is now handled by Railway cron job
     // Removed automatic startup and hourly checks to prevent duplicate generation
   });
-}).catch(console.error);
+}).catch(error => {
+  console.error('❌ Application startup failed:', error);
+  // Start server anyway to prevent complete failure
+  app.listen(PORT, () => {
+    console.log(`🚀 The Daily Holler Server running on port ${PORT} (limited mode)`);
+  });
+});
