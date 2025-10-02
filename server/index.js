@@ -2915,6 +2915,11 @@ app.post('/api/generate-single-article', async (req, res) => {
     
     console.log(`🏙️ Generating article for ${cityName}, ${state}...`);
     
+    const OpenAI = require('openai');
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+    
     // Search for real events on Eventbrite
     const eventbriteEvents = await searchEventbriteEvents(cityName, state);
     
