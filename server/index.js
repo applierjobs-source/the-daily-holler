@@ -2800,7 +2800,7 @@ app.post('/api/generate-daily-articles', async (req, res) => {
         // Generate article using OpenAI with real event data
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
-        const prompt = `You are a local investigative reporter writing about a REAL Eventbrite event for ${city.name}, ${state}.
+        const prompt = `You are a local investigative reporter writing about a REAL Eventbrite event for ${city.name}, ${city.state}.
 
 REAL EVENTBRITE EVENT DETAILS:
 - Event Title: ${eventDetails.title}
@@ -2833,7 +2833,7 @@ Return ONLY a JSON object with this exact structure:
 - Include the Eventbrite link at the end
 - Use format: "Source: [Event Title](${eventDetails.url})"
 
-Write about the real Eventbrite event "${eventDetails.title}" that will happen in ${city.name}, ${state}.`;
+Write about the real Eventbrite event "${eventDetails.title}" that will happen in ${city.name}, ${city.state}.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
