@@ -60,6 +60,15 @@ const Header = () => {
                 📰 News
               </Link>
             </li>
+            <li>
+              <Link 
+                to="/about" 
+                className={isActive('/about') ? 'active' : ''}
+                onClick={closeMobileMenu}
+              >
+                ℹ️ About
+              </Link>
+            </li>
           </ul>
         </div>
       </nav>

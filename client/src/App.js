@@ -9,6 +9,7 @@ import CitySelection from './components/CitySelection';
 import Footer from './components/Footer';
 import Terms from './components/Terms';
 import Privacy from './components/Privacy';
+import About from './components/About';
 import TestArticle from './components/TestArticle';
 import './App.css';
 
@@ -73,6 +74,7 @@ function AppContent() {
           <Route path="/test-article/:id" element={<TestArticle />} />
           <Route path="/news" element={<News cities={cities} />} />
           <Route path="/news/:cityId" element={<News cities={cities} />} />
+          <Route path="/about" element={<About />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
         </Routes>
