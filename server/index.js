@@ -2493,26 +2493,34 @@ app.post('/api/generate-daily-articles', async (req, res) => {
         // Generate article using OpenAI
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
-        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to uncover upcoming events (scheduled for a date AFTER ${today}) in ${city.name}, ${city.state} that have not been covered by any existing news articles. 
+        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to find REAL upcoming events (scheduled for a date AFTER ${today}) in ${city.name}, ${city.state}.
 
-CRITICAL: Only write about events happening AFTER ${today}. Do NOT write about past events.
+CRITICAL REQUIREMENTS:
+- ONLY write about REAL events that actually exist
+- Do NOT make up or invent events
+- Do NOT create fake event names, dates, or locations
+- Do NOT generate fictional quotes from organizers
 
-Search only community calendars, Eventbrite, Meetup.com, city sites, or social pages. Once you find a qualifying FUTURE event, write a 400-word newspaper article breaking the story — include quotes from organizers, community context, and why the event matters.
+### RESEARCH REQUIREMENTS
+Search for REAL upcoming events by looking for:
+- Community calendars on official city websites
+- Eventbrite listings for ${city.name}, ${city.state}
+- Meetup.com events in the area
+- Local venue websites and social media
+- Chamber of Commerce event listings
+- Local newspaper event calendars
+
+### IF NO REAL EVENTS FOUND
+If you cannot find any real upcoming events in ${city.name}, ${city.state}, then:
+- Write a general article about upcoming community activities in the area
+- Focus on regular recurring events (like farmers markets, library programs)
+- Mention local venues and attractions people can visit
+- Do NOT invent specific events, dates, or event names
 
 ### STYLE REQUIREMENTS
-- Tone: Professional investigative journalism, like a local newspaper breaking news story.
-- Focus: UPCOMING events that haven't been covered yet by other news sources.
-- Headline: Clear, informative, 8–12 words. Use Title Case (NOT ALL CAPS).
-- Content: 400 words, structured like a breaking news article with investigative details.
-
-### CONTENT REQUIREMENTS
-- Include event details: date, time, location, cost (if any) - MUST be after ${today}
-- Add quotes from event organizers or community members
-- Explain the community context and why this event matters
-- Include practical information people need to know
-- Focus on events happening in the future (after ${today})
-- Use real local venues, community spaces, and landmarks
-- If no future events are found, create a realistic upcoming event that could happen
+- Tone: Professional local journalism
+- Headline: Clear, informative, 8–12 words. Use Title Case.
+- Content: 400 words about real local activities or general community information
 
 ### FORMAT
 Return ONLY a JSON object with this exact structure:
@@ -2522,12 +2530,12 @@ Return ONLY a JSON object with this exact structure:
 }
 
 ### SOURCE REQUIREMENT
-- At the end of the article content, include a hyperlink to the source
-- Use format: "Source: [Event Name](https://example.com/event-link)" or "Source: [Eventbrite](https://eventbrite.com/event-link)"
-- Link to the actual event page, city website, or community calendar
-- If no real source exists, create a realistic link format
+- Include a real source link if available
+- Use format: "Source: [Event Name](https://real-event-link.com)" 
+- Only link to actual event pages or official city websites
+- If no real source exists, omit the source line entirely
 
-Focus on uncovering upcoming events in ${city.name}, ${city.state} that haven't been covered by other news sources. Remember: Only events happening AFTER ${today}.`;
+Remember: ONLY write about REAL events and activities. Do not invent fictional events.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
