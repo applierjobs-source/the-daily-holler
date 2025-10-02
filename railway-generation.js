@@ -8,7 +8,9 @@ const BATCH_SIZE = 10; // Smaller batches for Railway
 const DELAY_BETWEEN_BATCHES = 3000; // 3 seconds
 const MAX_RETRIES_PER_BATCH = 10; // Maximum retries for a single batch
 const RETRY_DELAYS = [5000, 10000, 15000, 30000, 60000]; // Exponential backoff delays
-const PROGRESS_FILE = '/tmp/railway-generation-progress.json';
+const PROGRESS_FILE = process.env.RAILWAY_VOLUME_MOUNT_PATH ? 
+  `${process.env.RAILWAY_VOLUME_MOUNT_PATH}/railway-generation-progress.json` : 
+  '/tmp/railway-generation-progress.json';
 
 // Save progress to file
 async function saveProgress(startIndex, totalCreated, totalFailed, batchNumber) {
@@ -108,6 +110,12 @@ async function runRailwayGeneration() {
   let totalCreated = savedProgress ? savedProgress.totalCreated : 0;
   let totalFailed = savedProgress ? savedProgress.totalFailed : 0;
   let batchNumber = savedProgress ? savedProgress.batchNumber : 1;
+  
+  // Safety check: Don't restart if we've already processed many articles today
+  if (startIndex === 0 && totalCreated > 100) {
+    console.log(`⚠️ Found ${totalCreated} articles already created today. Skipping generation to prevent duplicates.`);
+    return;
+  }
   
   if (savedProgress) {
     console.log(`📋 Resuming from previous progress:`);
