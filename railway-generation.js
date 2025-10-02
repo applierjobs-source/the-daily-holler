@@ -4,8 +4,8 @@ const https = require('https');
 const fs = require('fs').promises;
 const path = require('path');
 
-const BATCH_SIZE = 10; // Smaller batches for Railway
-const DELAY_BETWEEN_BATCHES = 3000; // 3 seconds
+const BATCH_SIZE = 50; // Larger batches for faster completion
+const DELAY_BETWEEN_BATCHES = 2000; // 2 seconds between batches
 const MAX_RETRIES_PER_BATCH = 10; // Maximum retries for a single batch
 const RETRY_DELAYS = [5000, 10000, 15000, 30000, 60000]; // Exponential backoff delays
 const PROGRESS_FILE = process.env.RAILWAY_VOLUME_MOUNT_PATH ? 
@@ -218,18 +218,22 @@ process.on('unhandledRejection', (reason, promise) => {
   // Don't exit - let the script continue
 });
 
-// Run the Railway generation - single run only to prevent infinite loops
-async function runSingleGeneration() {
-  try {
-    await runRailwayGeneration();
-    console.log('✅ Generation completed successfully, exiting.');
-    process.exit(0);
-  } catch (error) {
-    console.error('💥 Fatal error in generation process:', error);
-    console.log('❌ Generation failed, exiting to prevent infinite loops.');
-    process.exit(1);
+// Run the Railway generation - continue until ALL cities are processed
+async function runContinuousGeneration() {
+  while (true) {
+    try {
+      await runRailwayGeneration();
+      console.log('✅ Generation completed successfully for all 1,690 cities!');
+      console.log('🎉 All cities now have articles. Cron job will continue running daily.');
+      break; // Exit the loop when all cities are done
+    } catch (error) {
+      console.error('💥 Error in generation process:', error);
+      console.log('🔄 Restarting generation process in 30 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 30000));
+      console.log('🚀 Restarting generation...');
+    }
   }
 }
 
-// Start the generation process (single run only)
-runSingleGeneration();
+// Start the continuous generation process
+runContinuousGeneration();
