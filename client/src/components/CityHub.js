@@ -49,9 +49,8 @@ const CityHub = ({ cities }) => {
       const response = await fetch(`/api/news/city/${cityData.id}`);
       if (response.ok) {
         const data = await response.json();
-        const cityArticles = data.articles.filter(article => 
-          article.cityId === cityData.id.toString()
-        );
+        // Articles are already filtered by the API, no need to filter again
+        const cityArticles = data.articles;
         
         setArticles(cityArticles);
         
