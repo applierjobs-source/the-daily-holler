@@ -1651,6 +1651,28 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
+// Eventbrite API integration
+async function searchEventbriteEvents(cityName, state) {
+  try {
+    const EVENTBRITE_TOKEN = 'PJBZ63OG26WKDPCBYTX5';
+    const location = `${cityName}, ${state}`;
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(`https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&token=${EVENTBRITE_TOKEN}&expand=venue`);
+    
+    if (!response.ok) {
+      console.error(`Eventbrite API error: ${response.status}`);
+      return [];
+    }
+    
+    const data = await response.json();
+    return data.events || [];
+  } catch (error) {
+    console.error('Error searching Eventbrite:', error);
+    return [];
+  }
+}
+
 // Generate unique article slug
 function generateUniqueArticleSlug(title, city) {
   if (!title || !city) return '';
@@ -2490,37 +2512,43 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     
     for (const city of batchCities) {
       try {
-        // Generate article using OpenAI
+        // First, search for real events on Eventbrite
+        const eventbriteEvents = await searchEventbriteEvents(city.name, city.state);
+        
+        // Only generate article if we found real events
+        if (eventbriteEvents.length === 0) {
+          console.log(`⚠️ No Eventbrite events found for ${city.name}, ${city.state} - skipping`);
+          continue;
+        }
+
+        // Generate article using OpenAI with real event data
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
-        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to find REAL upcoming events (scheduled for a date AFTER ${today}) in ${city.name}, ${city.state}.
+        // Prepare event data for the prompt
+        const eventData = eventbriteEvents.slice(0, 3).map(event => ({
+          name: event.name.text,
+          description: event.description.text ? event.description.text.substring(0, 200) + '...' : 'No description available',
+          start: event.start.local,
+          url: event.url,
+          venue: event.venue ? event.venue.name : 'Venue TBD'
+        }));
 
-CRITICAL REQUIREMENTS:
-- ONLY write about REAL events that actually exist
-- Do NOT make up or invent events
-- Do NOT create fake event names, dates, or locations
-- Do NOT generate fictional quotes from organizers
+        const prompt = `You are a local investigative reporter writing about REAL upcoming events found on Eventbrite for ${city.name}, ${city.state}.
 
-### RESEARCH REQUIREMENTS
-Search for REAL upcoming events by looking for:
-- Community calendars on official city websites
-- Eventbrite listings for ${city.name}, ${city.state}
-- Meetup.com events in the area
-- Local venue websites and social media
-- Chamber of Commerce event listings
-- Local newspaper event calendars
+REAL EVENTBRITE EVENTS FOUND:
+${eventData.map(event => `- ${event.name} on ${event.start} at ${event.venue}`).join('\n')}
 
-### IF NO REAL EVENTS FOUND
-If you cannot find any real upcoming events in ${city.name}, ${city.state}, then:
-- Write a general article about upcoming community activities in the area
-- Focus on regular recurring events (like farmers markets, library programs)
-- Mention local venues and attractions people can visit
-- Do NOT invent specific events, dates, or event names
+### ARTICLE REQUIREMENTS
+- Write about ONE of the real Eventbrite events listed above
+- Use ONLY the real event information provided
+- Do NOT invent or modify event details
+- Include real event date, venue, and description
+- Write 400 words about why this event matters to the community
 
 ### STYLE REQUIREMENTS
 - Tone: Professional local journalism
 - Headline: Clear, informative, 8–12 words. Use Title Case.
-- Content: 400 words about real local activities or general community information
+- Content: 400 words about the real event and its community impact
 
 ### FORMAT
 Return ONLY a JSON object with this exact structure:
@@ -2530,12 +2558,11 @@ Return ONLY a JSON object with this exact structure:
 }
 
 ### SOURCE REQUIREMENT
-- Include a real source link if available
-- Use format: "Source: [Event Name](https://real-event-link.com)" 
-- Only link to actual event pages or official city websites
-- If no real source exists, omit the source line entirely
+- Include the Eventbrite link for the event you're writing about
+- Use format: "Source: [Event Name](https://eventbrite.com/event-url)"
+- Use the actual Eventbrite URL from the event data
 
-Remember: ONLY write about REAL events and activities. Do not invent fictional events.`;
+Write about a real Eventbrite event that will actually happen in ${city.name}, ${city.state}.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
