@@ -5,8 +5,11 @@ This guide will help you set up a Railway cron job to generate articles for all 
 ## What This Does
 
 - **Generates**: Articles for all cities listed on your website (based on API data)
-- **Schedule**: Every 24 hours at 9:50 PM UTC (4:50 PM CDT)
-- **Cost**: ~$0.56 per day (very affordable!)
+- **Schedule Options**:
+  - **Daily**: Every 24 hours at 9:50 PM UTC (4:50 PM CDT)
+  - **Continuous**: Every 4 hours (24/7 generation)
+  - **Custom**: Any schedule you prefer
+- **Cost**: ~$0.56 per day (daily) or ~$2.24 per day (continuous)
 - **Duration**: ~2-3 hours to complete all articles
 - **Runs independently**: You can close your laptop - it runs on Railway's servers
 
@@ -27,9 +30,15 @@ git push origin main
 2. Click on your project
 3. Click "New" → "Cron Job"
 4. Configure:
-   - **Name**: `daily-articles`
-   - **Schedule**: `50 21 * * *` (9:50 PM UTC / 4:50 PM CDT daily)
-   - **Command**: `node railway-daily-generation.js`
+   - **Name**: `continuous-articles` (or `daily-articles` for daily)
+   - **Schedule Options**:
+     - **Daily**: `50 21 * * *` (9:50 PM UTC / 4:50 PM CDT daily)
+     - **Every 4 Hours**: `0 */4 * * *` (12:00, 4:00, 8:00, 16:00, 20:00 UTC)
+     - **Every 6 Hours**: `0 */6 * * *` (12:00, 6:00, 12:00, 18:00 UTC)
+     - **Every 8 Hours**: `0 */8 * * *` (12:00, 8:00, 16:00 UTC)
+   - **Command**: 
+     - **Daily**: `node railway-daily-generation.js`
+     - **Continuous**: `node railway-continuous-generation.js`
    - **Working Directory**: `/` (root of your project)
 
 ### 3. Set Environment Variables
@@ -43,6 +52,46 @@ Make sure these are set in Railway:
 - **Railway Dashboard**: Check the cron job logs
 - **Expected Duration**: 4-5 hours for all 1,690 articles
 - **Progress Updates**: Every 25 articles (shows percentage complete)
+
+## Scheduling Options
+
+### 🕐 **Daily Generation** (Recommended for most users)
+- **Schedule**: `50 21 * * *` (Once per day at 9:50 PM UTC)
+- **Cost**: ~$0.56/day
+- **Best for**: Most websites, cost-effective
+- **Article freshness**: Articles updated once daily
+
+### 🔄 **Continuous Generation** (24/7)
+- **Schedule**: `0 */4 * * *` (Every 4 hours)
+- **Cost**: ~$2.24/day
+- **Best for**: High-traffic sites, maximum freshness
+- **Article freshness**: Articles updated 6 times per day
+
+### ⚡ **High-Frequency Generation**
+- **Schedule**: `0 */2 * * *` (Every 2 hours)
+- **Cost**: ~$4.48/day
+- **Best for**: News sites, maximum content velocity
+- **Article freshness**: Articles updated 12 times per day
+
+### 💰 **Budget-Friendly**
+- **Schedule**: `0 */8 * * *` (Every 8 hours)
+- **Cost**: ~$1.12/day
+- **Best for**: Budget-conscious users
+- **Article freshness**: Articles updated 3 times per day
+
+## Script Types
+
+### 📅 **Daily Generation Script** (`railway-daily-generation.js`)
+- **Purpose**: Generates articles for ALL cities every run
+- **Use Case**: Daily comprehensive updates
+- **Efficiency**: Processes all cities regardless of existing articles
+- **Best for**: Daily schedules, comprehensive updates
+
+### 🔄 **Continuous Generation Script** (`railway-continuous-generation.js`)
+- **Purpose**: Only generates articles for cities that need them
+- **Use Case**: Continuous 24/7 operation
+- **Efficiency**: Checks existing articles and only updates cities older than 6 hours
+- **Best for**: Frequent schedules (every 2-8 hours), cost optimization
 
 ## How It Works
 
