@@ -16,18 +16,10 @@ const CityHub = ({ cities }) => {
 
 
   useEffect(() => {
-    console.log(`🔍 CityHub useEffect - citySlug: ${citySlug}, cities.length: ${cities.length}`);
-    
-    if (!citySlug) {
-      console.log('❌ No citySlug provided');
-      return;
-    }
+    if (!citySlug) return;
 
     const { cityName, state } = parseCitySlug(citySlug);
-    console.log(`🔍 Parsed city slug - cityName: ${cityName}, state: ${state}`);
-    
     if (!cityName || !state) {
-      console.log('❌ Invalid city URL - could not parse city name or state');
       setError('Invalid city URL');
       setLoading(false);
       return;
@@ -39,17 +31,12 @@ const CityHub = ({ cities }) => {
       c.state === state
     );
 
-    console.log(`🔍 Looking for city: ${cityName}, ${state}`);
-    console.log(`🔍 Found city:`, foundCity);
-
     if (!foundCity) {
-      console.log('❌ City not found in cities list');
       setError('City not found');
       setLoading(false);
       return;
     }
 
-    console.log(`✅ City found: ${foundCity.name}, ${foundCity.state}, ID: ${foundCity.id}`);
     setCity(foundCity);
     loadCityData(foundCity);
   }, [citySlug, cities]);
@@ -59,13 +46,10 @@ const CityHub = ({ cities }) => {
       setLoading(true);
       
       // Load articles for this city
-      console.log(`🔍 Loading articles for city: ${cityData.name}, ID: ${cityData.id}`);
       const response = await fetch(`/api/news/city/${cityData.id}`);
-      console.log(`📡 API response status: ${response.status}`);
       
       if (response.ok) {
         const data = await response.json();
-        console.log(`📰 API returned ${data.articles.length} articles:`, data);
         // Articles are already filtered by the API, no need to filter again
         const cityArticles = data.articles;
         
@@ -179,12 +163,6 @@ const CityHub = ({ cities }) => {
         </div>
       </div>
 
-      {/* Debug Info */}
-      <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0'}}>
-        <p>Debug: Articles count: {articles.length}</p>
-        <p>Debug: Loading: {loading.toString()}</p>
-        <p>Debug: Error: {error || 'none'}</p>
-      </div>
 
       {/* Featured Articles */}
       {articles.length > 0 && (
