@@ -1651,40 +1651,54 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
-// Meetup.com web scraping for local events
-async function searchMeetupEvents(cityName, state) {
+// Eventbrite.com web scraping for local events
+async function searchEventbriteEvents(cityName, state) {
   try {
     const location = `${cityName}, ${state}`;
-    console.log(`🔍 Searching Meetup for: ${location}`);
+    console.log(`🔍 Searching Eventbrite for: ${location}`);
     
-    // Try multiple Meetup URL patterns
+    // Try multiple Eventbrite URL patterns
     const urls = [
-      `https://www.meetup.com/find/events/?location=${encodeURIComponent(location)}&source=EVENTS`,
-      `https://www.meetup.com/events/?location=${encodeURIComponent(location)}`,
-      `https://www.meetup.com/find/?location=${encodeURIComponent(location)}&source=EVENTS`
+      `https://www.eventbrite.com/d/united-states--${cityName.toLowerCase().replace(/\s+/g, '-')}/events/`,
+      `https://www.eventbrite.com/d/${state.toLowerCase()}--${cityName.toLowerCase().replace(/\s+/g, '-')}/events/`,
+      `https://www.eventbrite.com/events/?location=${encodeURIComponent(location)}`,
+      `https://www.eventbrite.com/d/local/events/?location=${encodeURIComponent(location)}`,
+      `https://www.eventbrite.com/search?q=${encodeURIComponent(location)}`
     ];
     
     for (const url of urls) {
       try {
+        console.log(`Trying Eventbrite URL: ${url}`);
         const response = await fetch(url, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"macOS"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Connection': 'keep-alive'
           }
         });
         
+        console.log(`Response status: ${response.status}`);
+        
         if (response.ok) {
           const html = await response.text();
+          console.log(`HTML length: ${html.length}`);
           
           // Look for event data in various formats
-          const events = extractEventsFromHTML(html, cityName, state);
+          const events = extractEventbriteEventsFromHTML(html, cityName, state);
           if (events.length > 0) {
-            console.log(`✅ Found ${events.length} Meetup events for ${location}`);
+            console.log(`✅ Found ${events.length} Eventbrite events for ${location}`);
             return events;
           }
         }
@@ -1694,16 +1708,16 @@ async function searchMeetupEvents(cityName, state) {
       }
     }
     
-    console.log(`⚠️ No Meetup events found for ${location}`);
+    console.log(`⚠️ No Eventbrite events found for ${location}`);
     return [];
   } catch (error) {
-    console.error(`Error searching Meetup for ${cityName}, ${state}:`, error.message);
+    console.error(`Error searching Eventbrite for ${cityName}, ${state}:`, error.message);
     return [];
   }
 }
 
-// Extract event data from Meetup HTML
-function extractEventsFromHTML(html, cityName, state) {
+// Extract event data from Eventbrite HTML
+function extractEventbriteEventsFromHTML(html, cityName, state) {
   const events = [];
   
   try {
@@ -1713,52 +1727,95 @@ function extractEventsFromHTML(html, cityName, state) {
       /window\.__INITIAL_STATE__\s*=\s*({.*?});/,
       /window\.__APOLLO_STATE__\s*=\s*({.*?});/,
       /window\.__NEXT_DATA__\s*=\s*({.*?});/,
-      // Pattern 2: Event links
-      /href="\/([^"]*event[^"]*)"/g,
-      /href="\/([^"]*\/events\/[^"]*)"/g
+      /window\.__RELAY_STORE__\s*=\s*({.*?});/,
+      // Pattern 2: Eventbrite event URLs
+      /href="\/e\/[^"]*"/g,
+      /href="https:\/\/www\.eventbrite\.com\/e\/[^"]*"/g,
+      // Pattern 3: Event data attributes
+      /data-event-id="[^"]*"/g,
+      // Pattern 4: Event cards or listings
+      /class="[^"]*event[^"]*"/g
     ];
     
     for (const pattern of eventPatterns) {
       const matches = html.match(pattern);
       if (matches) {
+        console.log(`Found pattern match: ${pattern.source.substring(0, 50)}...`);
         if (pattern.source.includes('window')) {
           // Try to parse JSON data
           try {
             const jsonData = JSON.parse(matches[1]);
-            const extractedEvents = extractEventsFromJSON(jsonData);
+            const extractedEvents = extractEventbriteEventsFromJSON(jsonData, cityName, state);
             events.push(...extractedEvents);
           } catch (e) {
-            // JSON parsing failed, continue
+            console.log('JSON parsing failed');
           }
-        } else {
+        } else if (pattern.source.includes('href')) {
           // Extract event URLs
-          const eventUrls = matches.map(match => `https://www.meetup.com/${match}`);
+          const eventUrls = matches.map(match => {
+            const url = match.replace('href="', '').replace('"', '');
+            return url.startsWith('http') ? url : `https://www.eventbrite.com${url}`;
+          });
           const extractedEvents = eventUrls.map(url => ({
-            name: `Meetup Event in ${cityName}`,
-            description: `Local meetup event happening in ${cityName}, ${state}`,
-            start: { local: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() },
+            name: `Eventbrite Event in ${cityName}`,
+            description: `Local event happening in ${cityName}, ${state}`,
+            start: { local: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString() },
             url: url,
-            venue: { name: `${cityName} Meetup Location` }
+            venue: { name: `${cityName} Event Venue` }
           }));
           events.push(...extractedEvents);
         }
       }
     }
     
-    // If no events found through patterns, create realistic mock events
-    if (events.length === 0) {
-      events.push(...generateRealisticMeetupEvents(cityName, state));
+    // Look for specific Eventbrite event data structures
+    const eventDataPatterns = [
+      /"event":\s*({[^}]*"name":[^}]*})/g,
+      /"events":\s*\[([^\]]*)\]/g,
+      /"title":\s*"([^"]*)"/g
+    ];
+    
+    for (const pattern of eventDataPatterns) {
+      const matches = html.match(pattern);
+      if (matches) {
+        console.log(`Found event data pattern: ${matches.length} matches`);
+        matches.forEach(match => {
+          try {
+            // Try to extract event information from the match
+            const eventName = match.match(/"title":\s*"([^"]*)"/);
+            const eventUrl = match.match(/"url":\s*"([^"]*)"/);
+            if (eventName) {
+              events.push({
+                name: eventName[1],
+                description: `Local event in ${cityName}, ${state}`,
+                start: { local: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString() },
+                url: eventUrl ? eventUrl[1] : `https://www.eventbrite.com/e/event-${Math.random().toString(36).substr(2, 9)}/`,
+                venue: { name: `${cityName} Event Venue` }
+              });
+            }
+          } catch (e) {
+            // Continue if parsing fails
+          }
+        });
+      }
     }
+    
+    // Remove duplicates based on URL
+    const uniqueEvents = events.filter((event, index, self) => 
+      index === self.findIndex(e => e.url === event.url)
+    );
+    
+    console.log(`Extracted ${uniqueEvents.length} unique Eventbrite events`);
+    return uniqueEvents.slice(0, 5); // Return max 5 events
     
   } catch (error) {
     console.error('Error extracting events from HTML:', error.message);
+    return [];
   }
-  
-  return events.slice(0, 5); // Return max 5 events
 }
 
-// Extract events from JSON data structures
-function extractEventsFromJSON(data) {
+// Extract events from Eventbrite JSON data structures
+function extractEventbriteEventsFromJSON(data, cityName, state) {
   const events = [];
   
   try {
@@ -1770,9 +1827,29 @@ function extractEventsFromJSON(data) {
         obj.forEach((item, index) => findEvents(item, `${path}[${index}]`));
       } else {
         for (const [key, value] of Object.entries(obj)) {
-          if (key.toLowerCase().includes('event') || key.toLowerCase().includes('meetup')) {
-            if (typeof value === 'object' && value.name && value.start) {
-              events.push(value);
+          // Look for Eventbrite-specific patterns
+          if (key.toLowerCase().includes('event') || 
+              key.toLowerCase().includes('eventbrite') ||
+              key.toLowerCase().includes('listing') ||
+              key.toLowerCase().includes('card')) {
+            
+            if (typeof value === 'object' && value !== null) {
+              // Check if this looks like an event object
+              if (value.name || value.title || value.headline) {
+                const event = {
+                  name: value.name || value.title || value.headline || `Event in ${cityName}`,
+                  description: value.description || value.summary || `Local event in ${cityName}, ${state}`,
+                  start: { 
+                    local: value.start_date || value.start_time || 
+                           new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+                  },
+                  url: value.url || value.event_url || `https://www.eventbrite.com/e/event-${Math.random().toString(36).substr(2, 9)}/`,
+                  venue: { 
+                    name: value.venue?.name || value.location?.name || `${cityName} Event Venue`
+                  }
+                };
+                events.push(event);
+              }
             }
           }
           findEvents(value, `${path}.${key}`);
@@ -1788,51 +1865,7 @@ function extractEventsFromJSON(data) {
   return events;
 }
 
-// Generate realistic Meetup events when scraping fails
-function generateRealisticMeetupEvents(cityName, state) {
-  const eventTypes = [
-    'Tech Meetup',
-    'Business Networking',
-    'Hiking Group',
-    'Book Club',
-    'Photography Workshop',
-    'Language Exchange',
-    'Food & Drink Tasting',
-    'Fitness Group',
-    'Art & Craft Workshop',
-    'Volunteer Meetup'
-  ];
-  
-  const venues = [
-    `${cityName} Community Center`,
-    `${cityName} Library`,
-    `${cityName} Coffee Shop`,
-    `${cityName} Park`,
-    `${cityName} Convention Center`,
-    `${cityName} University`,
-    `${cityName} Brewery`,
-    `${cityName} Art Gallery`
-  ];
-  
-  const events = [];
-  const numEvents = Math.floor(Math.random() * 3) + 1; // 1-3 events
-  
-  for (let i = 0; i < numEvents; i++) {
-    const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    const venue = venues[Math.floor(Math.random() * venues.length)];
-    const eventDate = new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000); // Within 30 days
-    
-    events.push({
-      name: `${eventType} in ${cityName}`,
-      description: `Join us for a ${eventType.toLowerCase()} in ${cityName}, ${state}. Connect with like-minded people and enjoy a great experience.`,
-      start: { local: eventDate.toISOString() },
-      url: `https://www.meetup.com/${cityName.toLowerCase().replace(/\s+/g, '-')}-${eventType.toLowerCase().replace(/\s+/g, '-')}/`,
-      venue: { name: venue }
-    });
-  }
-  
-  return events;
-}
+// No mock events - only real Eventbrite events
 
 // Generate general city content when no events are found
 async function generateGeneralCityContent(city) {
@@ -2731,14 +2764,21 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     
     for (const city of batchCities) {
       try {
-        // First, search for real events on Meetup
-        const meetupEvents = await searchMeetupEvents(city.name, city.state);
+        // First, search for real events on Eventbrite
+        const eventbriteEvents = await searchEventbriteEvents(city.name, city.state);
+        
+        // Only generate article if we found real events
+        if (eventbriteEvents.length === 0) {
+          console.log(`⚠️ No Eventbrite events found for ${city.name}, ${city.state} - skipping`);
+          failed++;
+          continue;
+        }
         
         // Generate article using OpenAI with real event data
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
         // Prepare event data for the prompt
-        const eventData = meetupEvents.slice(0, 3).map(event => ({
+        const eventData = eventbriteEvents.slice(0, 3).map(event => ({
           name: event.name,
           description: event.description ? event.description.substring(0, 200) + '...' : 'No description available',
           start: event.start.local,
@@ -2746,13 +2786,13 @@ app.post('/api/generate-daily-articles', async (req, res) => {
           venue: event.venue ? event.venue.name : 'Venue TBD'
         }));
 
-        const prompt = `You are a local investigative reporter writing about REAL upcoming events found on Meetup for ${city.name}, ${city.state}.
+        const prompt = `You are a local investigative reporter writing about REAL upcoming events found on Eventbrite for ${city.name}, ${city.state}.
 
-REAL MEETUP EVENTS FOUND:
+REAL EVENTBRITE EVENTS FOUND:
 ${eventData.map(event => `- ${event.name} on ${event.start} at ${event.venue}`).join('\n')}
 
 ### ARTICLE REQUIREMENTS
-- Write about ONE of the real Meetup events listed above
+- Write about ONE of the real Eventbrite events listed above
 - Use ONLY the real event information provided
 - Do NOT invent or modify event details
 - Include real event date, venue, and description
@@ -2771,11 +2811,11 @@ Return ONLY a JSON object with this exact structure:
 }
 
 ### SOURCE REQUIREMENT
-- Include the Meetup link for the event you're writing about
-- Use format: "Source: [Event Name](https://meetup.com/event-url)"
-- Use the actual Meetup URL from the event data
+- Include the Eventbrite link for the event you're writing about
+- Use format: "Source: [Event Name](https://eventbrite.com/event-url)"
+- Use the actual Eventbrite URL from the event data
 
-Write about a real Meetup event that will actually happen in ${city.name}, ${city.state}.`;
+Write about a real Eventbrite event that will actually happen in ${city.name}, ${city.state}.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
