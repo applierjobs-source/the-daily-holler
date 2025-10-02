@@ -1713,6 +1713,8 @@ app.get('/api/news', async (req, res) => {
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     
+    console.log('📰 Fetching news articles...');
+    
     // Get articles from database (no test article insertion)
     
     // Get articles from database
@@ -1722,8 +1724,12 @@ app.get('/api/news', async (req, res) => {
       LIMIT $1 OFFSET $2
     `, [limitNum, offsetNum]);
     
+    console.log(`📊 Found ${result.rows.length} articles`);
+    
     const totalResult = await pool.query('SELECT COUNT(*) FROM articles');
     const total = parseInt(totalResult.rows[0].count);
+    
+    console.log(`📈 Total articles in database: ${total}`);
     
     res.json({
       articles: result.rows,
@@ -1733,7 +1739,9 @@ app.get('/api/news', async (req, res) => {
       hasMore: offsetNum + limitNum < total
     });
   } catch (error) {
-    console.error('Error fetching news:', error);
+    console.error('❌ Error fetching news:', error);
+    console.error('❌ Error details:', error.message);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ error: 'Failed to fetch news', details: error.message });
   }
 });
