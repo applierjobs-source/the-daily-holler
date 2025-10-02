@@ -126,10 +126,12 @@ async function runRailwayGeneration() {
     console.log(`   - Last update: ${savedProgress.lastUpdate}`);
   }
   
-  // Main generation loop - this will NEVER exit until all articles are done
-  while (startIndex < 1690) {
-    const endIndex = Math.min(startIndex + BATCH_SIZE, 1690);
-    console.log(`\n📦 Batch ${batchNumber}: Processing articles ${startIndex + 1}-${endIndex}...`);
+  // Main generation loop - this will process all 1,690 cities
+  const TOTAL_CITIES = 1690;
+  while (startIndex < TOTAL_CITIES) {
+    const endIndex = Math.min(startIndex + BATCH_SIZE, TOTAL_CITIES);
+    const progressPercent = Math.round((startIndex / TOTAL_CITIES) * 100);
+    console.log(`\n📦 Batch ${batchNumber}: Processing cities ${startIndex + 1}-${endIndex} of ${TOTAL_CITIES} (${progressPercent}% complete)...`);
     
     let batchSuccess = false;
     let retryCount = 0;
@@ -143,10 +145,10 @@ async function runRailwayGeneration() {
           totalCreated += response.totalCreated;
           totalFailed += response.totalFailed;
           
-          const progress = Math.round((endIndex / 1690) * 100);
+          const progress = Math.round((endIndex / TOTAL_CITIES) * 100);
           console.log(`✅ Batch ${batchNumber} completed: ${response.totalCreated} created, ${response.totalFailed} failed`);
           console.log(`📊 Total so far: ${totalCreated} created, ${totalFailed} failed`);
-          console.log(`📈 Progress: ${progress}% complete (${endIndex}/1690)`);
+          console.log(`📈 Progress: ${progress}% complete (${endIndex}/${TOTAL_CITIES} cities)`);
           
           // Save progress after each successful batch
           await saveProgress(endIndex, totalCreated, totalFailed, batchNumber + 1);
@@ -216,21 +218,18 @@ process.on('unhandledRejection', (reason, promise) => {
   // Don't exit - let the script continue
 });
 
-// Run the Railway generation with infinite retry capability
-async function runWithInfiniteRetry() {
-  while (true) {
-    try {
-      await runRailwayGeneration();
-      console.log('✅ Generation completed successfully, exiting.');
-      process.exit(0);
-    } catch (error) {
-      console.error('💥 Fatal error in generation process:', error);
-      console.log('🔄 Restarting generation process in 30 seconds...');
-      await new Promise(resolve => setTimeout(resolve, 30000));
-      console.log('🚀 Restarting generation...');
-    }
+// Run the Railway generation - single run only to prevent infinite loops
+async function runSingleGeneration() {
+  try {
+    await runRailwayGeneration();
+    console.log('✅ Generation completed successfully, exiting.');
+    process.exit(0);
+  } catch (error) {
+    console.error('💥 Fatal error in generation process:', error);
+    console.log('❌ Generation failed, exiting to prevent infinite loops.');
+    process.exit(1);
   }
 }
 
-// Start the resilient generation process
-runWithInfiniteRetry();
+// Start the generation process (single run only)
+runSingleGeneration();
