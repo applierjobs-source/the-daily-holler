@@ -1,14 +1,14 @@
 # Railway Cron Job Setup - Daily Article Generation
 
-This guide will help you set up a Railway cron job to generate 1,690 articles (one for each city) every 24 hours.
+This guide will help you set up a Railway cron job to generate articles for all cities listed on holler.news/cities every 24 hours.
 
 ## What This Does
 
-- **Generates**: 1,690 unique satirical articles (one per city)
+- **Generates**: Articles for all cities listed on your website (based on API data)
 - **Schedule**: Every 24 hours at 9:50 PM UTC (4:50 PM CDT)
 - **Cost**: ~$0.56 per day (very affordable!)
-- **Duration**: ~4-5 hours to complete all articles
-- **Runs independently**: You can close your laptop
+- **Duration**: ~2-3 hours to complete all articles
+- **Runs independently**: You can close your laptop - it runs on Railway's servers
 
 ## Setup Steps
 
@@ -29,7 +29,7 @@ git push origin main
 4. Configure:
    - **Name**: `daily-articles`
    - **Schedule**: `50 21 * * *` (9:50 PM UTC / 4:50 PM CDT daily)
-   - **Command**: `node run-daily-generation.js`
+   - **Command**: `node railway-daily-generation.js`
    - **Working Directory**: `/` (root of your project)
 
 ### 3. Set Environment Variables
