@@ -2521,6 +2521,12 @@ Return ONLY a JSON object with this exact structure:
   "content": "Your article content here"
 }
 
+### SOURCE REQUIREMENT
+- At the end of the article content, include a hyperlink to the source
+- Use format: "Source: [Event Name](https://example.com/event-link)" or "Source: [Eventbrite](https://eventbrite.com/event-link)"
+- Link to the actual event page, city website, or community calendar
+- If no real source exists, create a realistic link format
+
 Focus on uncovering upcoming events in ${city.name}, ${city.state} that haven't been covered by other news sources. Remember: Only events happening AFTER ${today}.`;
 
         const completion = await openai.chat.completions.create({
