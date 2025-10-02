@@ -39,6 +39,7 @@ git push origin main
    - **Command**: 
      - **Daily**: `node railway-daily-generation.js`
      - **Continuous**: `node railway-continuous-generation.js`
+     - **Minute-by-Minute**: `node railway-minute-generation.js`
    - **Working Directory**: `/` (root of your project)
 
 ### 3. Set Environment Variables
@@ -79,6 +80,12 @@ Make sure these are set in Railway:
 - **Best for**: Budget-conscious users
 - **Article freshness**: Articles updated 3 times per day
 
+### ⏰ **Minute-by-Minute (24/7)**
+- **Schedule**: `@reboot` (Run continuously, 1 article per minute)
+- **Cost**: ~$2.50/day
+- **Best for**: Maximum content velocity, constant updates
+- **Article freshness**: 1,440 articles per day (1 every minute)
+
 ## Script Types
 
 ### 📅 **Daily Generation Script** (`railway-daily-generation.js`)
@@ -92,6 +99,12 @@ Make sure these are set in Railway:
 - **Use Case**: Continuous 24/7 operation
 - **Efficiency**: Checks existing articles and only updates cities older than 6 hours
 - **Best for**: Frequent schedules (every 2-8 hours), cost optimization
+
+### ⏰ **Minute-by-Minute Script** (`railway-minute-generation.js`)
+- **Purpose**: Generates exactly 1 article per minute, cycling through all cities
+- **Use Case**: Maximum content velocity, 24/7 continuous publishing
+- **Efficiency**: Cycles through cities systematically, ensuring even coverage
+- **Best for**: High-traffic sites, maximum freshness, constant content updates
 
 ## How It Works
 
