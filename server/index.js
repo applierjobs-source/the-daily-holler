@@ -1658,8 +1658,8 @@ async function searchEventbriteEvents(cityName, state) {
     const location = `${cityName}, ${state}`;
     const today = new Date().toISOString().split('T')[0];
     
-    // Use correct Eventbrite API endpoint
-    const url = `https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&expand=venue&token=${EVENTBRITE_TOKEN}`;
+    // Use correct Eventbrite API endpoint with Bearer token authentication
+    const url = `https://www.eventbriteapi.com/v3/events/search/?location.address=${encodeURIComponent(location)}&start_date.range_start=${today}&expand=venue`;
     
     console.log(`🔍 Searching Eventbrite for: ${location}`);
     
@@ -1692,7 +1692,7 @@ async function searchEventbriteAlternative(cityName, state) {
     const location = `${cityName}, ${state}`;
     
     // Try searching without date restriction first
-    const url = `https://www.eventbriteapi.com/v3/events/search/?q=${encodeURIComponent(location)}&expand=venue&token=${EVENTBRITE_TOKEN}`;
+    const url = `https://www.eventbriteapi.com/v3/events/search/?q=${encodeURIComponent(location)}&expand=venue`;
     
     const response = await fetch(url, {
       headers: {
