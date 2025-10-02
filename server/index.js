@@ -2901,6 +2901,136 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
   }
 });
 
+// Single article generation endpoint for targeted generation
+app.post('/api/generate-single-article', async (req, res) => {
+  try {
+    const { cityName, state, cityId } = req.body;
+    
+    if (!cityName || !state) {
+      return res.status(400).json({
+        success: false,
+        error: 'cityName and state are required'
+      });
+    }
+    
+    console.log(`🏙️ Generating article for ${cityName}, ${state}...`);
+    
+    // Search for real events on Eventbrite
+    const eventbriteEvents = await searchEventbriteEvents(cityName, state);
+    
+    if (eventbriteEvents.length === 0) {
+      console.log(`⚠️ No Eventbrite events found for ${cityName}, ${state} - skipping`);
+      return res.json({
+        success: false,
+        error: 'No Eventbrite events found',
+        cityName,
+        state
+      });
+    }
+    
+    // Fetch details for the first event
+    const eventDetails = await fetchEventDetails(eventbriteEvents[0].url);
+    
+    if (!eventDetails) {
+      console.log(`⚠️ Failed to fetch event details for ${cityName}, ${state} - skipping`);
+      return res.json({
+        success: false,
+        error: 'Failed to fetch event details',
+        cityName,
+        state
+      });
+    }
+    
+    // Generate article using OpenAI with real event data
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    const prompt = `You are a local investigative reporter writing about a REAL Eventbrite event for ${cityName}, ${state}.
+
+REAL EVENTBRITE EVENT DETAILS:
+- Event Title: ${eventDetails.title}
+- Event Description: ${eventDetails.description}
+- Event Date: ${eventDetails.date}
+- Event Venue: ${eventDetails.venue}
+- Event URL: ${eventDetails.url}
+
+### ARTICLE REQUIREMENTS
+- Write about this REAL Eventbrite event using the actual details provided above
+- Use ONLY the real event information provided - do NOT invent or modify details
+- Include the real event title, date, venue, and description
+- Write 400 words about why this specific event matters to the community
+- Make it engaging and informative for local residents
+
+### STYLE REQUIREMENTS
+- Tone: Professional local journalism
+- Headline: Clear, informative, 8–12 words. Use Title Case.
+- Content: 400 words about the real event and its community impact
+- Focus on the specific event details provided
+
+### FORMAT
+Return ONLY a JSON object with this exact structure:
+{
+  "headline": "Your headline here",
+  "content": "Your article content here"
+}
+
+### SOURCE REQUIREMENT
+- Include the Eventbrite link at the end
+- Use format: "Source: [Event Title](${eventDetails.url})"
+
+Write about the real Eventbrite event "${eventDetails.title}" that will happen in ${cityName}, ${state}.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.8,
+      max_tokens: 800
+    });
+    
+    const response = completion.choices[0].message.content;
+    const articleData = JSON.parse(response);
+    
+    // Generate slug
+    const slug = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${articleData.headline.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim('-')}`;
+    
+    // Insert into database
+    await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [
+      articleData.headline,
+      articleData.content,
+      cityName,
+      state,
+      slug,
+      'local-events',
+      true,
+      new Date()
+    ]);
+    
+    console.log(`✅ Created article for ${cityName}, ${state}`);
+    
+    res.json({
+      success: true,
+      message: `Article created successfully for ${cityName}, ${state}`,
+      article: {
+        title: articleData.headline,
+        city: cityName,
+        state: state,
+        slug: slug
+      }
+    });
+    
+  } catch (error) {
+    console.error(`❌ Error generating article for ${req.body.cityName}:`, error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      cityName: req.body.cityName,
+      state: req.body.state
+    });
+  }
+});
+
 // Daily generation is now handled by Railway cron job at 8:30 PM UTC (3:30 PM CDT)
 // Removed local generation functions to prevent conflicts with cron job
 
