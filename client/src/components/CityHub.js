@@ -16,10 +16,18 @@ const CityHub = ({ cities }) => {
 
 
   useEffect(() => {
-    if (!citySlug) return;
+    console.log(`🔍 CityHub useEffect - citySlug: ${citySlug}, cities.length: ${cities.length}`);
+    
+    if (!citySlug) {
+      console.log('❌ No citySlug provided');
+      return;
+    }
 
     const { cityName, state } = parseCitySlug(citySlug);
+    console.log(`🔍 Parsed city slug - cityName: ${cityName}, state: ${state}`);
+    
     if (!cityName || !state) {
+      console.log('❌ Invalid city URL - could not parse city name or state');
       setError('Invalid city URL');
       setLoading(false);
       return;
@@ -31,12 +39,17 @@ const CityHub = ({ cities }) => {
       c.state === state
     );
 
+    console.log(`🔍 Looking for city: ${cityName}, ${state}`);
+    console.log(`🔍 Found city:`, foundCity);
+
     if (!foundCity) {
+      console.log('❌ City not found in cities list');
       setError('City not found');
       setLoading(false);
       return;
     }
 
+    console.log(`✅ City found: ${foundCity.name}, ${foundCity.state}, ID: ${foundCity.id}`);
     setCity(foundCity);
     loadCityData(foundCity);
   }, [citySlug, cities]);
