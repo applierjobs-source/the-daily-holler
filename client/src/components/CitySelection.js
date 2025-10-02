@@ -157,7 +157,7 @@ const CitySelection = () => {
     <div className="city-selection">
       <div className="city-selection-header">
         <h1>Select a City</h1>
-        <p>Choose from over {cities.length.toLocaleString()} US cities to view local satirical news</p>
+        <p>Choose from over {cities.length.toLocaleString()} US cities to find local events and activities</p>
       </div>
 
       <div className="city-filters">

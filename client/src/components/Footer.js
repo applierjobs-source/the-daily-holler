@@ -9,7 +9,7 @@ const Footer = () => {
       <div className="footer-content">
         <div className="footer-section">
           <h4>The Daily Holler</h4>
-          <p>Your source for satirical news and local humor across America's cities.</p>
+          <p>Your source for local events and activities across America's cities.</p>
           <div className="social-links">
             <a href="https://twitter.com" className="social-link" target="_blank" rel="noopener noreferrer">Twitter</a>
             <a href="https://facebook.com" className="social-link" target="_blank" rel="noopener noreferrer">Facebook</a>
@@ -38,7 +38,7 @@ const Footer = () => {
         
         <div className="footer-section">
           <h4>Newsletter</h4>
-          <p>Get the latest satirical news delivered to your inbox.</p>
+          <p>Get the latest local events delivered to your inbox.</p>
           <div className="newsletter-signup">
             <input 
               type="email" 
@@ -54,7 +54,7 @@ const Footer = () => {
         <div className="footer-bottom-content">
           <p>&copy; {currentYear} The Daily Holler. All rights reserved.</p>
           <p className="disclaimer">
-            <strong>Disclaimer:</strong> All content on this site is satirical and fictional. 
+            <strong>Disclaimer:</strong> All content on this site is for entertainment and informational purposes. 
             Any resemblance to real events or persons is purely coincidental.
           </p>
         </div>

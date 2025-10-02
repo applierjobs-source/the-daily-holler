@@ -142,7 +142,7 @@ const CityHub = ({ cities }) => {
         </h1>
         
         <p className="city-description">
-          The latest satirical news and humor from {city.name}, {city.stateName}. 
+          Find local events and things to do in {city.name}, {city.stateName}. 
           Stay informed with our unique take on local events, politics, and community happenings.
         </p>
 

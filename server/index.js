@@ -2472,13 +2472,20 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     for (const city of batchCities) {
       try {
         // Generate article using OpenAI
-        const prompt = `You are a satirical news writer for a site like *The Onion*. Create a hilarious fake news article for ${city.name}, ${city.state}.
+        const prompt = `You are a local events reporter for ${city.name}, ${city.state}. Create an engaging article about a real local event or activity that people can attend.
 
 ### STYLE REQUIREMENTS
-- Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
-- Humor: Mix of exaggeration, surrealism, and playful cultural references.
-- Headline: Punchy, 8–12 words, must set up the absurd premise. Use Title Case (NOT ALL CAPS).
-- Content: 150-200 words, structured like a real news article with quotes and details.
+- Tone: Professional but friendly journalism, like a local newspaper or community blog.
+- Focus: Real events, activities, festivals, community gatherings, or local happenings.
+- Headline: Clear, informative, 8–12 words. Use Title Case (NOT ALL CAPS).
+- Content: 150-200 words, structured like a real news article with practical details.
+
+### CONTENT REQUIREMENTS
+- Include event details: date, time, location, cost (if any)
+- Mention what makes this event special or interesting
+- Include local context and why it matters to ${city.name} residents
+- Add practical information people need to know
+- Use real local landmarks, venues, or community spaces when possible
 
 ### FORMAT
 Return ONLY a JSON object with this exact structure:
@@ -2487,7 +2494,7 @@ Return ONLY a JSON object with this exact structure:
   "content": "Your article content here"
 }
 
-Make it funny and specific to ${city.name}, ${city.state}.`;
+Focus on real, helpful local events and activities in ${city.name}, ${city.state}.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
@@ -2512,7 +2519,7 @@ Make it funny and specific to ${city.name}, ${city.state}.`;
           city.name,
           city.state,
           slug,
-          'satirical-news',
+          'local-events',
           true,
           new Date()
         ]);

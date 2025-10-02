@@ -82,7 +82,7 @@ const News = () => {
       
       <div className="news-header">
         <h1>📰 Today's Latest News</h1>
-        <p>All the latest satirical news from cities across America</p>
+        <p>Find Local Events and Things to Do in Your City</p>
         {totalArticles > 0 && (
           <div className="news-stats">
             <span>{totalArticles} articles available</span>
@@ -101,7 +101,7 @@ const News = () => {
       {!loading && !error && articles.length === 0 && (
         <div className="no-articles">
           <h3>No articles available yet</h3>
-          <p>Check back later for the latest satirical news!</p>
+          <p>Check back later for the latest local events and activities!</p>
         </div>
       )}
 

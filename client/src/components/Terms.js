@@ -18,7 +18,7 @@ const Terms = () => {
         <section>
           <h2>2. Description of Service</h2>
           <p>
-            The Daily Holler is a satirical news website that publishes fictional, humorous content for entertainment purposes. All content is clearly marked as satirical and should not be construed as real news or factual information.
+            The Daily Holler is a local events and activities website that helps you discover things to do in your city. We provide information about local events, activities, and happenings to help you stay connected with your community.
           </p>
         </section>
 
@@ -26,7 +26,7 @@ const Terms = () => {
           <h2>3. User Responsibilities</h2>
           <p>Users agree to:</p>
           <ul>
-            <li>Understand that all content is satirical and fictional</li>
+            <li>Understand that event information may change and should be verified independently</li>
             <li>Not share content as factual news</li>
             <li>Respect other users and the community</li>
             <li>Not attempt to hack, damage, or interfere with the service</li>
@@ -37,7 +37,7 @@ const Terms = () => {
         <section>
           <h2>4. Content Disclaimer</h2>
           <p>
-            <strong>IMPORTANT:</strong> All articles, stories, and content published on The Daily Holler are entirely fictional and satirical in nature. They are created for entertainment purposes only and should not be taken as factual news or real events. Any resemblance to actual persons, living or dead, or actual events is purely coincidental.
+            <strong>IMPORTANT:</strong> The Daily Holler provides information about local events and activities. While we strive for accuracy, event details may change. Please verify event information directly with organizers before attending. We are not responsible for event cancellations, changes, or any issues that may arise from attending events listed on our site.
           </p>
         </section>
 
