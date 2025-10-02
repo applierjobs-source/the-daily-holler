@@ -2472,20 +2472,21 @@ app.post('/api/generate-daily-articles', async (req, res) => {
     for (const city of batchCities) {
       try {
         // Generate article using OpenAI
-        const prompt = `You are a local events reporter for ${city.name}, ${city.state}. Create an engaging article about a real local event or activity that people can attend.
+        const prompt = `You are a local investigative reporter for a small-town newspaper. Your job is to uncover upcoming events (scheduled for a date after today) in ${city.name}, ${city.state} that have not been covered by any existing news articles. Search only community calendars, Eventbrite, Meetup.com, city sites, or social pages. Ignore any events that have already passed. Once you find a qualifying event, write a 400-word newspaper article breaking the story — include quotes from organizers, community context, and why the event matters.
 
 ### STYLE REQUIREMENTS
-- Tone: Professional but friendly journalism, like a local newspaper or community blog.
-- Focus: Real events, activities, festivals, community gatherings, or local happenings.
+- Tone: Professional investigative journalism, like a local newspaper breaking news story.
+- Focus: Upcoming events that haven't been covered yet by other news sources.
 - Headline: Clear, informative, 8–12 words. Use Title Case (NOT ALL CAPS).
-- Content: 150-200 words, structured like a real news article with practical details.
+- Content: 400 words, structured like a breaking news article with investigative details.
 
 ### CONTENT REQUIREMENTS
 - Include event details: date, time, location, cost (if any)
-- Mention what makes this event special or interesting
-- Include local context and why it matters to ${city.name} residents
-- Add practical information people need to know
-- Use real local landmarks, venues, or community spaces when possible
+- Add quotes from event organizers or community members
+- Explain the community context and why this event matters
+- Include practical information people need to know
+- Focus on events happening in the future (after today's date)
+- Use real local venues, community spaces, and landmarks
 
 ### FORMAT
 Return ONLY a JSON object with this exact structure:
@@ -2494,13 +2495,13 @@ Return ONLY a JSON object with this exact structure:
   "content": "Your article content here"
 }
 
-Focus on real, helpful local events and activities in ${city.name}, ${city.state}.`;
+Focus on uncovering upcoming events in ${city.name}, ${city.state} that haven't been covered by other news sources.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.8,
-          max_tokens: 500
+          max_tokens: 800
         });
         
         const response = completion.choices[0].message.content;
