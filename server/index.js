@@ -2385,12 +2385,14 @@ app.post('/api/update-slugs', async (req, res) => {
   }
 });
 
-// Generate sitemap.xml
-app.get('/sitemap.xml', (req, res) => {
-  const baseUrl = 'https://holler.news';
-  const now = new Date().toISOString();
-  
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+// Generate comprehensive sitemap.xml
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const baseUrl = 'https://holler.news';
+    const now = new Date().toISOString();
+    
+    // Static pages
+    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>${baseUrl}/</loc>
@@ -2411,6 +2413,12 @@ app.get('/sitemap.xml', (req, res) => {
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>${baseUrl}/about</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/terms</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
@@ -2421,11 +2429,99 @@ app.get('/sitemap.xml', (req, res) => {
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-  </url>
+  </url>`;
+
+    // Add recent articles (last 1000 for performance)
+    try {
+      const articlesResult = await pool.query(`
+        SELECT title, slug, published_at, updated_at
+        FROM articles 
+        WHERE published_at IS NOT NULL
+        ORDER BY published_at DESC 
+        LIMIT 1000
+      `);
+      
+      articlesResult.rows.forEach(article => {
+        const lastmod = article.updated_at || article.published_at;
+        sitemap += `
+  <url>
+    <loc>${baseUrl}/article/${article.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+      });
+      
+      console.log(`📄 Added ${articlesResult.rows.length} articles to sitemap`);
+    } catch (error) {
+      console.error('❌ Error fetching articles for sitemap:', error.message);
+    }
+
+    // Add city pages
+    try {
+      const citiesResult = await pool.query(`
+        SELECT DISTINCT city, state
+        FROM articles 
+        WHERE city IS NOT NULL AND state IS NOT NULL
+        ORDER BY state, city
+        LIMIT 500
+      `);
+      
+      citiesResult.rows.forEach(city => {
+        const citySlug = `${city.city.toLowerCase().replace(/\s+/g, '-')}-${city.state.toLowerCase()}`;
+        sitemap += `
+  <url>
+    <loc>${baseUrl}/cities/${citySlug}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+      });
+      
+      console.log(`🏙️ Added ${citiesResult.rows.length} city pages to sitemap`);
+    } catch (error) {
+      console.error('❌ Error fetching cities for sitemap:', error.message);
+    }
+
+    sitemap += `
 </urlset>`;
-  
+    
   res.header('Content-Type', 'application/xml');
   res.send(sitemap);
+  
+  console.log(`🗺️ Sitemap generated successfully at ${new Date().toISOString()}`);
+} catch (error) {
+  console.error('❌ Error generating sitemap:', error);
+  res.status(500).send('Error generating sitemap');
+}
+});
+
+// Generate robots.txt
+app.get('/robots.txt', (req, res) => {
+  const robots = `User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://holler.news/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin or sensitive areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# Allow important pages
+Allow: /news
+Allow: /cities
+Allow: /article/
+Allow: /about
+Allow: /terms
+Allow: /privacy`;
+  
+  res.header('Content-Type', 'text/plain');
+  res.send(robots);
 });
 
 // Test endpoint to check database connection
