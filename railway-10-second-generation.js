@@ -112,16 +112,17 @@ async function testAPIConnection() {
  * Fetch all cities from the API
  */
 async function fetchCities() {
-  console.log('🏙️ Fetching cities from API...');
+  console.log('🏙️ Fetching all cities from API...');
   
   try {
-    const response = await makeRequest(`${API_BASE_URL}/api/cities`);
+    // Fetch all cities by using a large limit
+    const response = await makeRequest(`${API_BASE_URL}/api/cities?limit=2000`);
     
     if (!response || !response.cities || !Array.isArray(response.cities)) {
       throw new Error('Invalid cities response format');
     }
     
-    console.log(`✅ Found ${response.cities.length} cities`);
+    console.log(`✅ Found ${response.cities.length} cities (total available: ${response.total || response.cities.length})`);
     return response.cities;
   } catch (error) {
     console.error('❌ Failed to fetch cities:', error.message);
