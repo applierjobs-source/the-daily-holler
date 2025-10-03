@@ -11,12 +11,10 @@ const https = require('https');
 const http = require('http');
 
 // Configuration
-const API_BASE_URL = process.env.RAILWAY_PUBLIC_DOMAIN 
-  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
-  : 'https://holler.news';
+const API_BASE_URL = process.env.API_BASE_URL || 'https://holler.news';
 
-const MAX_RETRIES = 3;
-const REQUEST_TIMEOUT = 30000; // 30 seconds timeout
+const MAX_RETRIES = 5;
+const REQUEST_TIMEOUT = 60000; // 60 seconds timeout
 
 console.log('🚀 Railway 10-Second Article Generation Starting...');
 console.log(`📡 API Base URL: ${API_BASE_URL}`);
@@ -90,6 +88,22 @@ async function makeRequest(url, options = {}, retries = MAX_RETRIES) {
 }
 
 /**
+ * Test API connection
+ */
+async function testAPIConnection() {
+  console.log('🔍 Testing API connection...');
+  
+  try {
+    const response = await makeRequest(`${API_BASE_URL}/api/cities?limit=1`);
+    console.log('✅ API connection successful');
+    return true;
+  } catch (error) {
+    console.error('❌ API connection failed:', error.message);
+    return false;
+  }
+}
+
+/**
  * Fetch all cities from the API
  */
 async function fetchCities() {
@@ -144,6 +158,14 @@ async function generateArticleForCity(city) {
  */
 async function start10SecondGeneration() {
   try {
+    // Test API connection first
+    const connectionOk = await testAPIConnection();
+    if (!connectionOk) {
+      console.log('❌ API connection failed. Retrying in 30 seconds...');
+      setTimeout(start10SecondGeneration, 30000);
+      return;
+    }
+    
     // Fetch all cities
     const cities = await fetchCities();
     
@@ -162,6 +184,17 @@ async function start10SecondGeneration() {
     // Generate 1 article every 10 seconds indefinitely
     while (true) {
       const currentCity = cities[cityIndex];
+      
+      // Test connection periodically (every 50 articles)
+      if (totalGenerated > 0 && totalGenerated % 50 === 0) {
+        console.log('🔍 Testing API connection...');
+        const connectionOk = await testAPIConnection();
+        if (!connectionOk) {
+          console.log('❌ API connection lost. Retrying in 30 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 30000));
+          continue;
+        }
+      }
       const startTime = Date.now();
       
       console.log(`\n⏰ ${new Date().toISOString()} - Generating article ${totalGenerated + 1}`);
