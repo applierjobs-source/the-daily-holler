@@ -106,9 +106,6 @@ const Home = () => {
         <div className="articles-stream">
           {todayArticles.map((article, index) => (
             <React.Fragment key={article.id}>
-              {index === 5 && <InContentAd />}
-              {index === 15 && <InContentAd />}
-              {index === 25 && <InContentAd />}
               
               <div className="article-card">
                 <div className="article-meta">
