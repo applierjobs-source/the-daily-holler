@@ -1,7 +1,7 @@
 {
   "name": "the-daily-holler",
   "version": "1.0.0",
-  "description": "The Daily Holler - Satirical news and local humor across America's cities",
+  "description": "The Daily Holler - Local events and community activities across America's cities",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
@@ -16,9 +16,10 @@
   },
   "keywords": [
     "the-daily-holler",
-    "news",
-    "satire",
-    "local-news"
+    "local-events",
+    "community-activities",
+    "local-news",
+    "things-to-do"
   ],
   "author": "Developer",
   "license": "MIT",

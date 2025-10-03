@@ -2558,25 +2558,24 @@ app.post('/api/test-base-article', async (req, res) => {
       apiKey: process.env.OPENAI_API_KEY
     });
 
-    const prompt = `You are a satirical news writer for a site like *The Onion*. Your job is to create a unique, hilarious fake news article.
+    const prompt = `You are a local events reporter writing for a community news website. Your job is to create an engaging article about local events and activities in ${cityName}, ${city.state}.
 
 ### STYLE REQUIREMENTS
-- Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
-- Humor: Mix of exaggeration, surrealism, and playful cultural references.
-- Headline: Punchy, 8–12 words, must set up the absurd premise. Use Title Case (NOT ALL CAPS).
+- Tone: Professional but friendly, informative and engaging.
+- Focus: Real local events, community activities, and things to do.
+- Headline: Clear and descriptive, 8–12 words. Use Title Case (NOT ALL CAPS).
 - Length: 250–400 words.
 - Format: [HEADLINE] + [ARTICLE BODY with 3–4 short paragraphs].
 
-### THEMES
-Choose **one theme** for this article: Local thrift store introduces bizarre membership rules
-
-### WRITING REQUIREMENTS
-- Include at least one fake quote from a resident, official, or expert.
-- Weave in 1–2 real local facts to ground the absurdity.
-- Make the article feel distinct — no recycled setups.
+### CONTENT REQUIREMENTS
+- Focus on ${cityName}, ${city.state} and its local events scene.
+- Include information about upcoming events, community activities, or local attractions.
+- Mention real places, venues, or organizations when possible.
+- Make the article helpful and informative for residents and visitors.
+- Include practical details like dates, times, locations, or contact information when relevant.
 
 ### OUTPUT
-Return only the satirical article in this format:
+Return only the article in this format:
 [HEADLINE]
 [ARTICLE BODY]`;
 

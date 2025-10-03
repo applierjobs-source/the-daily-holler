@@ -145,7 +145,7 @@ const PostDetail = () => {
         
         <div className="article-footer">
           <div className="article-tags">
-            <span className="tag">Satirical News</span>
+            <span className="tag">Events</span>
             <span className="tag">{article.cityName}</span>
             <span className="tag">{article.state}</span>
           </div>

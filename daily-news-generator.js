@@ -42,12 +42,12 @@ async function loadCities() {
 
 // Generate a base article (generic, not city-specific)
 async function generateBaseArticle(themeNumber) {
-  const prompt = `You are a satirical news writer for a site like *The Onion*. Your job is to create a unique, hilarious fake news article for a generic city.
+  const prompt = `You are a local events reporter writing for a community news website. Your job is to create an engaging article about local events and activities for a generic city.
 
 ### STYLE REQUIREMENTS
-- Tone: Deadpan journalistic, as if it were a serious AP newswire article, but absurd.
-- Humor: Mix of exaggeration, surrealism, and playful cultural references.
-- Headline: Punchy, 8–12 words, must set up the absurd premise. Use Title Case (NOT ALL CAPS).
+- Tone: Professional but friendly, informative and engaging.
+- Focus: Real local events, community activities, and things to do.
+- Headline: Clear and descriptive, 8–12 words. Use Title Case (NOT ALL CAPS).
 - Length: 250–400 words.
 - Format: [HEADLINE] + [ARTICLE BODY with 3–4 short paragraphs].
 
@@ -59,25 +59,25 @@ async function generateBaseArticle(themeNumber) {
 - Do NOT use any real city names like Springfield, Chicago, New York, etc.
 - Do NOT use any real state names like Illinois, California, etc.
 
-### THEMES (rotate for diversity)
-Choose **one theme** for this article. Distribute themes so no single idea feels overused.
+### CONTENT REQUIREMENTS
+Choose **one event type** for this article. Focus on real community activities and local events:
 
-#### Themes 1–200
-1. Local thrift store introduces bizarre membership rules
-2. Residents panic when town clock moves ahead one year
-3. Local brewery sparks outrage with strange new flavor
-4. Entire town takes part in confusing scavenger hunt
-5. Residents feud over misplaced statue
-6. Local carnival game sparks federal investigation
-7. City council debates outlawing squirrels
-8. Local marching band sparks international incident
-9. Farmers protest by painting absurd slogans on cows
-10. Entire town convinced famous celebrity is hiding locally
-11. Town builds unnecessary underground tunnel
-12. Residents feud over hot dog toppings
-13. Local marathon devolves into absurd chaos
-14. Public park swings cause surreal controversy
-15. Entire town starts speaking in rhymes
+#### Event Types 1–200
+1. Local farmers market expands with new vendors and activities
+2. Community center hosts weekly fitness classes and workshops
+3. Local library launches summer reading program for all ages
+4. Downtown hosts monthly art walk featuring local artists
+5. City park organizes family-friendly outdoor movie nights
+6. Local theater group presents community production
+7. Chamber of commerce sponsors business networking events
+8. Recreation department offers youth sports programs
+9. Local museum hosts educational exhibits and tours
+10. Community garden project brings neighbors together
+11. Local food truck festival celebrates diverse cuisines
+12. Senior center offers technology classes and social activities
+13. Local marathon promotes fitness and community spirit
+14. Public park hosts seasonal festivals and concerts
+15. Community choir performs at local venues
 16. Residents panic over oddly shaped cloud
 17. Local theater troupe sparks nationwide protest
 18. Town introduces absurd bedtime curfew for adults
