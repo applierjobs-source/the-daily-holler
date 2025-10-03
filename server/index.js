@@ -1975,6 +1975,12 @@ async function initDatabase() {
       ALTER TABLE articles 
       ADD COLUMN IF NOT EXISTS published_at TIMESTAMP
     `);
+    
+    // Add eventbrite_url column if it doesn't exist
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS eventbrite_url TEXT
+    `);
     console.log('✅ Database initialized');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
@@ -2146,7 +2152,8 @@ app.get('/api/articles/:id', async (req, res) => {
       publishedAt: article.publishedAt,
       created_at: article.created_at,
       theme: article.theme,
-      is_today: article.is_today
+      is_today: article.is_today,
+      eventbrite_url: article.eventbrite_url
     };
     
     res.json(transformedArticle);
@@ -2188,7 +2195,8 @@ app.get('/api/articles/by-slug/:slug', async (req, res) => {
       publishedAt: article.publishedAt,
       created_at: article.created_at,
       theme: article.theme,
-      is_today: article.is_today
+      is_today: article.is_today,
+      eventbrite_url: article.eventbrite_url
     };
     
     res.json(transformedArticle);
@@ -2849,8 +2857,8 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
         
         // Insert into database
         await pool.query(`
-          INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, eventbrite_url)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `, [
           articleData.headline,
           articleData.content,
@@ -2859,7 +2867,8 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
           slug,
           'local-events',
           true,
-          new Date()
+          new Date(),
+          eventDetails.url
         ]);
         
         created++;
@@ -2998,8 +3007,8 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
     
     // Insert into database
     await pool.query(`
-      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, eventbrite_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
       articleData.headline,
       articleData.content,
@@ -3008,7 +3017,8 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
       slug,
       'local-events',
       true,
-      new Date()
+      new Date(),
+      eventDetails.url
     ]);
     
     console.log(`✅ Created article for ${cityName}, ${state}`);

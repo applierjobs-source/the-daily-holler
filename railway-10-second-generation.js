@@ -95,8 +95,13 @@ async function testAPIConnection() {
   
   try {
     const response = await makeRequest(`${API_BASE_URL}/api/cities?limit=1`);
-    console.log('✅ API connection successful');
-    return true;
+    if (response && response.cities && Array.isArray(response.cities)) {
+      console.log('✅ API connection successful');
+      return true;
+    } else {
+      console.error('❌ API connection failed: Invalid response format');
+      return false;
+    }
   } catch (error) {
     console.error('❌ API connection failed:', error.message);
     return false;
@@ -112,12 +117,12 @@ async function fetchCities() {
   try {
     const response = await makeRequest(`${API_BASE_URL}/api/cities`);
     
-    if (!response || !Array.isArray(response)) {
+    if (!response || !response.cities || !Array.isArray(response.cities)) {
       throw new Error('Invalid cities response format');
     }
     
-    console.log(`✅ Found ${response.length} cities`);
-    return response;
+    console.log(`✅ Found ${response.cities.length} cities`);
+    return response.cities;
   } catch (error) {
     console.error('❌ Failed to fetch cities:', error.message);
     throw error;

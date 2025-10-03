@@ -151,6 +151,27 @@ const PostDetail = () => {
           </div>
           
           <div className="article-actions">
+            {article.eventbrite_url && (
+              <a 
+                href={article.eventbrite_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-orange"
+                style={{
+                  backgroundColor: '#ff6b35',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                  display: 'inline-block',
+                  marginBottom: '16px'
+                }}
+              >
+                Get Tickets Here
+              </a>
+            )}
             <Link to={`/cities/${citySlug}`} className="btn btn-outline">
               More {article.cityName} News
             </Link>
