@@ -3134,8 +3134,10 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
     const response = completion.choices[0].message.content;
     const articleData = JSON.parse(response);
     
-    // Generate slug
-    const slug = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${articleData.headline.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim('-')}`;
+    // Generate unique slug with timestamp to prevent duplicates
+    const baseSlug = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${articleData.headline.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim('-')}`;
+    const timestamp = Date.now();
+    const slug = `${baseSlug}-${timestamp}`;
     
     // Insert into database
     await pool.query(`
@@ -3224,14 +3226,23 @@ async function startArticleGeneration() {
     }
     
     console.log(`🔄 Starting 10-second generation for ${cities.length} cities`);
-    console.log('⏰ Each city will get a new article every ~2.8 hours (8,640 ten-second intervals ÷ 50 cities)');
+    console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 10) / 3600)} hours (${cities.length} cities × 10 seconds ÷ 3600 seconds/hour)`);
     
     let cityIndex = 0;
     let totalGenerated = 0;
     let totalFailed = 0;
+    let isProcessing = false; // Prevent concurrent processing
     
     // Generate 1 article every 10 seconds indefinitely
     setInterval(async () => {
+      // Prevent concurrent processing
+      if (isProcessing) {
+        console.log(`⏳ Skipping - already processing a city`);
+        return;
+      }
+      
+      isProcessing = true;
+      
       try {
         const currentCity = cities[cityIndex];
         
@@ -3245,15 +3256,20 @@ async function startArticleGeneration() {
           console.log(`✅ Success! Total generated: ${totalGenerated} | City index: ${cityIndex}`);
         } else {
           totalFailed++;
-          console.log(`❌ Failed! Total failed: ${totalFailed} | City index: ${cityIndex}`);
+          console.log(`❌ Failed! Total failed: ${totalFailed} | City index: ${cityIndex} | Error: ${result.error || 'Unknown error'}`);
         }
         
-        // Move to next city
+        // ALWAYS move to next city (even on failure)
         cityIndex = (cityIndex + 1) % cities.length;
         console.log(`🔄 Next city index: ${cityIndex}`);
         
       } catch (error) {
         console.error('❌ Error in article generation:', error.message);
+        // Move to next city even on error
+        cityIndex = (cityIndex + 1) % cities.length;
+        console.log(`🔄 Next city index after error: ${cityIndex}`);
+      } finally {
+        isProcessing = false;
       }
     }, 10000); // 10 seconds
     
