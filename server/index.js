@@ -2645,6 +2645,34 @@ app.post('/api/fix-db', async (req, res) => {
   }
 });
 
+// Test endpoint to add Eventbrite URL to existing article
+app.post('/api/test-eventbrite-button', async (req, res) => {
+  try {
+    console.log('🧪 Adding Eventbrite URL to test article...');
+    
+    // Update the first article to have an Eventbrite URL
+    await pool.query(`
+      UPDATE articles 
+      SET eventbrite_url = $1
+      WHERE id = 1
+    `, ['https://www.eventbrite.com/e/test-event-tickets-123456789']);
+    
+    console.log('✅ Eventbrite URL added to test article');
+    res.json({
+      success: true,
+      message: 'Eventbrite URL added to test article',
+      eventbrite_url: 'https://www.eventbrite.com/e/test-event-tickets-123456789'
+    });
+    
+  } catch (error) {
+    console.error('❌ Error adding Eventbrite URL:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Test endpoint to create a single article
 app.post('/api/test-article', async (req, res) => {
   try {
