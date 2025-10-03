@@ -53,10 +53,6 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="footer-bottom-content">
           <p>&copy; {currentYear} The Daily Holler. All rights reserved.</p>
-          <p className="disclaimer">
-            <strong>Disclaimer:</strong> All content on this site is for entertainment and informational purposes. 
-            Any resemblance to real events or persons is purely coincidental.
-          </p>
         </div>
       </div>
     </footer>
