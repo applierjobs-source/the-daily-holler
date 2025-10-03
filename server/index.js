@@ -2434,17 +2434,25 @@ app.get('/api/test-db', async (req, res) => {
     const result = await pool.query('SELECT COUNT(*) FROM articles');
     
     // Check if published_at column exists
-    const columnCheck = await pool.query(`
+    const publishedAtCheck = await pool.query(`
       SELECT column_name 
       FROM information_schema.columns 
       WHERE table_name = 'articles' AND column_name = 'published_at'
+    `);
+    
+    // Check if eventbrite_url column exists
+    const eventbriteUrlCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'articles' AND column_name = 'eventbrite_url'
     `);
     
     res.json({ 
       success: true, 
       message: 'Database connected successfully',
       articleCount: parseInt(result.rows[0].count),
-      hasPublishedAtColumn: columnCheck.rows.length > 0
+      hasPublishedAtColumn: publishedAtCheck.rows.length > 0,
+      hasEventbriteUrlColumn: eventbriteUrlCheck.rows.length > 0
     });
   } catch (error) {
     res.status(500).json({ 
