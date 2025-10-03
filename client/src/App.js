@@ -68,8 +68,8 @@ function AppContent() {
           <Route path="/cities/:citySlug" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug/:category" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug/all" element={<CityHub cities={cities} />} />
-          <Route path="/cities/:citySlug/article/:articleSlug" element={<PostDetail />} />
-          <Route path="/:citySlug/article/:articleSlug" element={<PostDetail />} />
+          <Route path="/cities/:citySlug/events/:articleSlug" element={<PostDetail />} />
+          <Route path="/:citySlug/events/:articleSlug" element={<PostDetail />} />
           <Route path="/article/:id" element={<PostDetail />} />
           <Route path="/test-article/:id" element={<TestArticle />} />
           <Route path="/news" element={<News cities={cities} />} />

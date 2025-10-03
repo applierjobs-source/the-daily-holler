@@ -15,7 +15,7 @@ const PostDetail = () => {
         let articleData;
         
         if (articleSlug && citySlug) {
-          // New URL format: /cities/city-slug/article/article-slug
+          // New URL format: /cities/city-slug/events/article-slug
           // Fetch article by slug
           const response = await fetch(`/api/articles/by-slug/${articleSlug}`);
           
