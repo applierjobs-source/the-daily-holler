@@ -3112,6 +3112,59 @@ if (isProduction) {
   });
 }
 
+// Article generation background task
+async function startArticleGeneration() {
+  console.log('🚀 Starting background article generation...');
+  
+  // Import the article generation logic
+  const { generateArticleForCity, fetchCities } = require('../railway-10-second-generation.js');
+  
+  try {
+    // Fetch all cities
+    const cities = await fetchCities();
+    if (cities.length === 0) {
+      console.log('❌ No cities found for article generation');
+      return;
+    }
+    
+    console.log(`🔄 Starting 10-second generation for ${cities.length} cities`);
+    console.log('⏰ Each city will get a new article every ~2.8 hours (8,640 ten-second intervals ÷ 50 cities)');
+    
+    let cityIndex = 0;
+    let totalGenerated = 0;
+    let totalFailed = 0;
+    
+    // Generate 1 article every 10 seconds indefinitely
+    setInterval(async () => {
+      try {
+        const currentCity = cities[cityIndex];
+        
+        console.log(`\n⏰ ${new Date().toISOString()} - Generating article ${totalGenerated + 1}`);
+        console.log(`🏙️ Processing: ${currentCity.name}, ${currentCity.state}`);
+        
+        const result = await generateArticleForCity(currentCity);
+        
+        if (result.success) {
+          totalGenerated++;
+          console.log(`✅ Success! Total generated: ${totalGenerated}`);
+        } else {
+          totalFailed++;
+          console.log(`❌ Failed! Total failed: ${totalFailed}`);
+        }
+        
+        // Move to next city
+        cityIndex = (cityIndex + 1) % cities.length;
+        
+      } catch (error) {
+        console.error('❌ Error in article generation:', error.message);
+      }
+    }, 10000); // 10 seconds
+    
+  } catch (error) {
+    console.error('❌ Failed to start article generation:', error.message);
+  }
+}
+
 // Initialize data and start server
 initializeData().then(async () => {
   try {
@@ -3133,8 +3186,8 @@ initializeData().then(async () => {
       console.log(`🌐 Production mode: Serving React app`);
     }
     
-    // Note: Daily generation is now handled by Railway cron job
-    // Removed automatic startup and hourly checks to prevent duplicate generation
+    // Start background article generation
+    startArticleGeneration();
   });
 }).catch(error => {
   console.error('❌ Application startup failed:', error);

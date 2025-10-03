@@ -235,8 +235,17 @@ async function start10SecondGeneration() {
   }
 }
 
-// Start the generation
-start10SecondGeneration().catch(error => {
-  console.error('💥 Unhandled error:', error);
-  process.exit(1);
-});
+// Export functions for use in other modules
+module.exports = {
+  generateArticleForCity,
+  fetchCities,
+  makeRequest
+};
+
+// Start the generation if this file is run directly
+if (require.main === module) {
+  start10SecondGeneration().catch(error => {
+    console.error('💥 Unhandled error:', error);
+    process.exit(1);
+  });
+}
