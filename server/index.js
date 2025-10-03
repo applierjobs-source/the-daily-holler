@@ -3236,20 +3236,21 @@ async function startArticleGeneration() {
         const currentCity = cities[cityIndex];
         
         console.log(`\n⏰ ${new Date().toISOString()} - Generating article ${totalGenerated + 1}`);
-        console.log(`🏙️ Processing: ${currentCity.name}, ${currentCity.state}`);
+        console.log(`🏙️ Processing: ${currentCity.name}, ${currentCity.state} (City ${cityIndex + 1}/${cities.length})`);
         
         const result = await generateArticleForCity(currentCity);
         
         if (result.success) {
           totalGenerated++;
-          console.log(`✅ Success! Total generated: ${totalGenerated}`);
+          console.log(`✅ Success! Total generated: ${totalGenerated} | City index: ${cityIndex}`);
         } else {
           totalFailed++;
-          console.log(`❌ Failed! Total failed: ${totalFailed}`);
+          console.log(`❌ Failed! Total failed: ${totalFailed} | City index: ${cityIndex}`);
         }
         
         // Move to next city
         cityIndex = (cityIndex + 1) % cities.length;
+        console.log(`🔄 Next city index: ${cityIndex}`);
         
       } catch (error) {
         console.error('❌ Error in article generation:', error.message);
