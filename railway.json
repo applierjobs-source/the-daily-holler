@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install"
+    "buildCommand": "npm install --production"
   },
   "deploy": {
     "startCommand": "node railway-10-second-generation.js"
