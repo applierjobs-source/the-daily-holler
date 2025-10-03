@@ -44,10 +44,6 @@ const Privacy = () => {
           <h2>3. Third-Party Services</h2>
           <p>We use third-party services that may collect information about you:</p>
           
-          <h3>Google AdSense</h3>
-          <p>
-            We use Google AdSense to display advertisements. Google may use cookies and similar technologies to serve ads based on your visits to our site and other sites on the Internet. You can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Google Ad Settings</a>.
-          </p>
           
           <h3>Analytics</h3>
           <p>

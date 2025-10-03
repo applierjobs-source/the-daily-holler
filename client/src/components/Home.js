@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { generateArticleUrl, generateCitySlug } from '../utils/slugUtils';
-import { HeaderAd, InContentAd } from './AdBanner';
 
 const Home = () => {
   const [todayArticles, setTodayArticles] = useState([]);
@@ -77,7 +76,6 @@ const Home = () => {
 
   return (
     <div className="news-page">
-      <HeaderAd />
       
       <div className="news-header">
         <h1>📰 Latest News</h1>
