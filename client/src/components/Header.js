@@ -62,6 +62,15 @@ const Header = () => {
             </li>
             <li>
               <Link 
+                to="/jobs" 
+                className={isActive('/jobs') ? 'active' : ''}
+                onClick={closeMobileMenu}
+              >
+                💼 Jobs
+              </Link>
+            </li>
+            <li>
+              <Link 
                 to="/about" 
                 className={isActive('/about') ? 'active' : ''}
                 onClick={closeMobileMenu}

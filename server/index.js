@@ -2500,12 +2500,18 @@ app.get('/sitemap.xml', async (req, res) => {
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
-  <url>
-    <loc>${baseUrl}/privacy</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>`;
+         <url>
+           <loc>${baseUrl}/privacy</loc>
+           <lastmod>${now}</lastmod>
+           <changefreq>monthly</changefreq>
+           <priority>0.3</priority>
+         </url>
+         <url>
+           <loc>${baseUrl}/jobs</loc>
+           <lastmod>${now}</lastmod>
+           <changefreq>weekly</changefreq>
+           <priority>0.7</priority>
+         </url>`;
 
     // Add recent articles (last 1000 for performance)
     try {
