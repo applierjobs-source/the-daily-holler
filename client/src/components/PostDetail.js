@@ -170,8 +170,9 @@ const PostDetail = () => {
             href={article.eventbrite_url} 
             target="_blank" 
             rel="noopener noreferrer" 
+            className="sticky-tickets-btn"
             style={{
-              backgroundColor: '#ff6b35 !important',
+              backgroundColor: '#ff6b35',
               color: 'white',
               border: '2px solid white',
               padding: '16px 32px',

@@ -2044,6 +2044,17 @@
   }
 }
 
+/* Sticky Tickets Button Styles */
+.sticky-tickets-btn {
+  background-color: #ff6b35 !important;
+  color: white !important;
+  border: 2px solid white !important;
+}
+
+.sticky-tickets-button {
+  background-color: #007bff !important;
+}
+
 /* About Page Styles */
 .about-page {
   min-height: 100vh;
