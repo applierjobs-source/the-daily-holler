@@ -1776,10 +1776,12 @@ async function fetchEventDetails(eventUrl) {
         title: extractEventTitle(html),
         description: extractEventDescription(html),
         date: extractEventDate(html),
-        venue: extractEventVenue(html)
+        venue: extractEventVenue(html),
+        location: extractEventLocation(html)
       };
       
       console.log(`📋 Event details: ${eventInfo.title}`);
+      console.log(`📍 Event location: ${eventInfo.location || 'Not found'}`);
       return eventInfo;
     } else {
       console.log(`❌ Failed to fetch event page: ${response.status}`);
@@ -1879,6 +1881,55 @@ function extractEventVenue(html) {
   } catch (error) {
     return 'Event Venue';
   }
+}
+
+// Extract event location/address from HTML
+function extractEventLocation(html) {
+  try {
+    const patterns = [
+      /"address":\s*{[^}]*"address_1":\s*"([^"]+)"/,
+      /"location":\s*{[^}]*"address":\s*{[^}]*"street_address":\s*"([^"]+)"/,
+      /<div[^>]*class="[^"]*location[^"]*"[^>]*>([^<]+)</,
+      /<span[^>]*class="[^"]*location[^"]*"[^>]*>([^<]+)</,
+      /"addressLocality":\s*"([^"]+)"/,
+      /"addressRegion":\s*"([^"]+)"/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Validate that event location matches target city
+function validateEventLocation(eventLocation, targetCity, targetState) {
+  if (!eventLocation) {
+    console.log(`⚠️ No location found for event - skipping validation`);
+    return false;
+  }
+  
+  const location = eventLocation.toLowerCase();
+  const city = targetCity.toLowerCase();
+  const state = targetState.toLowerCase();
+  
+  // Check if the event location contains the target city
+  const cityMatch = location.includes(city);
+  
+  // Check if the event location contains the target state
+  const stateMatch = location.includes(state);
+  
+  console.log(`🔍 Location validation: "${location}" vs "${city}, ${state}"`);
+  console.log(`📍 City match: ${cityMatch}, State match: ${stateMatch}`);
+  
+  // Event must match both city AND state to be valid
+  return cityMatch && stateMatch;
 }
 
 // Generate general city content when no events are found
@@ -2936,6 +2987,13 @@ app.post('/api/generate-daily-articles', async (req, res) => {
           continue;
         }
         
+        // Validate that the event is actually in the target city
+        if (!validateEventLocation(eventDetails.location, city.name, city.state)) {
+          console.log(`⚠️ Event location "${eventDetails.location}" doesn't match target city "${city.name}, ${city.state}" - skipping`);
+          failed++;
+          continue;
+        }
+        
         // Generate article using OpenAI with real event data
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
@@ -3081,6 +3139,18 @@ app.post('/api/generate-single-article', async (req, res) => {
       return res.json({
         success: false,
         error: 'Failed to fetch event details',
+        cityName,
+        state
+      });
+    }
+    
+    // Validate that the event is actually in the target city
+    if (!validateEventLocation(eventDetails.location, cityName, state)) {
+      console.log(`⚠️ Event location "${eventDetails.location}" doesn't match target city "${cityName}, ${state}" - skipping`);
+      return res.json({
+        success: false,
+        error: `Event is not in ${cityName}, ${state}`,
+        eventLocation: eventDetails.location,
         cityName,
         state
       });
