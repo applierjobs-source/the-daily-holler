@@ -171,7 +171,7 @@ const PostDetail = () => {
             target="_blank" 
             rel="noopener noreferrer" 
             style={{
-              backgroundColor: '#007bff !important',
+              backgroundColor: '#ff6b35 !important',
               color: 'white',
               border: '2px solid white',
               padding: '16px 32px',
