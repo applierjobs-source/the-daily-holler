@@ -158,9 +158,8 @@ const PostDetail = () => {
             left: '0',
             right: '0',
             width: '100%',
-            backgroundColor: '#007bff',
+            backgroundColor: 'transparent',
             padding: '16px',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
             zIndex: 1000,
             textAlign: 'center'
           }}
