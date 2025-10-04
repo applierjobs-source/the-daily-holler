@@ -1931,18 +1931,28 @@ function validateEventLocation(eventLocation, targetCity, targetState) {
   console.log(`🔍 Location validation: "${location}" vs "${city}, ${state}"`);
   console.log(`📍 City match: ${cityMatch}, State match: ${stateMatch}, State abbrev match: ${stateAbbrevMatch}`);
   
-  // Event is valid if:
-  // 1. City matches AND (state matches OR state abbreviation matches), OR
-  // 2. City matches and location contains common city indicators (like "AL" for Alabama cities), OR
-  // 3. City matches and no conflicting state information (for city-only locations)
+  // List of common city names that exist in multiple states (require state validation)
+  const ambiguousCities = [
+    'greenville', 'springfield', 'franklin', 'clinton', 'madison', 'georgetown', 
+    'marion', 'salem', 'lexington', 'richmond', 'columbia', 'auburn', 'troy',
+    'birmingham', 'milton', 'athens', 'newport', 'washington', 'jackson',
+    'rochester', 'portland', 'aurora', 'glendale', 'huntington', 'warren'
+  ];
+  
+  // Check if this is an ambiguous city name
+  const isAmbiguousCity = ambiguousCities.includes(city);
+  
+  // For ambiguous cities, we MUST have state information
+  if (isAmbiguousCity) {
+    const isValid = cityMatch && (stateMatch || stateAbbrevMatch);
+    console.log(`🚨 Ambiguous city "${city}" - requiring state validation: ${isValid}`);
+    return isValid;
+  }
+  
+  // For non-ambiguous cities, allow city-only locations
   const isValid = cityMatch && (stateMatch || stateAbbrevMatch || 
-    (state === 'al' && location.includes('al')) ||
-    (state === 'ca' && location.includes('ca')) ||
-    (state === 'ny' && location.includes('ny')) ||
-    (state === 'tx' && location.includes('tx')) ||
-    (state === 'fl' && location.includes('fl')) ||
-    // Allow city-only locations if no conflicting state info
-    (!location.includes('ny') && !location.includes('ca') && !location.includes('tx') && !location.includes('fl') && state === 'al'));
+    // Allow city-only for non-ambiguous cities
+    (!isAmbiguousCity));
   
   return isValid;
 }
