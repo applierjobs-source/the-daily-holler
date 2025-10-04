@@ -152,14 +152,13 @@ const PostDetail = () => {
       {/* Sticky Get Tickets Button */}
       {article.eventbrite_url && (
         <div 
-          className="sticky-tickets-button"
           style={{
             position: 'fixed',
             bottom: '0',
             left: '0',
             right: '0',
             width: '100%',
-            backgroundColor: '#007bff !important',
+            backgroundColor: '#007bff',
             padding: '16px',
             boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
             zIndex: 1000,
@@ -170,7 +169,6 @@ const PostDetail = () => {
             href={article.eventbrite_url} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="sticky-tickets-btn"
             style={{
               backgroundColor: '#ff6b35',
               color: 'white',
