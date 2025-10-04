@@ -139,27 +139,6 @@ const PostDetail = () => {
           </div>
           
           <div className="article-actions">
-            {article.eventbrite_url && (
-              <a 
-                href={article.eventbrite_url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="btn btn-orange"
-                style={{
-                  backgroundColor: '#ff6b35',
-                  color: 'white',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontWeight: 'bold',
-                  display: 'inline-block',
-                  marginBottom: '16px'
-                }}
-              >
-                Get Tickets Here
-              </a>
-            )}
             <Link to={`/cities/${citySlug}`} className="btn btn-outline">
               More {article.cityName} News
             </Link>
@@ -169,6 +148,52 @@ const PostDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Sticky Get Tickets Button */}
+      {article.eventbrite_url && (
+        <div 
+          className="sticky-tickets-button"
+          style={{
+            position: 'fixed',
+            bottom: '0',
+            left: '0',
+            right: '0',
+            width: '100%',
+            backgroundColor: '#ff6b35',
+            padding: '16px',
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+            zIndex: 1000,
+            textAlign: 'center'
+          }}
+        >
+          <a 
+            href={article.eventbrite_url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{
+              backgroundColor: '#ff6b35',
+              color: 'white',
+              border: '2px solid white',
+              padding: '16px 32px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: '18px',
+              display: 'inline-block',
+              width: 'calc(100% - 32px)',
+              maxWidth: '400px',
+              boxSizing: 'border-box'
+            }}
+          >
+            🎫 Get Tickets Here
+          </a>
+        </div>
+      )}
+      
+      {/* Add bottom padding to prevent content from being hidden behind sticky button */}
+      {article.eventbrite_url && (
+        <div style={{ height: '100px' }}></div>
+      )}
     </div>
   );
 };
