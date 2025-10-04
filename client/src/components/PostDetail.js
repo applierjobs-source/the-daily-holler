@@ -159,7 +159,7 @@ const PostDetail = () => {
             left: '0',
             right: '0',
             width: '100%',
-            backgroundColor: '#007bff',
+            backgroundColor: '#007bff !important',
             padding: '16px',
             boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
             zIndex: 1000,
@@ -171,7 +171,7 @@ const PostDetail = () => {
             target="_blank" 
             rel="noopener noreferrer" 
             style={{
-              backgroundColor: '#007bff',
+              backgroundColor: '#007bff !important',
               color: 'white',
               border: '2px solid white',
               padding: '16px 32px',
