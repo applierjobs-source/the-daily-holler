@@ -1942,10 +1942,19 @@ function validateEventLocation(eventLocation, targetCity, targetState) {
   // Check if this is an ambiguous city name
   const isAmbiguousCity = ambiguousCities.includes(city);
   
-  // For ambiguous cities, we MUST have state information
+  // For ambiguous cities, we need to be more careful but not too strict
   if (isAmbiguousCity) {
-    const isValid = cityMatch && (stateMatch || stateAbbrevMatch);
-    console.log(`🚨 Ambiguous city "${city}" - requiring state validation: ${isValid}`);
+    // Allow city-only matches if no conflicting state information is present
+    const hasConflictingState = location.includes('ny') || location.includes('ca') || 
+                               location.includes('tx') || location.includes('fl') || 
+                               location.includes('sc') || location.includes('nc') ||
+                               location.includes('ga') || location.includes('tn') ||
+                               location.includes('ms') || location.includes('la');
+    
+    const isValid = cityMatch && (stateMatch || stateAbbrevMatch || 
+      (state === 'al' && !hasConflictingState));
+    
+    console.log(`🚨 Ambiguous city "${city}" - state validation: ${isValid} (has conflicting state: ${hasConflictingState})`);
     return isValid;
   }
   
