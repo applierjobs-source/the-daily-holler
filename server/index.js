@@ -3326,8 +3326,8 @@ async function startArticleGeneration() {
       return;
     }
     
-    console.log(`🔄 Starting 10-second generation for ${cities.length} cities`);
-    console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 10) / 3600)} hours (${cities.length} cities × 10 seconds ÷ 3600 seconds/hour)`);
+           console.log(`🔄 Starting 2-second generation for ${cities.length} cities`);
+           console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 2) / 3600)} hours (${cities.length} cities × 2 seconds ÷ 3600 seconds/hour)`);
     
     let cityIndex = 0;
     let totalGenerated = 0;
@@ -3369,10 +3369,10 @@ async function startArticleGeneration() {
         // Move to next city even on error
         cityIndex = (cityIndex + 1) % cities.length;
         console.log(`🔄 Next city index after error: ${cityIndex}`);
-      } finally {
-        isProcessing = false;
-      }
-    }, 10000); // 10 seconds
+             } finally {
+               isProcessing = false;
+             }
+           }, 2000); // 2 seconds
     
   } catch (error) {
     console.error('❌ Failed to start article generation:', error.message);
@@ -3400,7 +3400,7 @@ initializeData().then(async () => {
       console.log(`🌐 Production mode: Serving React app`);
     }
     
-    // Start background article generation
+    // Start background article generation (every 2 seconds)
     startArticleGeneration();
   });
 }).catch(error => {

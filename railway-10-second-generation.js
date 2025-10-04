@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Railway 10-Second Article Generation Script
+ * Railway 2-Second Article Generation Script
  * 
- * This script generates exactly 1 article every 10 seconds, cycling through cities
+ * This script generates exactly 1 article every 2 seconds, cycling through cities
  * to ensure continuous content generation around the clock.
  */
 
@@ -16,10 +16,10 @@ const API_BASE_URL = process.env.API_BASE_URL || 'https://holler.news';
 const MAX_RETRIES = 5;
 const REQUEST_TIMEOUT = 60000; // 60 seconds timeout
 
-console.log('🚀 Railway 10-Second Article Generation Starting...');
+console.log('🚀 Railway 2-Second Article Generation Starting...');
 console.log(`📡 API Base URL: ${API_BASE_URL}`);
 console.log(`⏰ Started at: ${new Date().toISOString()}`);
-console.log('🎯 Target: 1 article every 10 seconds (360 articles/hour, 8,640/day)');
+console.log('🎯 Target: 1 article every 2 seconds (1,800 articles/hour, 43,200/day)');
 
 /**
  * Make HTTP request with retry logic
@@ -160,9 +160,9 @@ async function generateArticleForCity(city) {
 }
 
 /**
- * Main generation loop - generates 1 article every 10 seconds
+ * Main generation loop - generates 1 article every 2 seconds
  */
-async function start10SecondGeneration() {
+async function start2SecondGeneration() {
   try {
     // Test API connection first
     const connectionOk = await testAPIConnection();
@@ -180,14 +180,14 @@ async function start10SecondGeneration() {
       return;
     }
     
-    console.log(`🔄 Starting 10-second generation for ${cities.length} cities`);
-    console.log('⏰ Each city will get a new article every ~2.8 hours (8,640 ten-second intervals ÷ 50 cities)');
+    console.log(`🔄 Starting 2-second generation for ${cities.length} cities`);
+    console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 2) / 3600)} hours (${cities.length} cities × 2 seconds ÷ 3600 seconds/hour)`);
     
     let cityIndex = 0;
     let totalGenerated = 0;
     let totalFailed = 0;
     
-    // Generate 1 article every 10 seconds indefinitely
+    // Generate 1 article every 2 seconds indefinitely
     while (true) {
       const currentCity = cities[cityIndex];
       
@@ -219,11 +219,11 @@ async function start10SecondGeneration() {
       // Move to next city
       cityIndex = (cityIndex + 1) % cities.length;
       
-      // Calculate time to wait for next 10-second interval
+      // Calculate time to wait for next 2-second interval
       const elapsedTime = Date.now() - startTime;
-      const waitTime = Math.max(0, 10000 - elapsedTime); // Wait until next 10 seconds
+      const waitTime = Math.max(0, 2000 - elapsedTime); // Wait until next 2 seconds
       
-      console.log(`⏳ Waiting ${Math.round(waitTime / 1000)} seconds until next 10-second interval...`);
+      console.log(`⏳ Waiting ${Math.round(waitTime / 1000)} seconds until next 2-second interval...`);
       
       if (waitTime > 0) {
         await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -245,7 +245,7 @@ module.exports = {
 
 // Start the generation if this file is run directly
 if (require.main === module) {
-  start10SecondGeneration().catch(error => {
+  start2SecondGeneration().catch(error => {
     console.error('💥 Unhandled error:', error);
     process.exit(1);
   });
