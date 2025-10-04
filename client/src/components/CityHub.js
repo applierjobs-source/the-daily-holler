@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generateArticleUrl, parseCitySlug } from '../utils/slugUtils';
+import { Helmet } from 'react-helmet';
 
 const CityHub = ({ cities }) => {
   const { citySlug } = useParams();
@@ -131,6 +132,18 @@ const CityHub = ({ cities }) => {
 
   return (
     <div className="city-hub">
+      {city && (
+        <Helmet>
+          <title>{city.name}, {city.stateName} Events & Local News | The Daily Holler</title>
+          <meta name="description" content={`Discover local events, activities, and community happenings in ${city.name}, ${city.stateName}. Stay informed about what's happening in your city with real-time updates and local insights.`} />
+          <meta name="keywords" content={`${city.name} events, ${city.name} activities, ${city.stateName} local news, ${city.name} community events, things to do in ${city.name}`} />
+          <meta property="og:title" content={`${city.name}, ${city.stateName} Events & Local News | The Daily Holler`} />
+          <meta property="og:description" content={`Discover local events, activities, and community happenings in ${city.name}, ${city.stateName}. Stay informed about what's happening in your city.`} />
+          <meta property="og:url" content={`https://holler.news/cities/${citySlug}`} />
+          <link rel="canonical" href={`https://holler.news/cities/${citySlug}`} />
+        </Helmet>
+      )}
+      
       {/* City Header */}
       <div className="city-header">
         <div className="breadcrumb">
@@ -142,8 +155,8 @@ const CityHub = ({ cities }) => {
         </h1>
         
         <p className="city-description">
-          Find local events and things to do in {city.name}, {city.stateName}. 
-          Stay informed with our unique take on local events, politics, and community happenings.
+          Discover local events, activities, and community happenings in {city.name}, {city.stateName}. 
+          Stay informed about what's happening in your city with real-time updates and local insights.
         </p>
 
         {/* City Stats */}
