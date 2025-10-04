@@ -3,97 +3,116 @@ import React, { useState, useEffect } from 'react';
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error] = useState(null);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [stats, setStats] = useState(null);
+
+  const JOBS_PER_PAGE = 20;
 
   useEffect(() => {
-    // For now, we'll use mock data since we don't have a jobs API yet
-    // In the future, this could fetch from a jobs API
-    const mockJobs = [
-      {
-        id: 1,
-        title: "Event Coordinator",
-        company: "Local Events Inc.",
-        location: "Atlanta, GA",
-        category: "Events",
-        type: "Full-time",
-        salary: "$45,000 - $55,000",
-        description: "Coordinate local events and manage event logistics for community gatherings.",
-        postedDate: "2025-10-03",
-        requirements: ["Bachelor's degree", "2+ years event planning experience", "Strong communication skills"]
-      },
-      {
-        id: 2,
-        title: "Community Manager",
-        company: "City Connect",
-        location: "Austin, TX",
-        category: "Community",
-        type: "Full-time",
-        salary: "$50,000 - $65,000",
-        description: "Build and manage local community engagement programs and partnerships.",
-        postedDate: "2025-10-02",
-        requirements: ["Marketing or Communications degree", "Social media experience", "Community outreach experience"]
-      },
-      {
-        id: 3,
-        title: "Local News Reporter",
-        company: "The Daily Holler",
-        location: "Remote",
-        category: "Journalism",
-        type: "Part-time",
-        salary: "$25 - $35/hour",
-        description: "Write engaging articles about local events and community happenings.",
-        postedDate: "2025-10-01",
-        requirements: ["Journalism or English degree", "Writing portfolio", "Local knowledge preferred"]
-      },
-      {
-        id: 4,
-        title: "Marketing Specialist",
-        company: "Local Business Solutions",
-        location: "Denver, CO",
-        category: "Marketing",
-        type: "Full-time",
-        salary: "$55,000 - $70,000",
-        description: "Develop marketing strategies for local businesses and community events.",
-        postedDate: "2025-09-30",
-        requirements: ["Marketing degree", "3+ years experience", "Digital marketing skills"]
-      },
-      {
-        id: 5,
-        title: "Event Photographer",
-        company: "Capture Moments",
-        location: "Miami, FL",
-        category: "Photography",
-        type: "Contract",
-        salary: "$150 - $300/event",
-        description: "Photograph local events, festivals, and community gatherings.",
-        postedDate: "2025-09-29",
-        requirements: ["Professional photography experience", "Portfolio required", "Equipment provided"]
+    fetchJobs();
+    fetchStats();
+  }, [page, searchTerm, locationFilter, categoryFilter, sourceFilter]);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: JOBS_PER_PAGE.toString()
+      });
+      
+      if (searchTerm) params.append('search', searchTerm);
+      if (locationFilter) params.append('location', locationFilter);
+      if (categoryFilter) params.append('category', categoryFilter);
+      if (sourceFilter) params.append('source', sourceFilter);
+      
+      const response = await fetch(`/api/jobs?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(data.jobs || []);
+        setTotalPages(data.totalPages || 0);
+        setTotalJobs(data.total || 0);
+      } else {
+        setError('Failed to load jobs');
       }
-    ];
-
-    // Simulate API call
-    setTimeout(() => {
-      setJobs(mockJobs);
+    } catch (err) {
+      console.error('Error fetching jobs:', err);
+      setError('Failed to load jobs');
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/jobs/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(1); // Reset to first page when searching
+  };
+
+  const handleLocationFilter = (e) => {
+    setLocationFilter(e.target.value);
+    setPage(1);
+  };
+
+  const handleCategoryFilter = (e) => {
+    setCategoryFilter(e.target.value);
+    setPage(1);
+  };
+
+  const handleSourceFilter = (e) => {
+    setSourceFilter(e.target.value);
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    window.scrollTo(0, 0); // Scroll to top when changing pages
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getSourceBadge = (source) => {
+    const badges = {
+      'indeed': { text: 'Indeed', class: 'source-indeed' },
+      'glassdoor': { text: 'Glassdoor', class: 'source-glassdoor' },
+      'craigslist': { text: 'Craigslist', class: 'source-craigslist' },
+      'linkedin': { text: 'LinkedIn', class: 'source-linkedin' }
+    };
     
-    const matchesLocation = !locationFilter || job.location.toLowerCase().includes(locationFilter.toLowerCase());
-    
-    const matchesCategory = !categoryFilter || job.category === categoryFilter;
+    const badge = badges[source] || { text: source || 'Unknown', class: 'source-unknown' };
+    return <span className={`source-badge ${badge.class}`}>{badge.text}</span>;
+  };
 
-    return matchesSearch && matchesLocation && matchesCategory;
-  });
-
-  const categories = [...new Set(jobs.map(job => job.category))];
+  // Get unique categories and sources for filter dropdowns
+  const categories = [...new Set(jobs.map(job => job.category).filter(Boolean))];
+  const sources = [...new Set(jobs.map(job => job.source).filter(Boolean))];
 
   if (loading) {
     return (
@@ -122,6 +141,29 @@ const Jobs = () => {
       <div className="jobs-header">
         <h1>Local Jobs & Opportunities</h1>
         <p>Find meaningful work in your community with The Daily Holler's job board</p>
+        
+        {stats && (
+          <div className="jobs-stats">
+            <div className="stat-item">
+              <span className="stat-number">{stats.totalJobs.toLocaleString()}</span>
+              <span className="stat-label">Total Jobs</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{stats.citiesWithJobs}</span>
+              <span className="stat-label">Cities Covered</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{stats.coverage}</span>
+              <span className="stat-label">Coverage</span>
+            </div>
+            {stats.lastUpdated && (
+              <div className="stat-item">
+                <span className="stat-number">Updated</span>
+                <span className="stat-label">{formatDate(stats.lastUpdated)}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="jobs-filters">
@@ -130,7 +172,7 @@ const Jobs = () => {
             type="text"
             placeholder="Search jobs, companies, or keywords..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
             className="search-input"
           />
         </div>
@@ -140,7 +182,7 @@ const Jobs = () => {
             type="text"
             placeholder="Filter by location..."
             value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
+            onChange={handleLocationFilter}
             className="location-input"
           />
         </div>
@@ -148,7 +190,7 @@ const Jobs = () => {
         <div className="filter-group">
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={handleCategoryFilter}
             className="category-select"
           >
             <option value="">All Categories</option>
@@ -157,52 +199,134 @@ const Jobs = () => {
             ))}
           </select>
         </div>
+
+        <div className="filter-group">
+          <select
+            value={sourceFilter}
+            onChange={handleSourceFilter}
+            className="source-select"
+          >
+            <option value="">All Sources</option>
+            {sources.map(source => (
+              <option key={source} value={source}>{source.charAt(0).toUpperCase() + source.slice(1)}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="jobs-results">
         <div className="results-header">
-          <h3>{filteredJobs.length} Job{filteredJobs.length !== 1 ? 's' : ''} Found</h3>
-        </div>
-
-        <div className="jobs-list">
-          {filteredJobs.length === 0 ? (
-            <div className="no-jobs">
-              <p>No jobs found matching your criteria. Try adjusting your filters.</p>
+          <h3>{totalJobs.toLocaleString()} Job{totalJobs !== 1 ? 's' : ''} Found</h3>
+          {totalPages > 1 && (
+            <div className="pagination-info">
+              Page {page} of {totalPages}
             </div>
-          ) : (
-            filteredJobs.map(job => (
-              <div key={job.id} className="job-card">
-                <div className="job-header">
-                  <h3 className="job-title">{job.title}</h3>
-                  <div className="job-meta">
-                    <span className="job-company">{job.company}</span>
-                    <span className="job-location">📍 {job.location}</span>
-                    <span className="job-type">{job.type}</span>
-                  </div>
-                </div>
-                
-                <div className="job-details">
-                  <p className="job-salary">💰 {job.salary}</p>
-                  <p className="job-description">{job.description}</p>
-                  
-                  <div className="job-requirements">
-                    <h4>Requirements:</h4>
-                    <ul>
-                      {job.requirements.map((req, index) => (
-                        <li key={index}>{req}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                
-                <div className="job-footer">
-                  <span className="job-posted">Posted: {new Date(job.postedDate).toLocaleDateString()}</span>
-                  <button className="apply-btn">Apply Now</button>
-                </div>
-              </div>
-            ))
           )}
         </div>
+
+        {loading ? (
+          <div className="loading">
+            <p>Loading jobs...</p>
+          </div>
+        ) : error ? (
+          <div className="error">
+            <p>{error}</p>
+            <button onClick={fetchJobs} className="retry-btn">Retry</button>
+          </div>
+        ) : (
+          <>
+            <div className="jobs-list">
+              {jobs.length === 0 ? (
+                <div className="no-jobs">
+                  <p>No jobs found matching your criteria. Try adjusting your filters.</p>
+                  {stats && stats.totalJobs === 0 && (
+                    <p className="no-data-message">
+                      No jobs have been scraped yet. Check back later or contact us to add job sources.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                jobs.map(job => (
+                  <div key={job.id} className="job-card">
+                    <div className="job-header">
+                      <h3 className="job-title">{job.title}</h3>
+                      <div className="job-meta">
+                        <span className="job-company">{job.company || 'Company not specified'}</span>
+                        <span className="job-location">📍 {job.location}</span>
+                        {job.type && <span className="job-type">{job.type}</span>}
+                        {getSourceBadge(job.source)}
+                      </div>
+                    </div>
+                    
+                    <div className="job-details">
+                      {job.salary && <p className="job-salary">💰 {job.salary}</p>}
+                      <p className="job-description">{job.description}</p>
+                      
+                      {job.requirements && job.requirements.length > 0 && (
+                        <div className="job-requirements">
+                          <h4>Requirements:</h4>
+                          <ul>
+                            {job.requirements.map((req, index) => (
+                              <li key={index}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="job-footer">
+                      <span className="job-posted">Posted: {formatDate(job.postedDate)}</span>
+                      <div className="job-actions">
+                        {job.url && (
+                          <a href={job.url} target="_blank" rel="noopener noreferrer" className="apply-btn">
+                            View Job
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button 
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  className="pagination-btn"
+                >
+                  Previous
+                </button>
+                
+                <div className="pagination-pages">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, page - 2) + i;
+                    if (pageNum > totalPages) return null;
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`pagination-page ${pageNum === page ? 'active' : ''}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button 
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  className="pagination-btn"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="jobs-cta">

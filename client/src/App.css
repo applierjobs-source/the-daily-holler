@@ -2565,3 +2565,185 @@
     max-width: 300px;
   }
 }
+
+/* Jobs Enhancement Styles */
+.jobs-stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 120px;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Source badges */
+.source-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+
+.source-indeed {
+  background: #2557a7;
+  color: white;
+}
+
+.source-glassdoor {
+  background: #0caa41;
+  color: white;
+}
+
+.source-craigslist {
+  background: #8f4700;
+  color: white;
+}
+
+.source-linkedin {
+  background: #0077b5;
+  color: white;
+}
+
+.source-unknown {
+  background: #6c757d;
+  color: white;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 20px;
+}
+
+.pagination-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.pagination-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 5px;
+}
+
+.pagination-page {
+  background: white;
+  color: #007bff;
+  border: 1px solid #007bff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination-page:hover {
+  background: #f8f9fa;
+}
+
+.pagination-page.active {
+  background: #007bff;
+  color: white;
+}
+
+.pagination-info {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 20px;
+}
+
+/* Error and loading states */
+.retry-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.retry-btn:hover {
+  background: #c82333;
+}
+
+.no-data-message {
+  font-style: italic;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Job actions */
+.job-actions {
+  margin-left: auto;
+}
+
+/* Mobile responsiveness for new job features */
+@media (max-width: 768px) {
+  .jobs-stats {
+    gap: 15px;
+  }
+  
+  .stat-item {
+    min-width: 100px;
+    padding: 15px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .pagination {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .pagination-info {
+    margin-left: 0;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .source-badge {
+    margin-left: 0;
+    margin-top: 5px;
+  }
+}

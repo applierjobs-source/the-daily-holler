@@ -2368,8 +2368,357 @@ app.get('/api/cities/slug/:slug', async (req, res) => {
   }
 });
 
+// Jobs API endpoints
+const JOBS_FILE = path.join(__dirname, 'data', 'jobs.json');
 
+// Get all jobs with search and pagination
+app.get('/api/jobs', async (req, res) => {
+  try {
+    const { search, location, category, source, page = 1, limit = 20 } = req.query;
+    
+    // Try to load jobs data
+    let jobsData = [];
+    try {
+      const data = await fs.readFile(JOBS_FILE, 'utf8');
+      jobsData = JSON.parse(data);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      // File doesn't exist yet, return empty results
+      return res.json({
+        jobs: [],
+        total: 0,
+        page: parseInt(page),
+        totalPages: 0,
+        message: 'No jobs data available yet'
+      });
+    }
+    
+    // Flatten all jobs from all cities
+    let allJobs = [];
+    jobsData.forEach(cityData => {
+      if (cityData.jobs && Array.isArray(cityData.jobs)) {
+        allJobs.push(...cityData.jobs);
+      }
+    });
+    
+    // Apply filters
+    if (search) {
+      const searchLower = search.toLowerCase();
+      allJobs = allJobs.filter(job => 
+        job.title.toLowerCase().includes(searchLower) ||
+        job.company.toLowerCase().includes(searchLower) ||
+        job.description.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (location) {
+      const locationLower = location.toLowerCase();
+      allJobs = allJobs.filter(job => 
+        job.location.toLowerCase().includes(locationLower)
+      );
+    }
+    
+    if (category) {
+      allJobs = allJobs.filter(job => 
+        job.category && job.category.toLowerCase().includes(category.toLowerCase())
+      );
+    }
+    
+    if (source) {
+      allJobs = allJobs.filter(job => 
+        job.source && job.source.toLowerCase().includes(source.toLowerCase())
+      );
+    }
+    
+    // Sort by posted date (newest first)
+    allJobs.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+    
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedJobs = allJobs.slice(startIndex, endIndex);
+    
+    res.json({
+      jobs: paginatedJobs,
+      total: allJobs.length,
+      page: parseInt(page),
+      totalPages: Math.ceil(allJobs.length / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
 
+// Get jobs by city
+app.get('/api/jobs/city/:cityId', async (req, res) => {
+  try {
+    const { cityId } = req.params;
+    const { limit = 20 } = req.query;
+    
+    // Load cities to find city name
+    const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
+    const cities = JSON.parse(citiesData);
+    const city = cities.find(c => c.id === cityId);
+    
+    if (!city) {
+      return res.status(404).json({ error: 'City not found' });
+    }
+    
+    // Try to load jobs data
+    let jobsData = [];
+    try {
+      const data = await fs.readFile(JOBS_FILE, 'utf8');
+      jobsData = JSON.parse(data);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      return res.json({
+        city: city,
+        jobs: [],
+        total: 0,
+        message: 'No jobs data available for this city yet'
+      });
+    }
+    
+    // Find jobs for this city
+    const cityKey = `${city.name}, ${city.state}`;
+    const cityJobsEntry = jobsData.find(entry => entry.cityKey === cityKey);
+    
+    const jobs = cityJobsEntry ? cityJobsEntry.jobs : [];
+    
+    // Limit results
+    const limitedJobs = jobs.slice(0, parseInt(limit));
+    
+    res.json({
+      city: city,
+      jobs: limitedJobs,
+      total: jobs.length
+    });
+  } catch (error) {
+    console.error('Error fetching city jobs:', error);
+    res.status(500).json({ error: 'Failed to fetch city jobs' });
+  }
+});
+
+// Get jobs statistics
+app.get('/api/jobs/stats', async (req, res) => {
+  try {
+    // Try to load jobs data
+    let jobsData = [];
+    try {
+      const data = await fs.readFile(JOBS_FILE, 'utf8');
+      jobsData = JSON.parse(data);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      return res.json({
+        totalJobs: 0,
+        citiesWithJobs: 0,
+        totalCities: 0,
+        coverage: '0%',
+        sources: {},
+        lastUpdated: null
+      });
+    }
+    
+    // Calculate statistics
+    const totalJobs = jobsData.reduce((sum, cityData) => sum + (cityData.jobs ? cityData.jobs.length : 0), 0);
+    const citiesWithJobs = jobsData.length;
+    
+    // Load total cities count
+    const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
+    const cities = JSON.parse(citiesData);
+    const totalCities = cities.length;
+    
+    // Count jobs by source
+    const sources = {};
+    jobsData.forEach(cityData => {
+      if (cityData.jobs) {
+        cityData.jobs.forEach(job => {
+          const source = job.source || 'unknown';
+          sources[source] = (sources[source] || 0) + 1;
+        });
+      }
+    });
+    
+    // Find most recent update
+    const lastUpdated = jobsData.length > 0 ? 
+      Math.max(...jobsData.map(entry => new Date(entry.lastUpdated || 0))) : null;
+    
+    res.json({
+      totalJobs,
+      citiesWithJobs,
+      totalCities,
+      coverage: ((citiesWithJobs / totalCities) * 100).toFixed(2) + '%',
+      sources,
+      lastUpdated: lastUpdated ? new Date(lastUpdated).toISOString() : null
+    });
+  } catch (error) {
+    console.error('Error fetching jobs stats:', error);
+    res.status(500).json({ error: 'Failed to fetch jobs statistics' });
+  }
+});
+
+// Trigger jobs scraping (admin endpoint)
+app.post('/api/jobs/scrape', async (req, res) => {
+  try {
+    const { batchSize = 10, startIndex = 0 } = req.body;
+    
+    // Import the jobs scraper
+    const JobsScraper = require('./jobs-scraper');
+    const scraper = new JobsScraper();
+    
+    console.log(`🚀 Starting jobs scraping: batchSize=${batchSize}, startIndex=${startIndex}`);
+    
+    // Run scraping in background
+    scraper.run(batchSize, startIndex)
+      .then(result => {
+        if (result.success) {
+          console.log('✅ Jobs scraping completed successfully');
+        } else {
+          console.error('❌ Jobs scraping failed:', result.error);
+        }
+      })
+      .catch(error => {
+        console.error('❌ Jobs scraping error:', error);
+      });
+    
+    // Return immediately with status
+    res.json({
+      success: true,
+      message: 'Jobs scraping started',
+      batchSize: parseInt(batchSize),
+      startIndex: parseInt(startIndex),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error starting jobs scraping:', error);
+    res.status(500).json({ error: 'Failed to start jobs scraping' });
+  }
+});
+
+// Jobs scheduler endpoints
+let jobsScheduler = null;
+
+// Initialize jobs scheduler
+async function initializeJobsScheduler() {
+  try {
+    const JobsScheduler = require('./jobs-scheduler');
+    jobsScheduler = new JobsScheduler();
+    await jobsScheduler.initialize();
+    
+    // Start scheduler automatically in production
+    if (isProduction) {
+      jobsScheduler.startScheduler();
+      console.log('🕐 Jobs scheduler started automatically in production');
+    }
+  } catch (error) {
+    console.error('❌ Failed to initialize jobs scheduler:', error);
+  }
+}
+
+// Get scheduler status
+app.get('/api/jobs/scheduler/status', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    const status = jobsScheduler.getStatus();
+    res.json(status);
+  } catch (error) {
+    console.error('Error getting scheduler status:', error);
+    res.status(500).json({ error: 'Failed to get scheduler status' });
+  }
+});
+
+// Get detailed scheduler statistics
+app.get('/api/jobs/scheduler/stats', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    const stats = await jobsScheduler.getStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting scheduler stats:', error);
+    res.status(500).json({ error: 'Failed to get scheduler stats' });
+  }
+});
+
+// Start scheduler
+app.post('/api/jobs/scheduler/start', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    jobsScheduler.startScheduler();
+    res.json({
+      success: true,
+      message: 'Jobs scheduler started',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error starting scheduler:', error);
+    res.status(500).json({ error: 'Failed to start scheduler' });
+  }
+});
+
+// Stop scheduler
+app.post('/api/jobs/scheduler/stop', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    jobsScheduler.stopScheduler();
+    res.json({
+      success: true,
+      message: 'Jobs scheduler stopped',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error stopping scheduler:', error);
+    res.status(500).json({ error: 'Failed to stop scheduler' });
+  }
+});
+
+// Trigger manual batch run
+app.post('/api/jobs/scheduler/run', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    const result = await jobsScheduler.triggerNow();
+    res.json(result);
+  } catch (error) {
+    console.error('Error triggering manual run:', error);
+    res.status(500).json({ error: 'Failed to trigger manual run' });
+  }
+});
+
+// Reset scheduler
+app.post('/api/jobs/scheduler/reset', async (req, res) => {
+  try {
+    if (!jobsScheduler) {
+      return res.status(503).json({ error: 'Jobs scheduler not initialized' });
+    }
+    
+    const result = await jobsScheduler.reset();
+    res.json(result);
+  } catch (error) {
+    console.error('Error resetting scheduler:', error);
+    res.status(500).json({ error: 'Failed to reset scheduler' });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -3420,6 +3769,15 @@ initializeData().then(async () => {
     console.log('✅ Database initialized successfully');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
+    // Continue anyway to prevent app crash
+  }
+  
+  try {
+    // Initialize jobs scheduler
+    await initializeJobsScheduler();
+    console.log('✅ Jobs scheduler initialized successfully');
+  } catch (error) {
+    console.error('❌ Jobs scheduler initialization failed:', error);
     // Continue anyway to prevent app crash
   }
   
