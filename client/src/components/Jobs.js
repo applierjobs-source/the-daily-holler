@@ -18,7 +18,7 @@ const Jobs = () => {
   useEffect(() => {
     fetchJobs();
     fetchStats();
-  }, [page, searchTerm, locationFilter, categoryFilter, sourceFilter]);
+  }, [page, searchTerm, locationFilter, categoryFilter, sourceFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchJobs = async () => {
     try {
