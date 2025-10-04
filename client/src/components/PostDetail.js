@@ -179,10 +179,10 @@ const PostDetail = () => {
               textDecoration: 'none',
               fontWeight: 'bold',
               fontSize: '18px',
-              display: 'inline-block',
-              width: 'calc(100% - 32px)',
-              maxWidth: '400px',
-              boxSizing: 'border-box'
+              display: 'block',
+              width: '100%',
+              boxSizing: 'border-box',
+              textAlign: 'center'
             }}
           >
             🎫 Get Tickets Here
