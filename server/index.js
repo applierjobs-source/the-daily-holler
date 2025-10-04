@@ -2302,8 +2302,32 @@ app.get('/api/cities/slug/:slug', async (req, res) => {
       return res.status(400).json({ error: 'Invalid city slug' });
     }
     
-    const state = parts[parts.length - 1].toUpperCase();
-    const cityName = parts.slice(0, -1).join(' ').replace(/\b\w/g, l => l.toUpperCase());
+    // Check if the last part is a state abbreviation (2 chars) or state name (longer)
+    const lastPart = parts[parts.length - 1];
+    let state, cityName;
+    
+    if (lastPart.length === 2) {
+      // State abbreviation
+      state = lastPart.toUpperCase();
+      cityName = parts.slice(0, -1).join(' ').replace(/\b\w/g, l => l.toUpperCase());
+    } else {
+      // Full state name - convert to abbreviation
+      const stateMap = {
+        'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+        'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+        'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+        'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+        'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+        'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new-hampshire': 'NH', 'new-jersey': 'NJ',
+        'new-mexico': 'NM', 'new-york': 'NY', 'north-carolina': 'NC', 'north-dakota': 'ND', 'ohio': 'OH',
+        'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode-island': 'RI', 'south-carolina': 'SC',
+        'south-dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+        'virginia': 'VA', 'washington': 'WA', 'west-virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY'
+      };
+      
+      state = stateMap[lastPart.toLowerCase()] || lastPart.toUpperCase();
+      cityName = parts.slice(0, -1).join(' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
     
     const data = await fs.readFile(CITIES_FILE, 'utf8');
     const cities = JSON.parse(data);
