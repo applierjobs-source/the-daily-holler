@@ -7,6 +7,7 @@ const PostDetail = () => {
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showTicketButton, setShowTicketButton] = useState(false);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -48,6 +49,13 @@ const PostDetail = () => {
           setError(articleData.error);
         } else if (articleData) {
           setArticle(articleData);
+          
+          // Show ticket button after 10 seconds if article has eventbrite_url
+          if (articleData.eventbrite_url) {
+            setTimeout(() => {
+              setShowTicketButton(true);
+            }, 10000);
+          }
         } else {
           setError('Article not found');
         }
@@ -150,7 +158,7 @@ const PostDetail = () => {
       </div>
       
       {/* Sticky Get Tickets Button */}
-      {article.eventbrite_url && (
+      {article.eventbrite_url && showTicketButton && (
         <div 
           style={{
             position: 'fixed',
@@ -161,7 +169,8 @@ const PostDetail = () => {
             backgroundColor: 'transparent',
             padding: '16px',
             zIndex: 1000,
-            textAlign: 'center'
+            textAlign: 'center',
+            animation: 'fadeInUp 0.5s ease-out'
           }}
         >
           <a 

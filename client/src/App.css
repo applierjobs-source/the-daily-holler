@@ -2343,6 +2343,18 @@
   }
 }
 
+/* Animation for Get Tickets Button */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* About Page Styles */
 .about-page {
   min-height: 100vh;
