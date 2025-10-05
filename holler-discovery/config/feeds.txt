@@ -1,0 +1,45 @@
+# RSS feeds for discovery ingestion
+# Add one feed URL per line
+# Lines starting with # are comments
+
+# Government and official sources
+https://www.gov.uk/search/news-and-communications.atom
+https://www.whitehouse.gov/feed/
+https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=&company=&dateb=&owner=include&start=0&count=100&output=atom
+
+# News and media
+https://feeds.bbci.co.uk/news/rss.xml
+https://rss.cnn.com/rss/edition.rss
+https://feeds.reuters.com/reuters/topNews
+
+# Technology and science
+https://feeds.feedburner.com/oreilly/radar
+https://feeds.feedburner.com/venturebeat/SZYF
+https://www.nature.com/nature.rss
+
+# Academic and research
+https://arxiv.org/rss/cs
+https://arxiv.org/rss/physics
+https://www.nber.org/rss/rss.html
+
+# Documentation and resources
+https://docs.python.org/3/feeds/all.rss.xml
+https://developer.mozilla.org/en-US/docs/rss.xml
+https://github.com/trending/python.atom
+
+# Open data and transparency
+https://data.gov.uk/feeds/latest-updates.xml
+https://www.data.gov/feed/
+https://www.opengovpartnership.org/feed/
+
+# Financial and business
+https://feeds.finance.yahoo.com/rss/2.0/headline
+https://www.bloomberg.com/feeds/politics.rss
+https://www.ft.com/rss/home
+
+# International organizations
+https://www.un.org/rss/
+https://www.worldbank.org/en/rss
+https://www.imf.org/en/rss
+
+# Add your own feeds here...

@@ -1,0 +1,137 @@
+name: Discovery Feed Nightly Build
+
+on:
+  schedule:
+    # Run daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  discovery-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        cd holler-discovery
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Set date variable
+      id: date
+      run: |
+        if [ -n "${{ github.event.inputs.date }}" ]; then
+          echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+        else
+          echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Run database migrations
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+      run: |
+        cd holler-discovery
+        hndisc migrate-db
+    
+    - name: Ingest Certificate Transparency logs
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        CT_LOOKBACK_HOURS: 24
+      run: |
+        cd holler-discovery
+        hndisc ingest-ct --hours 24
+    
+    - name: Ingest RSS feeds
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        RSS_FEEDS_PATH: config/feeds.txt
+      run: |
+        cd holler-discovery
+        hndisc ingest-rss --feeds config/feeds.txt
+    
+    - name: Ingest Common Crawl Index
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        CC_URL_LIMIT: 10000
+        CC_DATASETS_RECENT: 3
+      run: |
+        cd holler-discovery
+        hndisc ingest-cc --limit 10000
+    
+    - name: Filter and deduplicate URLs
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        HOST_CAP: 500
+        PARKING_THRESHOLD: 0.3
+        NOVELTY_THRESHOLD: 0.5
+      run: |
+        cd holler-discovery
+        hndisc filter --host-cap 500
+    
+    - name: Generate discovery pages
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        LINKS_PER_PAGE: 200
+        BASE_URL: https://holler.news
+      run: |
+        cd holler-discovery
+        hndisc generate --date ${{ steps.date.outputs.date }} --out ../public --links-per-page 200
+    
+    - name: Generate sitemaps
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        BASE_URL: https://holler.news
+        SITEMAP_URLS_PER_FILE: 50000
+      run: |
+        cd holler-discovery
+        hndisc sitemaps --root ../public --base-url https://holler.news
+    
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Commit and push changes
+      if: steps.changes.outputs.changed == 'true'
+      run: |
+        cd holler-discovery
+        hndisc commit-artifacts --branch main --paths "../public/discover ../public/sitemaps ../public/sitemap-index.xml"
+    
+    - name: No changes to commit
+      if: steps.changes.outputs.changed == 'false'
+      run: echo "No changes detected, skipping commit"
+    
+    - name: Run statistics
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+      run: |
+        cd holler-discovery
+        echo "=== Discovery Feed Statistics ==="
+        hndisc stats --date ${{ steps.date.outputs.date }}
