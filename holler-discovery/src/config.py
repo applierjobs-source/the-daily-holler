@@ -23,7 +23,11 @@ class Config:
     host_cap: int = int(os.getenv("HOST_CAP", "500"))
     parking_threshold: float = float(os.getenv("PARKING_THRESHOLD", "0.3"))
     novelty_threshold: float = float(os.getenv("NOVELTY_THRESHOLD", "0.5"))
-    doc_extensions: List[str] = os.getenv("DOC_EXTENSIONS", "pdf,csv,json,txt").split(",")
+    doc_extensions: List[str] = None
+    
+    def __post_init__(self):
+        if self.doc_extensions is None:
+            self.doc_extensions = os.getenv("DOC_EXTENSIONS", "pdf,csv,json,txt").split(",")
     
     # Generate settings
     links_per_page: int = int(os.getenv("LINKS_PER_PAGE", "200"))
