@@ -3682,19 +3682,43 @@ if (isProduction) {
   }));
   
   // Serve discovery feed static files
-  app.get('/discover/*', (req, res) => {
-    let filePath = path.join(staticPath, req.path);
-    console.log('Discovery route hit for:', req.path, 'File:', filePath);
-    
-    // If path ends with /, try index.html
-    if (req.path.endsWith('/')) {
-      filePath = path.join(filePath, 'index.html');
-    }
-    
-    console.log('Final file path:', filePath);
+  app.get('/discover/:date', (req, res) => {
+    const date = req.params.date;
+    let filePath = path.join(staticPath, 'discover', date, 'index.html');
+    console.log('Discovery route hit for date:', date, 'File:', filePath);
     console.log('File exists:', require('fs').existsSync(filePath));
     
-    // Check if file exists
+    if (require('fs').existsSync(filePath)) {
+      console.log('Serving discovery file:', filePath);
+      res.sendFile(filePath);
+    } else {
+      console.log('Discovery file not found:', filePath);
+      res.status(404).send('Discovery page not found');
+    }
+  });
+  
+  app.get('/discover/:date/', (req, res) => {
+    const date = req.params.date;
+    const filePath = path.join(staticPath, 'discover', date, 'index.html');
+    console.log('Discovery route hit for date with slash:', date, 'File:', filePath);
+    console.log('File exists:', require('fs').existsSync(filePath));
+    
+    if (require('fs').existsSync(filePath)) {
+      console.log('Serving discovery file:', filePath);
+      res.sendFile(filePath);
+    } else {
+      console.log('Discovery file not found:', filePath);
+      res.status(404).send('Discovery page not found');
+    }
+  });
+  
+  app.get('/discover/:date/:page', (req, res) => {
+    const date = req.params.date;
+    const page = req.params.page;
+    const filePath = path.join(staticPath, 'discover', date, page);
+    console.log('Discovery route hit for date/page:', date, page, 'File:', filePath);
+    console.log('File exists:', require('fs').existsSync(filePath));
+    
     if (require('fs').existsSync(filePath)) {
       console.log('Serving discovery file:', filePath);
       res.sendFile(filePath);
