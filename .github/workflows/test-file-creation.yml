@@ -1,0 +1,43 @@
+name: Test File Creation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-file-creation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Create test files
+      run: |
+        # Create test directory
+        mkdir -p test-discovery
+        
+        # Create simple test file
+        cat > test-discovery/test.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Discovery Feed</title>
+</head>
+<body>
+    <h1>Discovery Feed Test</h1>
+    <p>This is a test file created by GitHub Actions.</p>
+    <p>Timestamp: $(date)</p>
+</body>
+</html>
+EOF
+        
+        # Create another test file
+        echo "Test sitemap content" > test-discovery/sitemap-test.xml
+        
+        # List what we created
+        echo "Files created:"
+        ls -la test-discovery/
+        
+        # Show content
+        echo "Test HTML content:"
+        cat test-discovery/test.html
