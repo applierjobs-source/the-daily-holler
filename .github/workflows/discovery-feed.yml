@@ -40,6 +40,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install -r requirements.txt || echo "No requirements.txt found"
+        # Verify installation
+        python -c "import holler_discovery; print('Module imported successfully')"
     
     - name: Set date variable
       id: date
@@ -55,7 +57,7 @@ jobs:
         DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
       run: |
         cd holler-discovery
-        hndisc migrate-db
+        python -m holler_discovery.cli migrate-db
     
     - name: Ingest Certificate Transparency logs
       env:
@@ -63,7 +65,7 @@ jobs:
         CT_LOOKBACK_HOURS: 24
       run: |
         cd holler-discovery
-        hndisc ingest-ct --hours 24
+        python -m holler_discovery.cli ingest-ct --hours 24
     
     - name: Ingest RSS feeds
       env:
@@ -71,7 +73,7 @@ jobs:
         RSS_FEEDS_PATH: config/feeds.txt
       run: |
         cd holler-discovery
-        hndisc ingest-rss --feeds config/feeds.txt
+        python -m holler_discovery.cli ingest-rss --feeds config/feeds.txt
     
     - name: Ingest Common Crawl Index
       env:
@@ -80,7 +82,7 @@ jobs:
         CC_DATASETS_RECENT: 3
       run: |
         cd holler-discovery
-        hndisc ingest-cc --limit 10000
+        python -m holler_discovery.cli ingest-cc --limit 10000
     
     - name: Filter and deduplicate URLs
       env:
@@ -90,7 +92,7 @@ jobs:
         NOVELTY_THRESHOLD: 0.5
       run: |
         cd holler-discovery
-        hndisc filter --host-cap 500
+        python -m holler_discovery.cli filter --host-cap 500
     
     - name: Generate discovery pages
       env:
@@ -99,7 +101,7 @@ jobs:
         BASE_URL: https://holler.news
       run: |
         cd holler-discovery
-        hndisc generate --date ${{ steps.date.outputs.date }} --out ../public --links-per-page 200
+        python -m holler_discovery.cli generate --date ${{ steps.date.outputs.date }} --out ../public --links-per-page 200
     
     - name: Generate sitemaps
       env:
@@ -108,7 +110,7 @@ jobs:
         SITEMAP_URLS_PER_FILE: 50000
       run: |
         cd holler-discovery
-        hndisc sitemaps --root ../public --base-url https://holler.news
+        python -m holler_discovery.cli sitemaps --root ../public --base-url https://holler.news
     
     - name: Check for changes
       id: changes
@@ -125,7 +127,7 @@ jobs:
         cd holler-discovery
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        hndisc commit-artifacts --branch main --paths "../public/discover ../public/sitemaps ../public/sitemap-index.xml"
+        python -m holler_discovery.cli commit-artifacts --branch main --paths "../public/discover ../public/sitemaps ../public/sitemap-index.xml"
     
     - name: No changes to commit
       if: steps.changes.outputs.changed == 'false'
@@ -137,4 +139,4 @@ jobs:
       run: |
         cd holler-discovery
         echo "=== Discovery Feed Statistics ==="
-        hndisc stats --date ${{ steps.date.outputs.date }}
+        python -m holler_discovery.cli stats --date ${{ steps.date.outputs.date }}
