@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install && cd server && npm install && cd ../client && npm install && cd .. && npm run build"
+    "buildCommand": "npm install && cd server && npm install && cd ../client && npm install && cd .. && npm run build && cd holler-discovery && pip install -e ."
   },
   "deploy": {
     "startCommand": "cd server && NODE_ENV=production node --max-old-space-size=8192 index.js"
