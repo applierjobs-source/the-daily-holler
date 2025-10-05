@@ -21,7 +21,7 @@ function AppContent() {
 
   useEffect(() => {
     // Load cities
-    fetch('/api/cities?limit=1000')
+    fetch('/api/cities?limit=10000')
       .then(res => res.json())
       .then(citiesResponse => {
         setCities(citiesResponse.cities);
