@@ -3681,6 +3681,34 @@ if (isProduction) {
     }
   }));
   
+  // Serve discovery feed static files
+  app.get('/discover/*', (req, res) => {
+    const filePath = path.join(staticPath, req.path);
+    console.log('Discovery route hit for:', req.path, 'File:', filePath);
+    
+    // Check if file exists
+    if (require('fs').existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      console.log('Discovery file not found:', filePath);
+      res.status(404).send('Discovery page not found');
+    }
+  });
+  
+  // Serve sitemap files
+  app.get('/sitemap*.xml', (req, res) => {
+    const filePath = path.join(staticPath, req.path);
+    console.log('Sitemap route hit for:', req.path, 'File:', filePath);
+    
+    if (require('fs').existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/xml');
+      res.sendFile(filePath);
+    } else {
+      console.log('Sitemap file not found:', filePath);
+      res.status(404).send('Sitemap not found');
+    }
+  });
+  
   // Serve index.html for root
   app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
