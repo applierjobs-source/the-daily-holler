@@ -3683,8 +3683,13 @@ if (isProduction) {
   
   // Serve discovery feed static files
   app.get('/discover/*', (req, res) => {
-    const filePath = path.join(staticPath, req.path);
+    let filePath = path.join(staticPath, req.path);
     console.log('Discovery route hit for:', req.path, 'File:', filePath);
+    
+    // If path ends with /, try index.html
+    if (req.path.endsWith('/')) {
+      filePath = path.join(filePath, 'index.html');
+    }
     
     // Check if file exists
     if (require('fs').existsSync(filePath)) {
