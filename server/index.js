@@ -3691,8 +3691,12 @@ if (isProduction) {
       filePath = path.join(filePath, 'index.html');
     }
     
+    console.log('Final file path:', filePath);
+    console.log('File exists:', require('fs').existsSync(filePath));
+    
     // Check if file exists
     if (require('fs').existsSync(filePath)) {
+      console.log('Serving discovery file:', filePath);
       res.sendFile(filePath);
     } else {
       console.log('Discovery file not found:', filePath);
