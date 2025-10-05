@@ -9,7 +9,7 @@ class JobsScheduler {
     this.isRunning = false;
     this.lastRun = null;
     this.scheduleLog = [];
-    this.batchSize = 20; // Process 20 cities at a time (reduced for Craigslist)
+    this.batchSize = 25; // Process 25 cities at a time (optimized for Indeed)
     this.currentBatch = 0;
     this.totalBatches = 0;
     this.logFile = path.join(__dirname, 'data', 'jobs-scheduler.log');
