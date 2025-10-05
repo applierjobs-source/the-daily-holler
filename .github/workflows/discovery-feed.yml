@@ -126,7 +126,7 @@ jobs:
         cd holler-discovery
         python -c "
         from src.pipeline.html_writer import HTMLWriter
-        writer = HTMLWriter(output_dir='../public')
+        writer = HTMLWriter(output_dir='../client/build')
         generated_files = writer.generate_discovery_pages('${{ steps.date.outputs.date }}')
         print(f'Generated {len(generated_files)} files for ${{ steps.date.outputs.date }}')
         for file_path in generated_files:
@@ -142,7 +142,7 @@ jobs:
         cd holler-discovery
         python -c "
         from src.pipeline.sitemap_writer import SitemapWriter
-        writer = SitemapWriter(output_dir='../public', base_url='https://holler.news')
+        writer = SitemapWriter(output_dir='../client/build', base_url='https://holler.news')
         generated_files = writer.generate_sitemaps()
         print(f'Generated {len(generated_files)} sitemap files')
         for file_path in generated_files:
@@ -165,7 +165,7 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         # Commit generated files
-        git add ../public/discover ../public/sitemaps ../public/sitemap-index.xml || echo "No new files to add"
+        git add ../client/build/discover ../client/build/sitemaps ../client/build/sitemap-index.xml || echo "No new files to add"
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
