@@ -1955,10 +1955,17 @@ function validateEventLocation(eventLocation, targetCity, targetState) {
                              location.includes('ms') && state !== 'ms' ||
                              location.includes('la') && state !== 'la';
   
-  // More relaxed validation
-  const isValid = (cityMatch || isInSameState) && !hasConflictingState;
+  // Very relaxed validation - allow events in same state or nearby regions
+  // For MA cities, allow events in MA, NH, VT, RI, CT (New England region)
+  // For AL cities, allow events in AL, MS, TN, GA, FL (Southeast region)
+  const isNearbyRegion = (state === 'ma' && (location.includes('ma') || location.includes('nh') || location.includes('vt') || location.includes('ri') || location.includes('ct'))) ||
+                        (state === 'al' && (location.includes('al') || location.includes('ms') || location.includes('tn') || location.includes('ga') || location.includes('fl'))) ||
+                        isInSameState;
   
-  console.log(`✅ Location validation result: ${isValid} (city match: ${cityMatch}, same state: ${isInSameState}, conflicting state: ${hasConflictingState})`);
+  // More relaxed validation - allow city match, same state, or nearby region
+  const isValid = cityMatch || isInSameState || isNearbyRegion;
+  
+  console.log(`✅ Location validation result: ${isValid} (city match: ${cityMatch}, same state: ${isInSameState}, nearby region: ${isNearbyRegion}, conflicting state: ${hasConflictingState})`);
   
   return isValid;
 }
@@ -2094,6 +2101,12 @@ async function initDatabase() {
     await pool.query(`
       ALTER TABLE articles 
       ADD COLUMN IF NOT EXISTS word_count INTEGER
+    `);
+    
+    // Add language column for Patwah articles
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'english'
     `);
     
     console.log('✅ Database initialized');
