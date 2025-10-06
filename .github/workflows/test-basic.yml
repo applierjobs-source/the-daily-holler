@@ -1,0 +1,26 @@
+name: Test Basic
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-basic:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Create test file
+      run: |
+        echo "Hello World" > test.txt
+        echo "Created test.txt"
+        cat test.txt
+    
+    - name: Commit test file
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add test.txt
+        git commit -m "Add test file" || echo "No changes to commit"
+        git push origin main || echo "Nothing to push"
