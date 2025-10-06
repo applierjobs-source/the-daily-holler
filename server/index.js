@@ -2928,7 +2928,6 @@ app.get('/sitemap.xml', async (req, res) => {
         FROM articles 
         WHERE city IS NOT NULL AND state IS NOT NULL
         ORDER BY state, city
-        LIMIT 500
       `);
       
       citiesResult.rows.forEach(city => {
