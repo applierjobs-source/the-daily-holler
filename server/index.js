@@ -1913,7 +1913,7 @@ function extractEventLocation(html) {
   }
 }
 
-// Validate that event location matches target city
+// Validate that event location matches target city (relaxed validation)
 function validateEventLocation(eventLocation, targetCity, targetState) {
   if (!eventLocation) {
     console.log(`⚠️ No location found for event - skipping validation`);
@@ -1936,37 +1936,29 @@ function validateEventLocation(eventLocation, targetCity, targetState) {
   console.log(`🔍 Location validation: "${location}" vs "${city}, ${state}"`);
   console.log(`📍 City match: ${cityMatch}, State match: ${stateMatch}, State abbrev match: ${stateAbbrevMatch}`);
   
-  // List of common city names that exist in multiple states (require state validation)
-  const ambiguousCities = [
-    'greenville', 'springfield', 'franklin', 'clinton', 'madison', 'georgetown', 
-    'marion', 'salem', 'lexington', 'richmond', 'columbia', 'auburn', 'troy',
-    'birmingham', 'milton', 'athens', 'newport', 'washington', 'jackson',
-    'rochester', 'portland', 'aurora', 'glendale', 'huntington', 'warren'
-  ];
+  // Relaxed validation - allow events in the same state even if not exact city
+  // This helps with events in nearby cities or metropolitan areas
+  const isInSameState = stateMatch || stateAbbrevMatch;
   
-  // Check if this is an ambiguous city name
-  const isAmbiguousCity = ambiguousCities.includes(city);
+  // Allow if:
+  // 1. Exact city match (preferred)
+  // 2. Same state match (nearby city)
+  // 3. No conflicting state information
+  const hasConflictingState = location.includes('ny') && state !== 'ny' ||
+                             location.includes('ca') && state !== 'ca' ||
+                             location.includes('tx') && state !== 'tx' ||
+                             location.includes('fl') && state !== 'fl' ||
+                             location.includes('sc') && state !== 'sc' ||
+                             location.includes('nc') && state !== 'nc' ||
+                             location.includes('ga') && state !== 'ga' ||
+                             location.includes('tn') && state !== 'tn' ||
+                             location.includes('ms') && state !== 'ms' ||
+                             location.includes('la') && state !== 'la';
   
-  // For ambiguous cities, we need to be more careful but not too strict
-  if (isAmbiguousCity) {
-    // Allow city-only matches if no conflicting state information is present
-    const hasConflictingState = location.includes('ny') || location.includes('ca') || 
-                               location.includes('tx') || location.includes('fl') || 
-                               location.includes('sc') || location.includes('nc') ||
-                               location.includes('ga') || location.includes('tn') ||
-                               location.includes('ms') || location.includes('la');
-    
-    const isValid = cityMatch && (stateMatch || stateAbbrevMatch || 
-      (state === 'al' && !hasConflictingState));
-    
-    console.log(`🚨 Ambiguous city "${city}" - state validation: ${isValid} (has conflicting state: ${hasConflictingState})`);
-    return isValid;
-  }
+  // More relaxed validation
+  const isValid = (cityMatch || isInSameState) && !hasConflictingState;
   
-  // For non-ambiguous cities, allow city-only locations
-  const isValid = cityMatch && (stateMatch || stateAbbrevMatch || 
-    // Allow city-only for non-ambiguous cities
-    (!isAmbiguousCity));
+  console.log(`✅ Location validation result: ${isValid} (city match: ${cityMatch}, same state: ${isInSameState}, conflicting state: ${hasConflictingState})`);
   
   return isValid;
 }

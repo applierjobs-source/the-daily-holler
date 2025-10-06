@@ -119,18 +119,32 @@ async function fetchCities() {
   console.log('🏙️ Fetching all cities from API...');
   
   try {
-    // Fetch all cities by using a large limit
+    // First try to fetch from API
     const response = await makeRequest(`${API_BASE_URL}/api/cities?limit=2000`);
     
-    if (!response || !response.cities || !Array.isArray(response.cities)) {
-      throw new Error('Invalid cities response format');
+    if (response && response.cities && Array.isArray(response.cities)) {
+      console.log(`✅ Found ${response.cities.length} cities from API (total available: ${response.total || response.cities.length})`);
+      return response.cities;
+    } else {
+      throw new Error('Invalid cities response format from API');
     }
-    
-    console.log(`✅ Found ${response.cities.length} cities (total available: ${response.total || response.cities.length})`);
-    return response.cities;
   } catch (error) {
-    console.error('❌ Failed to fetch cities:', error.message);
-    throw error;
+    console.log('⚠️ API fetch failed, trying local cities file...');
+    
+    // Fallback to local cities file
+    try {
+      const fs = require('fs').promises;
+      const path = require('path');
+      const citiesPath = path.join(__dirname, 'server/data/cities.json');
+      const citiesData = await fs.readFile(citiesPath, 'utf8');
+      const cities = JSON.parse(citiesData);
+      
+      console.log(`✅ Found ${cities.length} cities from local file`);
+      return cities;
+    } catch (localError) {
+      console.error('❌ Failed to fetch cities from both API and local file:', error.message);
+      throw error;
+    }
   }
 }
 
@@ -170,7 +184,7 @@ async function generateNewsPatoisArticle(city) {
   try {
     console.log(`📰 Generating Google News + Patois article for ${city.name}, ${city.state}...`);
     
-    const response = await makeRequest(`${API_BASE_URL}/api/generate-news-patois-article`, {
+    const response = await makeRequest(`${API_BASE_URL}/api/generate-google-news-article`, {
       method: 'POST',
       body: {
         cityName: city.name,
