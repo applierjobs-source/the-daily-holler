@@ -3730,9 +3730,14 @@ if (isProduction) {
     }
   });
   
-  app.get('/sitemaps/sitemap-*.xml', (req, res) => {
-    const filePath = path.join(staticPath, req.path);
-    console.log('Discovery sitemap route hit for:', req.path, 'File:', filePath);
+  app.get('/sitemaps/:filename', (req, res) => {
+    const filename = req.params.filename;
+    if (!filename.endsWith('.xml')) {
+      return res.status(404).send('Not found');
+    }
+    
+    const filePath = path.join(staticPath, 'sitemaps', filename);
+    console.log('Discovery sitemap route hit for:', filename, 'File:', filePath);
     
     if (require('fs').existsSync(filePath)) {
       res.setHeader('Content-Type', 'application/xml');
