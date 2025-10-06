@@ -47,26 +47,30 @@ jobs:
     - name: Create test discovery content
       env:
         DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
       run: |
         cd holler-discovery
         python3 << 'EOF'
         import os
         from pathlib import Path
         
+        # Get date from environment variable
+        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        
         # Create test discovery directory
-        output_dir = Path('../client/build/discover/${{ steps.date.outputs.date }}')
+        output_dir = Path(f'../client/build/discover/{discovery_date}')
         output_dir.mkdir(parents=True, exist_ok=True)
         
         # Create index page
-        index_html = '''<!DOCTYPE html>
+        index_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${{ steps.date.outputs.date }} - Discovery Feed by Holler.News</title>
-    <meta name="description" content="Discovery feed for ${{ steps.date.outputs.date }} with curated URLs.">
+    <title>{discovery_date} - Discovery Feed by Holler.News</title>
+    <meta name="description" content="Discovery feed for {discovery_date} with curated URLs.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://holler.news/discover/${{ steps.date.outputs.date }}/">
+    <link rel="canonical" href="https://holler.news/discover/{discovery_date}/">
     
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }
@@ -80,7 +84,7 @@ jobs:
     <div class="header">
         <h1>Discovery Feed by Holler.News</h1>
         <div class="intro">
-            <p>Discovery feed for <strong>${{ steps.date.outputs.date }}</strong>. This page contains curated URLs discovered by our automated system.</p>
+            <p>Discovery feed for <strong>{discovery_date}</strong>. This page contains curated URLs discovered by our automated system.</p>
             <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
         </div>
         
@@ -95,7 +99,7 @@ jobs:
     <div class="page-list">
         <h2>Available Pages</h2>
         <div class="page-item">
-            <a href="https://holler.news/discover/${{ steps.date.outputs.date }}/page-000001.html">
+            <a href="https://holler.news/discover/{discovery_date}/page-000001.html">
                 <span class="page-number">Page 1</span>
             </a>
             <span class="page-stats">Test Links 1-5</span>
@@ -119,15 +123,15 @@ jobs:
 </html>'''
         
         # Create page 1
-        page_html = '''<!DOCTYPE html>
+        page_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page 1 - ${{ steps.date.outputs.date }} - Discovery Feed by Holler.News</title>
-    <meta name="description" content="Discover 5 interesting URLs from ${{ steps.date.outputs.date }}, including pages from various sources.">
+    <title>Page 1 - {discovery_date} - Discovery Feed by Holler.News</title>
+    <meta name="description" content="Discover 5 interesting URLs from {discovery_date}, including pages from various sources.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://holler.news/discover/${{ steps.date.outputs.date }}/page-000001.html">
+    <link rel="canonical" href="https://holler.news/discover/{discovery_date}/page-000001.html">
     
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }
@@ -151,7 +155,7 @@ jobs:
     <div class="header">
         <h1>Discovery Feed by Holler.News</h1>
         <div class="intro">
-            <p>Discovering interesting URLs from across the web on ${{ steps.date.outputs.date }}. This page contains 5 curated links, including content from various sources.</p>
+            <p>Discovering interesting URLs from across the web on {discovery_date}. This page contains 5 curated links, including content from various sources.</p>
             <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
         </div>
         <div class="page-info">
@@ -202,11 +206,11 @@ jobs:
 
     <div class="navigation">
         <div class="page-info">
-            Page 1 of 1 for ${{ steps.date.outputs.date }}
+            Page 1 of 1 for {discovery_date}
         </div>
         
         <span class="nav-link disabled">← Previous Page</span>
-        <a href="https://holler.news/discover/${{ steps.date.outputs.date }}/" class="nav-link">Day Index</a>
+        <a href="https://holler.news/discover/{discovery_date}/" class="nav-link">Day Index</a>
         <span class="nav-link disabled">Next Page →</span>
     </div>
 </body>
@@ -216,55 +220,60 @@ jobs:
         (output_dir / 'index.html').write_text(index_html)
         (output_dir / 'page-000001.html').write_text(page_html)
         
-        print(f'Created test discovery files for ${{ steps.date.outputs.date }}')
+        print(f'Created test discovery files for {discovery_date}')
         print(f'Files created: {list(output_dir.iterdir())}')
         EOF
     
     - name: Create test sitemap
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
       run: |
         cd holler-discovery
         python3 << 'EOF'
         import os
         from pathlib import Path
         
+        # Get date from environment variable
+        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        
         # Create sitemaps directory
         sitemaps_dir = Path('../client/build/sitemaps')
         sitemaps_dir.mkdir(parents=True, exist_ok=True)
         
         # Create sitemap for the date
-        sitemap_content = '''<?xml version="1.0" encoding="UTF-8"?>
+        sitemap_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://holler.news/discover/${{ steps.date.outputs.date }}/</loc>
-    <lastmod>${{ steps.date.outputs.date }}T00:00:00Z</lastmod>
+    <loc>https://holler.news/discover/{discovery_date}/</loc>
+    <lastmod>{discovery_date}T00:00:00Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://holler.news/discover/${{ steps.date.outputs.date }}/page-000001.html</loc>
-    <lastmod>${{ steps.date.outputs.date }}T00:00:00Z</lastmod>
+    <loc>https://holler.news/discover/{discovery_date}/page-000001.html</loc>
+    <lastmod>{discovery_date}T00:00:00Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
 </urlset>'''
         
         # Write sitemap
-        sitemap_file = sitemaps_dir / f'sitemap-${{ steps.date.outputs.date }}.xml'
+        sitemap_file = sitemaps_dir / f'sitemap-{discovery_date}.xml'
         sitemap_file.write_text(sitemap_content)
         
         # Update sitemap index
-        index_content = '''<?xml version="1.0" encoding="UTF-8"?>
+        index_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://holler.news/sitemaps/sitemap-${{ steps.date.outputs.date }}.xml</loc>
-    <lastmod>${{ steps.date.outputs.date }}T00:00:00Z</lastmod>
+    <loc>https://holler.news/sitemaps/sitemap-{discovery_date}.xml</loc>
+    <lastmod>{discovery_date}T00:00:00Z</lastmod>
   </sitemap>
 </sitemapindex>'''
         
         index_file = Path('../client/build/sitemap-index.xml')
         index_file.write_text(index_content)
         
-        print(f'Created sitemap files for ${{ steps.date.outputs.date }}')
+        print(f'Created sitemap files for {discovery_date}')
         print(f'Sitemap: {sitemap_file}')
         print(f'Index: {index_file}')
         EOF
