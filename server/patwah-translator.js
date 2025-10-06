@@ -86,6 +86,75 @@ TRANSLATED AND EXPANDED PATWAH TEXT (approximately 400 words):`;
   }
 
   /**
+   * Translate title to Patwah (short and concise)
+   * @param {string} title - English title to translate
+   * @param {string} context - Context for better translation
+   * @returns {Promise<string>} Short Patwah title
+   */
+  async translateTitleToPatwah(title, context = '') {
+    try {
+      if (!this.hasApiKey) {
+        console.log('⚠️ OpenAI API key not available, returning original title');
+        return title;
+      }
+
+      if (!title || typeof title !== 'string') {
+        throw new Error('Invalid title provided for translation');
+      }
+
+      console.log(`🔄 Translating title to Patwah: "${title.substring(0, 50)}..."`);
+
+      const prompt = `You are a native Jamaican Patois (Patwah) speaker and translator. Translate the following English headline to authentic Jamaican Patois.
+
+CONTEXT: ${context}
+
+TITLE REQUIREMENTS:
+- Keep it SHORT and concise (8-12 words maximum)
+- Use authentic Jamaican Patois vocabulary and grammar
+- Maintain the original meaning and tone
+- Use appropriate Patwah expressions where natural
+- Keep proper nouns (names, places) unchanged
+- Use phonetic spelling that reflects how words sound in Patwah
+- Don't make it too exaggerated or stereotypical - keep it natural and authentic
+- Write in the style of a Patwah news headline
+
+ORIGINAL ENGLISH TITLE:
+${title}
+
+SHORT PATWAH TITLE (8-12 words maximum):`;
+
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert translator specializing in English to Jamaican Patois (Patwah). You create SHORT, concise headlines that preserve meaning while using proper Patwah vocabulary. Keep headlines to 8-12 words maximum."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 100
+      });
+
+      const translatedTitle = completion.choices[0].message.content.trim();
+      
+      console.log(`✅ Title translation complete: "${translatedTitle}"`);
+      
+      return translatedTitle;
+
+    } catch (error) {
+      console.error('❌ Error translating title to Patwah:', error.message);
+      
+      // Fallback: return original title if translation fails
+      console.log('⚠️ Title translation failed, returning original title');
+      return title;
+    }
+  }
+
+  /**
    * Translate a news article to Patwah
    * @param {Object} article - News article object
    * @returns {Promise<Object>} Translated article
@@ -94,13 +163,13 @@ TRANSLATED AND EXPANDED PATWAH TEXT (approximately 400 words):`;
     try {
       console.log(`🔄 Translating news article: "${article.title}"`);
 
-      // Translate title
-      const translatedTitle = await this.translateToPatwah(
+      // Translate title (keep it short and concise)
+      const translatedTitle = await this.translateTitleToPatwah(
         article.title,
         `News headline about ${article.cityName}, ${article.state}`
       );
 
-      // Translate content/snippet
+      // Translate content/snippet (expand to full article)
       const translatedContent = await this.translateToPatwah(
         article.snippet,
         `News article content about ${article.cityName}, ${article.state} from ${article.source}`
