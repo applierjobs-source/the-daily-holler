@@ -2,14 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://holler.news/discover/2024-01-05/</loc>
-    <lastmod>2024-01-05T00:00:00Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://holler.news/discover/2024-01-05/page-000001.html</loc>
-    <lastmod>2024-01-05T00:00:00Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2024-01-05</lastmod>
   </url>
 </urlset>
