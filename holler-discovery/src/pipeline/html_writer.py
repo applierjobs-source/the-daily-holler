@@ -47,12 +47,20 @@ class HTMLWriter:
         # Get navigation info
         nav_info = self.chunker.get_navigation_info(date_str, page_num)
         
+        # Add source and priority info to URLs
+        enhanced_urls = []
+        for url_data in page_urls:
+            enhanced_url = url_data.copy()
+            enhanced_url['source'] = self._get_source_from_url(url_data['url'])
+            enhanced_url['priority_label'] = self._get_priority_label(url_data.get('priority_class', 2))
+            enhanced_urls.append(enhanced_url)
+        
         # Prepare template data
         template_data = {
             'date': date_str,
             'page_num': page_num,
             'total_pages': total_pages,
-            'urls': page_urls,
+            'urls': enhanced_urls,
             'sample_hosts': nav_info['sample_hosts'],
             'navigation': nav_info['page_info'],
             'base_url': config.base_url,
@@ -145,6 +153,30 @@ class HTMLWriter:
         
         print(f"Generated {len(generated_files)} files for {date_str}")
         return generated_files
+    
+    def _get_source_from_url(self, url: str) -> str:
+        """Determine source from URL patterns (heuristic)."""
+        url_lower = url.lower()
+        
+        # Common patterns
+        if any(pattern in url_lower for pattern in ['crt.sh', 'certificate-transparency']):
+            return 'CT'
+        elif any(pattern in url_lower for pattern in ['rss', 'feed', 'xml']):
+            return 'RSS'
+        elif any(pattern in url_lower for pattern in ['commoncrawl', 'cc-']):
+            return 'CC'
+        else:
+            return 'Unknown'
+    
+    def _get_priority_label(self, priority_class: int) -> str:
+        """Get human-readable priority label."""
+        labels = {
+            0: 'P0 (High)',
+            1: 'P1 (Medium)',
+            2: 'P2 (Low)',
+            3: 'P3 (Deferred)'
+        }
+        return labels.get(priority_class, 'Unknown')
     
     def generate_discovery_pages(self, date_str: str, output_dir: str = None) -> List[str]:
         """Main entry point for generating discovery pages."""

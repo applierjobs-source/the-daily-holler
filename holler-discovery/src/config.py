@@ -53,6 +53,43 @@ class Config:
     request_delay: float = float(os.getenv("REQUEST_DELAY", "0.1"))
     max_retries: int = int(os.getenv("MAX_RETRIES", "3"))
     
+    # Ranking weights (must sum to 1.0)
+    rank_weights_unseen: float = float(os.getenv("RANK_WEIGHTS_UNSEEN", "0.28"))
+    rank_weights_host_novelty: float = float(os.getenv("RANK_WEIGHTS_HOST_NOVELTY", "0.20"))
+    rank_weights_content_ready: float = float(os.getenv("RANK_WEIGHTS_CONTENT_READY", "0.16"))
+    rank_weights_link_yield: float = float(os.getenv("RANK_WEIGHTS_LINK_YIELD", "0.14"))
+    rank_weights_source_rel: float = float(os.getenv("RANK_WEIGHTS_SOURCE_REL", "0.10"))
+    rank_weights_freshness: float = float(os.getenv("RANK_WEIGHTS_FRESHNESS", "0.06"))
+    rank_weights_safety: float = float(os.getenv("RANK_WEIGHTS_SAFETY", "0.04"))
+    rank_weights_topic: float = float(os.getenv("RANK_WEIGHTS_TOPIC", "0.02"))
+    
+    # Ranking thresholds
+    min_publish_score: float = float(os.getenv("MIN_PUBLISH_SCORE", "60.0"))
+    profile_score: float = float(os.getenv("PROFILE_SCORE", "80.0"))
+    
+    # Backoff settings
+    backoff_start_hours: int = int(os.getenv("BACKOFF_START_HOURS", "6"))
+    backoff_max_hours: int = int(os.getenv("BACKOFF_MAX_HOURS", "48"))
+    backoff_multiplier: float = float(os.getenv("BACKOFF_MULTIPLIER", "2.0"))
+    
+    def __post_init__(self):
+        if self.doc_extensions is None:
+            self.doc_extensions = os.getenv("DOC_EXTENSIONS", "pdf,csv,json,txt").split(",")
+        
+        # Validate ranking weights sum to 1.0
+        total_weight = (
+            self.rank_weights_unseen +
+            self.rank_weights_host_novelty +
+            self.rank_weights_content_ready +
+            self.rank_weights_link_yield +
+            self.rank_weights_source_rel +
+            self.rank_weights_freshness +
+            self.rank_weights_safety +
+            self.rank_weights_topic
+        )
+        if abs(total_weight - 1.0) > 0.01:  # Allow small floating point errors
+            raise ValueError(f"Ranking weights must sum to 1.0, got {total_weight}")
+    
     def validate(self) -> None:
         """Validate configuration."""
         if not self.database_url:

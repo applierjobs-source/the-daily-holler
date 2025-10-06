@@ -70,7 +70,13 @@ class ManifestManager:
                 'pages': manifest.pages,
                 'links_per_page': manifest.links_per_page,
                 'created_at': manifest.created_at.isoformat(),
-                'filter_rate': manifest.kept / manifest.candidates if manifest.candidates > 0 else 0
+                'filter_rate': manifest.kept / manifest.candidates if manifest.candidates > 0 else 0,
+                # New ranking metrics
+                'p0_count': getattr(manifest, 'p0_count', 0),
+                'p1_count': getattr(manifest, 'p1_count', 0),
+                'p2_count': getattr(manifest, 'p2_count', 0),
+                'p3_count': getattr(manifest, 'p3_count', 0),
+                'avg_score': getattr(manifest, 'avg_score', 0.0)
             }
             
         finally:
@@ -170,6 +176,78 @@ class ManifestManager:
         finally:
             session.close()
     
+    def get_ranking_stats(self, date_str: str = None) -> Dict[str, Any]:
+        """Get ranking statistics for a specific date."""
+        if date_str is None:
+            date_str = datetime.now().strftime('%Y-%m-%d')
+        
+        session = db.get_session()
+        
+        try:
+            # Get priority class counts
+            priority_stats = session.query(
+                DiscoveredKept.priority_class,
+                func.count(DiscoveredKept.id).label('count')
+            ).filter(
+                func.date(DiscoveredKept.picked_at) == date_str
+            ).group_by(DiscoveredKept.priority_class).all()
+            
+            priority_counts = {f'P{priority}': count for priority, count in priority_stats}
+            
+            # Get average score
+            avg_score = session.query(
+                func.avg(DiscoveredKept.discovery_score)
+            ).filter(
+                func.date(DiscoveredKept.picked_at) == date_str
+            ).scalar() or 0.0
+            
+            # Get score distribution
+            score_ranges = [
+                (0, 20, '0-20'),
+                (20, 40, '20-40'),
+                (40, 60, '40-60'),
+                (60, 80, '60-80'),
+                (80, 100, '80-100')
+            ]
+            
+            score_distribution = {}
+            for min_score, max_score, label in score_ranges:
+                count = session.query(DiscoveredKept).filter(
+                    func.date(DiscoveredKept.picked_at) == date_str,
+                    DiscoveredKept.discovery_score >= min_score,
+                    DiscoveredKept.discovery_score < max_score
+                ).count()
+                score_distribution[label] = count
+            
+            # Get top scoring URLs
+            top_urls = session.query(DiscoveredKept).filter(
+                func.date(DiscoveredKept.picked_at) == date_str,
+                DiscoveredKept.discovery_score > 0
+            ).order_by(
+                DiscoveredKept.discovery_score.desc()
+            ).limit(10).all()
+            
+            top_urls_data = []
+            for url in top_urls:
+                top_urls_data.append({
+                    'url': url.url,
+                    'host': url.host,
+                    'discovery_score': url.discovery_score,
+                    'priority_class': url.priority_class,
+                    'signals': url.signals or {}
+                })
+            
+            return {
+                'date': date_str,
+                'priority_counts': priority_counts,
+                'avg_score': float(avg_score),
+                'score_distribution': score_distribution,
+                'top_urls': top_urls_data
+            }
+            
+        finally:
+            session.close()
+    
     def export_manifest(self, run_date: str, output_path: str = None) -> str:
         """Export run manifest to JSON file."""
         stats = self.get_run_stats(run_date)
@@ -213,3 +291,9 @@ def get_daily_stats(date_str: str = None) -> Dict[str, Any]:
     """Convenience function to get daily statistics."""
     manager = ManifestManager()
     return manager.get_daily_stats(date_str)
+
+
+def get_ranking_stats(date_str: str = None) -> Dict[str, Any]:
+    """Convenience function to get ranking statistics."""
+    manager = ManifestManager()
+    return manager.get_ranking_stats(date_str)

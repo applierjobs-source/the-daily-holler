@@ -113,6 +113,43 @@ jobs:
         print(f'Filtering completed: {result} URLs moved to discovered_kept')
         "
     
+    - name: Rank URLs and assign priority classes
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        MIN_PUBLISH_SCORE: 60
+        PROFILE_SCORE: 80
+      run: |
+        cd holler-discovery
+        python -c "
+        import asyncio
+        from src.pipeline.ranker import ranker
+        
+        async def rank_urls():
+            counts = await ranker.rank_urls(60.0, 80.0)
+            print(f'Ranking completed:')
+            print(f'  P0 (≥80): {counts[\"P0\"]} URLs')
+            print(f'  P1 (60-79): {counts[\"P1\"]} URLs')
+            print(f'  P2 (40-59): {counts[\"P2\"]} URLs')
+            print(f'  P3 (<40): {counts[\"P3\"]} URLs')
+            
+            # Update run manifest
+            from datetime import datetime
+            from src.db import db, DiscoveredKept
+            from sqlalchemy import func
+            
+            run_date = datetime.now().strftime('%Y-%m-%d')
+            session = db.get_session()
+            try:
+                avg_score = session.query(func.avg(DiscoveredKept.discovery_score)).scalar() or 0.0
+            finally:
+                session.close()
+            
+            await ranker.update_run_manifest(run_date, counts, avg_score)
+            print(f'  Average score: {avg_score:.2f}')
+        
+        asyncio.run(rank_urls())
+        "
+    
     - name: Generate discovery pages with real data
       env:
         DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}

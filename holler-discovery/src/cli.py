@@ -13,7 +13,8 @@ from .ingest.commoncrawl import ingest_cc
 from .pipeline.filters import filter_raw_urls
 from .pipeline.html_writer import HTMLWriter
 from .pipeline.sitemap_writer import SitemapWriter
-from .pipeline.manifest import create_run_manifest, get_run_stats, get_daily_stats
+from .pipeline.manifest import create_run_manifest, get_run_stats, get_daily_stats, get_ranking_stats
+from .pipeline.ranker import ranker
 
 
 @click.group()
@@ -84,6 +85,39 @@ def filter_cmd(host_cap):
     """Filter raw URLs and move good ones to discovered_kept."""
     count = filter_raw_urls(host_cap)
     click.echo(f"Filtering completed: {count} URLs moved to discovered_kept")
+
+
+@main.command()
+@click.option('--min-publish-score', default=None, type=float, help='Minimum score to publish (default from config)')
+@click.option('--profile-score', default=None, type=float, help='Minimum score for profile pages (default from config)')
+def rank_cmd(min_publish_score, profile_score):
+    """Rank URLs and assign priority classes."""
+    async def _rank():
+        counts = await ranker.rank_urls(min_publish_score, profile_score)
+        
+        # Update run manifest with ranking metrics
+        run_date = datetime.now().strftime('%Y-%m-%d')
+        avg_score = 0.0  # Will be computed by ranker
+        
+        # Get average score from database
+        from .db import DiscoveredKept
+        from sqlalchemy import func
+        session = db.get_session()
+        try:
+            avg_score = session.query(func.avg(DiscoveredKept.discovery_score)).scalar() or 0.0
+        finally:
+            session.close()
+        
+        await ranker.update_run_manifest(run_date, counts, avg_score)
+        
+        click.echo("Ranking completed successfully!")
+        click.echo(f"  P0 (≥80): {counts['P0']} URLs")
+        click.echo(f"  P1 (60-79): {counts['P1']} URLs")
+        click.echo(f"  P2 (40-59): {counts['P2']} URLs")
+        click.echo(f"  P3 (<40): {counts['P3']} URLs")
+        click.echo(f"  Average score: {avg_score:.2f}")
+    
+    asyncio.run(_rank())
 
 
 @main.command()
@@ -200,14 +234,19 @@ def upload_cmd(root, provider, bucket, prefix):
 
 @main.command()
 @click.option('--date', default=None, help='Date to get stats for (YYYY-MM-DD, default: latest)')
-def stats_cmd(date):
+@click.option('--ranking', is_flag=True, help='Show ranking statistics')
+def stats_cmd(date, ranking):
     """Show run statistics."""
     if date:
         stats = get_run_stats(date)
         daily_stats = get_daily_stats(date)
+        if ranking:
+            ranking_stats = get_ranking_stats(date)
     else:
         stats = get_run_stats()
         daily_stats = get_daily_stats()
+        if ranking:
+            ranking_stats = get_ranking_stats()
     
     if stats:
         click.echo("Run Statistics:")
@@ -218,6 +257,15 @@ def stats_cmd(date):
         click.echo(f"  Pages: {stats.get('pages', 0)}")
         click.echo(f"  Filter Rate: {stats.get('filter_rate', 0):.2%}")
         click.echo(f"  Created: {stats.get('created_at', 'N/A')}")
+        
+        # Show ranking metrics if available
+        if stats.get('p0_count', 0) > 0 or stats.get('p1_count', 0) > 0:
+            click.echo("\nRanking Statistics:")
+            click.echo(f"  P0 (≥80): {stats.get('p0_count', 0)} URLs")
+            click.echo(f"  P1 (60-79): {stats.get('p1_count', 0)} URLs")
+            click.echo(f"  P2 (40-59): {stats.get('p2_count', 0)} URLs")
+            click.echo(f"  P3 (<40): {stats.get('p3_count', 0)} URLs")
+            click.echo(f"  Average Score: {stats.get('avg_score', 0.0):.2f}")
     
     if daily_stats:
         click.echo("\nDaily Statistics:")
@@ -235,6 +283,26 @@ def stats_cmd(date):
             click.echo("  Top Hosts:")
             for host_info in daily_stats['top_hosts'][:5]:
                 click.echo(f"    {host_info['host']}: {host_info['count']}")
+    
+    if ranking and 'ranking_stats' in locals():
+        click.echo("\nDetailed Ranking Statistics:")
+        click.echo(f"  Date: {ranking_stats.get('date', 'N/A')}")
+        click.echo(f"  Average Score: {ranking_stats.get('avg_score', 0.0):.2f}")
+        
+        if ranking_stats.get('priority_counts'):
+            click.echo("  Priority Distribution:")
+            for priority, count in ranking_stats['priority_counts'].items():
+                click.echo(f"    {priority}: {count}")
+        
+        if ranking_stats.get('score_distribution'):
+            click.echo("  Score Distribution:")
+            for range_label, count in ranking_stats['score_distribution'].items():
+                click.echo(f"    {range_label}: {count}")
+        
+        if ranking_stats.get('top_urls'):
+            click.echo("  Top Scoring URLs:")
+            for url_info in ranking_stats['top_urls'][:5]:
+                click.echo(f"    {url_info['url']} (Score: {url_info['discovery_score']:.1f}, P{url_info['priority_class']})")
 
 
 @main.command()

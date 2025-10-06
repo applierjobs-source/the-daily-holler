@@ -15,15 +15,22 @@ class URLChunker:
     def __init__(self, links_per_page: int = None):
         self.links_per_page = links_per_page or config.links_per_page
     
-    def get_urls_for_date(self, date_str: str) -> List[Dict[str, Any]]:
-        """Get URLs picked on a specific date."""
+    def get_urls_for_date(self, date_str: str, min_score: float = None) -> List[Dict[str, Any]]:
+        """Get URLs picked on a specific date, optionally filtered by score."""
+        if min_score is None:
+            min_score = config.min_publish_score
+        
         session = db.get_session()
         
         try:
-            # Query URLs picked on the given date
+            # Query URLs picked on the given date, only P0/P1 (priority_class 0,1)
+            # and above minimum score
             records = session.query(DiscoveredKept).filter(
-                func.date(DiscoveredKept.picked_at) == date_str
+                func.date(DiscoveredKept.picked_at) == date_str,
+                DiscoveredKept.discovery_score >= min_score,
+                DiscoveredKept.priority_class.in_([0, 1])  # P0 and P1 only
             ).order_by(
+                DiscoveredKept.discovery_score.desc(),  # Order by discovery score
                 DiscoveredKept.novelty_score.desc(),
                 DiscoveredKept.parking_score.asc()
             ).all()
@@ -37,6 +44,9 @@ class URLChunker:
                     'tld': record.tld,
                     'parking_score': record.parking_score,
                     'novelty_score': record.novelty_score,
+                    'discovery_score': record.discovery_score,
+                    'priority_class': record.priority_class,
+                    'signals': record.signals or {},
                     'picked_at': record.picked_at
                 })
             
