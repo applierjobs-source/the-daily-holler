@@ -1,0 +1,46 @@
+name: Test Simple
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set date variable
+      id: date
+      run: |
+        echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+    
+    - name: Create test file
+      env:
+        TEST_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        echo "Test date: $TEST_DATE"
+        mkdir -p test-output
+        echo "Test file created on $TEST_DATE" > test-output/test.txt
+        echo "Files created:"
+        ls -la test-output/
+    
+    - name: Commit test file
+      env:
+        TEST_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add test-output/
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Test workflow - $TEST_DATE"
+          git push origin main
+          echo "Test file committed successfully"
+        fi
