@@ -3716,17 +3716,30 @@ if (isProduction) {
     }
   });
   
-  // Serve sitemap files
-  app.get('/sitemap*.xml', (req, res) => {
-    const filePath = path.join(staticPath, req.path);
-    console.log('Sitemap route hit for:', req.path, 'File:', filePath);
+  // Serve sitemap index and discovery sitemaps
+  app.get('/sitemap-index.xml', (req, res) => {
+    const filePath = path.join(staticPath, 'sitemap-index.xml');
+    console.log('Sitemap index route hit, File:', filePath);
     
     if (require('fs').existsSync(filePath)) {
       res.setHeader('Content-Type', 'application/xml');
       res.sendFile(filePath);
     } else {
-      console.log('Sitemap file not found:', filePath);
-      res.status(404).send('Sitemap not found');
+      console.log('Sitemap index file not found:', filePath);
+      res.status(404).send('Sitemap index not found');
+    }
+  });
+  
+  app.get('/sitemaps/sitemap-*.xml', (req, res) => {
+    const filePath = path.join(staticPath, req.path);
+    console.log('Discovery sitemap route hit for:', req.path, 'File:', filePath);
+    
+    if (require('fs').existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/xml');
+      res.sendFile(filePath);
+    } else {
+      console.log('Discovery sitemap file not found:', filePath);
+      res.status(404).send('Discovery sitemap not found');
     }
   });
   
