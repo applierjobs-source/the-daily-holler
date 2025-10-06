@@ -2895,31 +2895,8 @@ app.get('/sitemap.xml', async (req, res) => {
            <priority>0.7</priority>
          </url>`;
 
-    // Add recent articles (last 1000 for performance)
-    try {
-      const articlesResult = await pool.query(`
-        SELECT title, slug, published_at, updated_at
-        FROM articles 
-        WHERE published_at IS NOT NULL
-        ORDER BY published_at DESC 
-        LIMIT 1000
-      `);
-      
-      articlesResult.rows.forEach(article => {
-        const lastmod = article.updated_at || article.published_at;
-        sitemap += `
-  <url>
-    <loc>${baseUrl}/article/${article.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-      });
-      
-      console.log(`📄 Added ${articlesResult.rows.length} articles to sitemap`);
-    } catch (error) {
-      console.error('❌ Error fetching articles for sitemap:', error.message);
-    }
+    // Articles are accessible through city pages, no need to include in sitemap
+    console.log('📄 Articles accessible through city pages - not included in sitemap');
 
     // Add city pages
     try {
