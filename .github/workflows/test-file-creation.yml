@@ -16,20 +16,18 @@ jobs:
         # Create test directory
         mkdir -p test-discovery
         
-        # Create simple test file
-        cat > test-discovery/test.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Test Discovery Feed</title>
-</head>
-<body>
-    <h1>Discovery Feed Test</h1>
-    <p>This is a test file created by GitHub Actions.</p>
-    <p>Timestamp: $(date)</p>
-</body>
-</html>
-EOF
+        # Create simple test file using echo
+        echo "<!DOCTYPE html>" > test-discovery/test.html
+        echo "<html>" >> test-discovery/test.html
+        echo "<head>" >> test-discovery/test.html
+        echo "    <title>Test Discovery Feed</title>" >> test-discovery/test.html
+        echo "</head>" >> test-discovery/test.html
+        echo "<body>" >> test-discovery/test.html
+        echo "    <h1>Discovery Feed Test</h1>" >> test-discovery/test.html
+        echo "    <p>This is a test file created by GitHub Actions.</p>" >> test-discovery/test.html
+        echo "    <p>Timestamp: $(date)</p>" >> test-discovery/test.html
+        echo "</body>" >> test-discovery/test.html
+        echo "</html>" >> test-discovery/test.html
         
         # Create another test file
         echo "Test sitemap content" > test-discovery/sitemap-test.xml
