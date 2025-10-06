@@ -1,0 +1,95 @@
+name: Discovery Minimal Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  discovery-minimal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set date variable
+      id: date
+      run: |
+        if [ -n "${{ github.event.inputs.date }}" ]; then
+          echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+        else
+          echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create discovery directory
+      run: |
+        mkdir -p client/build/discover/${{ steps.date.outputs.date }}
+        echo "Created directory: client/build/discover/${{ steps.date.outputs.date }}"
+    
+    - name: Create simple index page
+      run: |
+        cat > client/build/discover/${{ steps.date.outputs.date }}/index.html << 'HTML_EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Discovery Feed - ${{ steps.date.outputs.date }}</title>
+        </head>
+        <body>
+            <h1>Discovery Feed</h1>
+            <p>Date: ${{ steps.date.outputs.date }}</p>
+            <p>This is a test discovery page.</p>
+        </body>
+        </html>
+        HTML_EOF
+        echo "Created index.html"
+    
+    - name: Create simple sitemap
+      run: |
+        mkdir -p client/build/sitemaps
+        cat > client/build/sitemaps/sitemap-${{ steps.date.outputs.date }}.xml << 'XML_EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://holler.news/discover/${{ steps.date.outputs.date }}/</loc>
+            <lastmod>${{ steps.date.outputs.date }}T00:00:00Z</lastmod>
+          </url>
+        </urlset>
+        XML_EOF
+        echo "Created sitemap"
+    
+    - name: Create sitemap index
+      run: |
+        cat > client/build/sitemap-index.xml << 'INDEX_EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <sitemap>
+            <loc>https://holler.news/sitemaps/sitemap-${{ steps.date.outputs.date }}.xml</loc>
+            <lastmod>${{ steps.date.outputs.date }}T00:00:00Z</lastmod>
+          </sitemap>
+        </sitemapindex>
+        INDEX_EOF
+        echo "Created sitemap index"
+    
+    - name: Commit changes
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add client/build/discover/ client/build/sitemaps/ client/build/sitemap-index.xml
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update discovery feed - ${{ steps.date.outputs.date }}"
+          git push origin main
+          echo "Changes committed successfully"
+        fi
