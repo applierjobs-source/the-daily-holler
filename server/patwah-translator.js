@@ -34,7 +34,7 @@ class PatwahTranslator {
 
       console.log(`🔄 Translating to Patwah: "${text.substring(0, 50)}..."`);
 
-      const prompt = `You are a native Jamaican Patois (Patwah) speaker and translator. Translate the following English text to authentic Jamaican Patois.
+      const prompt = `You are a native Jamaican Patois (Patwah) speaker and translator. Translate and expand the following English text to authentic Jamaican Patois.
 
 CONTEXT: ${context}
 
@@ -43,21 +43,23 @@ TRANSLATION REQUIREMENTS:
 - Maintain the original meaning and tone
 - Use appropriate Patwah expressions and idioms where natural
 - Keep proper nouns (names, places) unchanged
-- Maintain the structure and flow of the original text
+- Expand the content to approximately 400 words (same length as event articles)
+- Add relevant local details, community context, and cultural insights
 - Use phonetic spelling that reflects how words sound in Patwah
 - Don't make it too exaggerated or stereotypical - keep it natural and authentic
+- Write in the style of a local Patwah news reporter
 
 ORIGINAL ENGLISH TEXT:
 ${text}
 
-TRANSLATED PATWAH TEXT:`;
+TRANSLATED AND EXPANDED PATWAH TEXT (approximately 400 words):`;
 
       const completion = await this.openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: "You are an expert translator specializing in English to Jamaican Patois (Patwah). You provide authentic, natural translations that preserve meaning while using proper Patwah vocabulary, grammar, and expressions."
+            content: "You are an expert translator specializing in English to Jamaican Patois (Patwah). You provide authentic, natural translations that preserve meaning while using proper Patwah vocabulary, grammar, and expressions. You expand content to match the length of professional news articles (approximately 400 words)."
           },
           {
             role: "user",
@@ -65,7 +67,7 @@ TRANSLATED PATWAH TEXT:`;
           }
         ],
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1500
       });
 
       const translatedText = completion.choices[0].message.content.trim();
@@ -185,11 +187,14 @@ TRANSLATED PATWAH TEXT:`;
 
     return `${translatedArticle.content}
 
-Mi a tell yuh bout dis news from ${cityName}, ${state}. Dis story come from ${translatedArticle.source} and mi translate it fi yuh inna real Patwah style.
+Mi a tell yuh bout dis news from ${cityName}, ${state}. Dis story come from ${translatedArticle.source} and mi translate it fi yuh inna real Patwah style. Di community a ${cityName} always a look fi good news and mi hope dis one bring yuh some joy and information.
+
+Dis kind a news important fi we community because it show we how things a go inna di area. Mi want fi make sure everybaddy can understand what a gwaan, so mi translate it fi yuh inna we own language.
 
 Source: ${translatedArticle.originalUrl}
 Published: ${timestamp}
-Language: Jamaican Patois (Patwah)`;
+Language: Jamaican Patois (Patwah)
+Translated by: The Daily Holler Patwah Team`;
   }
 
   /**
