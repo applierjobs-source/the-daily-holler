@@ -1,4 +1,4 @@
-name: Discovery Feed Test (No DB)
+name: Discovery Feed Test
 
 on:
   workflow_dispatch:
@@ -23,79 +23,50 @@ jobs:
         pip install -r requirements.txt
         pip install -e .
     
-    - name: Test module imports
+    - name: Test database connection
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
       run: |
         cd holler-discovery
         python -c "
-        print('Testing module imports...')
-        from src.config import config
-        print('✅ Config imported successfully')
-        from src.ingest.normalize import URLNormalizer
-        print('✅ URLNormalizer imported successfully')
-        from src.pipeline.filters import URLFilter
-        print('✅ URLFilter imported successfully')
-        print('All modules imported successfully!')
-        "
-    
-    - name: Test URL filtering
-      run: |
-        cd holler-discovery
-        python -c "
-        from src.pipeline.filters import URLFilter
-        from src.ingest.normalize import URLNormalizer
-        
-        print('Testing URL filtering...')
-        filterer = URLFilter()
-        normalizer = URLNormalizer()
-        
-        test_urls = [
-            'https://example.com/document.pdf',
-            'https://parking.example.com',
-            'https://news.example.com/article'
-        ]
-        
-        scores = filterer.calculate_scores(test_urls)
-        print(f'Processed {len(scores)} URLs')
-        
-        for url, score in scores.items():
-            print(f'  {url}: parking={score[\"parking_score\"]:.2f}, novelty={score[\"novelty_score\"]:.2f}')
-        
-        print('✅ URL filtering test completed successfully!')
+        import asyncio
+        from src.db import db
+        async def test_db():
+            try:
+                await db.connect()
+                print('Database connection successful')
+                await db.disconnect()
+            except Exception as e:
+                print(f'Database connection failed: {e}')
+        asyncio.run(test_db())
         "
     
     - name: Test HTML generation
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        LINKS_PER_PAGE: 200
+        BASE_URL: https://holler.news
       run: |
         cd holler-discovery
         python -c "
         from src.pipeline.html_writer import HTMLWriter
-        
-        print('Testing HTML generation...')
-        writer = HTMLWriter(output_dir='./test-output')
-        
-        # Create test data
-        test_urls = [
-            {
-                'url': 'https://example.com/document.pdf',
-                'host': 'example.com',
-                'tld': 'com',
-                'parking_score': 0.1,
-                'novelty_score': 0.8,
-                'picked_at': '2024-01-05T12:00:00Z',
-                'source': 'cc'
-            },
-            {
-                'url': 'https://news.example.com/article',
-                'host': 'news.example.com',
-                'tld': 'com',
-                'parking_score': 0.2,
-                'novelty_score': 0.6,
-                'picked_at': '2024-01-05T12:00:00Z',
-                'source': 'rss'
-            }
-        ]
-        
-        # Test page generation
-        print('Generating test discovery page...')
-        # This will create test files in ./test-output
-        print('✅ HTML generation test completed!')
+        writer = HTMLWriter(output_dir='../client/build')
+        print('HTMLWriter created successfully')
+        print(f'Output directory: {writer.output_dir}')
+        print(f'Template directory: {writer.template_dir}')
+        "
+    
+    - name: Test sitemap generation
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        BASE_URL: https://holler.news
+        SITEMAP_URLS_PER_FILE: 50000
+      run: |
+        cd holler-discovery
+        python -c "
+        from src.pipeline.sitemap_writer import SitemapWriter
+        writer = SitemapWriter(output_dir='../client/build', base_url='https://holler.news')
+        print('SitemapWriter created successfully')
+        print(f'Output directory: {writer.output_dir}')
+        print(f'Sitemaps directory: {writer.sitemaps_dir}')
         "
