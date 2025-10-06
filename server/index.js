@@ -2861,7 +2861,7 @@ app.get('/sitemap.xml', async (req, res) => {
   <url>
     <loc>${baseUrl}/news</loc>
     <lastmod>${now}</lastmod>
-    <changefreq>hourly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
@@ -2913,7 +2913,7 @@ app.get('/sitemap.xml', async (req, res) => {
   <url>
     <loc>${baseUrl}/cities/${citySlug}</loc>
     <lastmod>${now}</lastmod>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>`;
       });
