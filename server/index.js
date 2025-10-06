@@ -2946,6 +2946,51 @@ app.get('/sitemap.xml', async (req, res) => {
       console.error('❌ Error fetching cities for sitemap:', error.message);
     }
 
+    // Add discovery feed pages (if they exist)
+    try {
+      const fs = require('fs');
+      const discoveryPath = path.join(__dirname, '../client/build/discover');
+      
+      if (fs.existsSync(discoveryPath)) {
+        const discoveryDirs = fs.readdirSync(discoveryPath, { withFileTypes: true })
+          .filter(dirent => dirent.isDirectory())
+          .map(dirent => dirent.name)
+          .sort()
+          .reverse(); // Most recent first
+        
+        discoveryDirs.forEach(dateDir => {
+          // Add discovery day index
+          sitemap += `
+  <url>
+    <loc>${baseUrl}/discover/${dateDir}/</loc>
+    <lastmod>${dateDir}T00:00:00Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+          
+          // Add discovery pages for this date
+          const datePath = path.join(discoveryPath, dateDir);
+          const files = fs.readdirSync(datePath)
+            .filter(file => file.startsWith('page-') && file.endsWith('.html'))
+            .sort();
+          
+          files.forEach(file => {
+            sitemap += `
+  <url>
+    <loc>${baseUrl}/discover/${dateDir}/${file}</loc>
+    <lastmod>${dateDir}T00:00:00Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+          });
+        });
+        
+        console.log(`🔍 Added ${discoveryDirs.length} discovery feed dates to sitemap`);
+      }
+    } catch (error) {
+      console.error('❌ Error adding discovery feed to sitemap:', error.message);
+    }
+
     sitemap += `
 </urlset>`;
     
@@ -3715,37 +3760,7 @@ if (isProduction) {
     }
   });
   
-  // Serve sitemap index and discovery sitemaps
-  app.get('/sitemap-index.xml', (req, res) => {
-    const filePath = path.join(staticPath, 'sitemap-index.xml');
-    console.log('Sitemap index route hit, File:', filePath);
-    
-    if (require('fs').existsSync(filePath)) {
-      res.setHeader('Content-Type', 'application/xml');
-      res.sendFile(filePath);
-    } else {
-      console.log('Sitemap index file not found:', filePath);
-      res.status(404).send('Sitemap index not found');
-    }
-  });
-  
-  app.get('/sitemaps/:filename', (req, res) => {
-    const filename = req.params.filename;
-    if (!filename.endsWith('.xml')) {
-      return res.status(404).send('Not found');
-    }
-    
-    const filePath = path.join(staticPath, 'sitemaps', filename);
-    console.log('Discovery sitemap route hit for:', filename, 'File:', filePath);
-    
-    if (require('fs').existsSync(filePath)) {
-      res.setHeader('Content-Type', 'application/xml');
-      res.sendFile(filePath);
-    } else {
-      console.log('Discovery sitemap file not found:', filePath);
-      res.status(404).send('Discovery sitemap not found');
-    }
-  });
+  // Discovery sitemap routes removed - using single sitemap.xml instead
   
   // Serve index.html for root
   app.get('/', (req, res) => {
