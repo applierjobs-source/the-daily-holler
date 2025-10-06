@@ -1,0 +1,117 @@
+name: Discovery Fixed Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  discovery-fixed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set date variable
+      id: date
+      run: |
+        if [ -n "${{ github.event.inputs.date }}" ]; then
+          echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+        else
+          echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create discovery content
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        # Create discovery directory
+        mkdir -p client/build/discover/$DISCOVERY_DATE
+        
+        # Create simple index page
+        echo "<!DOCTYPE html>" > client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<html lang=\"en\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<head>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <meta charset=\"UTF-8\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <title>$DISCOVERY_DATE - Discovery Feed</title>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</head>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<body>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <h1>Discovery Feed for $DISCOVERY_DATE</h1>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <p>This is a test discovery page.</p>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <a href=\"page-000001.html\">Page 1</a>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</body>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</html>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        
+        # Create page 1
+        echo "<!DOCTYPE html>" > client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "<html lang=\"en\">" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "<head>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <meta charset=\"UTF-8\">" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <title>Page 1 - $DISCOVERY_DATE</title>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "</head>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "<body>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <h1>Page 1 - $DISCOVERY_DATE</h1>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <p>Test discovery links:</p>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <ul>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "        <li><a href=\"https://example.com/test1\">Test Link 1</a></li>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "        <li><a href=\"https://example.com/test2\">Test Link 2</a></li>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    </ul>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "    <a href=\"index.html\">Back to Index</a>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "</body>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        echo "</html>" >> client/build/discover/$DISCOVERY_DATE/page-000001.html
+        
+        echo "Created discovery files for $DISCOVERY_DATE"
+        ls -la client/build/discover/$DISCOVERY_DATE/
+    
+    - name: Create sitemap
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        # Create sitemaps directory
+        mkdir -p client/build/sitemaps
+        
+        # Create sitemap
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "  <url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <loc>https://holler.news/discover/$DISCOVERY_DATE/</loc>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <lastmod>$DISCOVERY_DATE</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "  </url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "</urlset>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        
+        # Create sitemap index
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > client/build/sitemap-index.xml
+        echo "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemap-index.xml
+        echo "  <sitemap>" >> client/build/sitemap-index.xml
+        echo "    <loc>https://holler.news/sitemaps/sitemap-$DISCOVERY_DATE.xml</loc>" >> client/build/sitemap-index.xml
+        echo "    <lastmod>$DISCOVERY_DATE</lastmod>" >> client/build/sitemap-index.xml
+        echo "  </sitemap>" >> client/build/sitemap-index.xml
+        echo "</sitemapindex>" >> client/build/sitemap-index.xml
+        
+        echo "Created sitemap files for $DISCOVERY_DATE"
+    
+    - name: Commit and push changes
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add client/build/discover/ client/build/sitemaps/ client/build/sitemap-index.xml
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update discovery feed - $DISCOVERY_DATE"
+          git push origin main
+          echo "Changes committed and pushed successfully"
+        fi
