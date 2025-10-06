@@ -1,0 +1,212 @@
+name: Discovery Production Feed
+
+on:
+  schedule:
+    # Run daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  discovery-production:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        cd holler-discovery
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Set date variable
+      id: date
+      run: |
+        if [ -n "${{ github.event.inputs.date }}" ]; then
+          echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+        else
+          echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Run database migrations
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+      run: |
+        cd holler-discovery
+        python -c "
+        import asyncio
+        from src.db import migrate_db
+        asyncio.run(migrate_db())
+        print('Database migrations completed successfully')
+        "
+    
+    - name: Ingest Certificate Transparency logs
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        CT_LOOKBACK_HOURS: 24
+      run: |
+        cd holler-discovery
+        python -c "
+        import asyncio
+        from src.ingest.ct import ingest_ct
+        result = asyncio.run(ingest_ct(24))
+        print(f'CT ingestion completed: {result} URLs inserted')
+        "
+    
+    - name: Ingest RSS feeds
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        RSS_FEEDS_PATH: config/feeds.txt
+      run: |
+        cd holler-discovery
+        python -c "
+        import asyncio
+        from src.ingest.rss import ingest_rss
+        result = asyncio.run(ingest_rss('config/feeds.txt'))
+        print(f'RSS ingestion completed: {result} URLs inserted')
+        "
+    
+    - name: Ingest Common Crawl Index
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        CC_URL_LIMIT: 10000
+        CC_DATASETS_RECENT: 3
+      run: |
+        cd holler-discovery
+        python -c "
+        import asyncio
+        from src.ingest.commoncrawl import ingest_cc
+        result = asyncio.run(ingest_cc(10000))
+        print(f'Common Crawl ingestion completed: {result} URLs inserted')
+        "
+    
+    - name: Filter and deduplicate URLs
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        HOST_CAP: 500
+        PARKING_THRESHOLD: 0.3
+        NOVELTY_THRESHOLD: 0.5
+      run: |
+        cd holler-discovery
+        python -c "
+        from src.pipeline.filters import filter_raw_urls
+        result = filter_raw_urls(500)
+        print(f'Filtering completed: {result} URLs moved to discovered_kept')
+        "
+    
+    - name: Generate discovery pages with real data
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+        LINKS_PER_PAGE: 200
+        BASE_URL: https://holler.news
+      run: |
+        cd holler-discovery
+        python -c "
+        import os
+        from src.pipeline.html_writer import HTMLWriter
+        from src.pipeline.chunker import get_url_chunks
+        
+        # Get date from environment
+        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        links_per_page = int(os.environ.get('LINKS_PER_PAGE', '200'))
+        
+        # Get URLs for this date
+        chunks = get_url_chunks(discovery_date, links_per_page)
+        print(f'Found {len(chunks)} chunks for {discovery_date}')
+        
+        # Generate HTML pages
+        writer = HTMLWriter(output_dir='../client/build')
+        generated_files = writer.generate_discovery_pages(discovery_date)
+        
+        print(f'Generated {len(generated_files)} discovery pages:')
+        for file_path in generated_files:
+            print(f'  {file_path}')
+        "
+    
+    - name: Generate sitemaps
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        BASE_URL: https://holler.news
+        SITEMAP_URLS_PER_FILE: 50000
+      run: |
+        cd holler-discovery
+        python -c "
+        from src.pipeline.sitemap_writer import SitemapWriter
+        writer = SitemapWriter(output_dir='../client/build', base_url='https://holler.news')
+        generated_files = writer.generate_sitemaps()
+        print(f'Generated {len(generated_files)} sitemap files')
+        for file_path in generated_files:
+            print(f'  {file_path}')
+        "
+    
+    - name: Record run manifest
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        cd holler-discovery
+        python -c "
+        import os
+        from src.pipeline.manifest import record_daily_run
+        
+        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        record_daily_run(discovery_date)
+        print(f'Recorded run manifest for {discovery_date}')
+        "
+    
+    - name: Commit and push changes
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add client/build/discover/ client/build/sitemaps/ client/build/sitemap-index.xml
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update discovery feed - $DISCOVERY_DATE"
+          git push origin main
+          echo "Changes committed and pushed successfully"
+        fi
+    
+    - name: Log Discovery Feed Statistics
+      env:
+        DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        cd holler-discovery
+        python -c "
+        import os
+        from src.pipeline.manifest import get_daily_stats
+        
+        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        stats = get_daily_stats(discovery_date)
+        
+        print('=== Discovery Feed Statistics ===')
+        print(f'Date: {discovery_date}')
+        print(f'Raw URLs: {stats.get(\"raw_count\", 0)}')
+        print(f'Kept URLs: {stats.get(\"kept_count\", 0)}')
+        print(f'Filter Rate: {stats.get(\"filter_rate\", 0):.2%}')
+        print(f'Pages Generated: {stats.get(\"pages_generated\", 0)}')
+        print('===============================')
+        "

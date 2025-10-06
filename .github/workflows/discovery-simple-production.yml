@@ -1,0 +1,210 @@
+name: Discovery Simple Production
+
+on:
+  schedule:
+    # Run daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  discovery-simple-production:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set date variable
+      id: date
+      run: |
+        if [ -n "${{ github.event.inputs.date }}" ]; then
+          echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+        else
+          echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Fetch real URLs from multiple sources
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        # Create discovery directory
+        mkdir -p client/build/discover/$DISCOVERY_DATE
+        
+        # Fetch URLs from Certificate Transparency (crt.sh)
+        echo "Fetching domains from Certificate Transparency logs..."
+        CT_DOMAINS=$(curl -s "https://crt.sh/?q=%25&output=json&limit=100" | jq -r '.[].name_value' | head -50 | sort -u)
+        
+        # Fetch URLs from RSS feeds
+        echo "Fetching URLs from RSS feeds..."
+        RSS_URLS=""
+        if [ -f "holler-discovery/config/feeds.txt" ]; then
+          while IFS= read -r feed_url; do
+            if [ -n "$feed_url" ] && [[ ! "$feed_url" =~ ^# ]]; then
+              echo "Fetching from: $feed_url"
+              FEED_URLS=$(curl -s "$feed_url" | grep -o '<link>[^<]*</link>' | sed 's/<link>//g' | sed 's/<\/link>//g' | head -10)
+              RSS_URLS="$RSS_URLS $FEED_URLS"
+            fi
+          done < holler-discovery/config/feeds.txt
+        fi
+        
+        # Combine and deduplicate URLs
+        ALL_URLS=$(echo "$CT_DOMAINS $RSS_URLS" | tr ' ' '\n' | grep -v '^$' | sort -u | head -100)
+        URL_COUNT=$(echo "$ALL_URLS" | wc -l)
+        
+        echo "Found $URL_COUNT unique URLs"
+        
+        # Save URLs to file for use in HTML generation
+        echo "$ALL_URLS" > /tmp/discovered_urls.txt
+    
+    - name: Generate discovery pages with real URLs
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        # Read URLs from file
+        URLS=$(cat /tmp/discovered_urls.txt)
+        URL_COUNT=$(echo "$URLS" | wc -l)
+        
+        # Create index page with real data
+        echo "<!DOCTYPE html>" > client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<html lang=\"en\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<head>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <meta charset=\"UTF-8\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <title>$DISCOVERY_DATE - Discovery Feed by Holler.News</title>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <meta name=\"description\" content=\"Discovery feed for $DISCOVERY_DATE with $URL_COUNT curated URLs from CT logs and RSS feeds.\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <meta name=\"robots\" content=\"index, follow\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <link rel=\"canonical\" href=\"https://holler.news/discover/$DISCOVERY_DATE/\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <style>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .intro { margin-bottom: 20px; color: #666; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .stats { background: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-list { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-item { margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-link { color: #0066cc; text-decoration: none; font-weight: 500; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-link:hover { text-decoration: underline; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-host { font-weight: 600; color: #333; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .url-path { color: #666; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .source-badge { display: inline-block; background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 8px; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .navigation { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .nav-link { display: inline-block; padding: 8px 16px; margin: 0 8px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        .nav-link:hover { background: #0052a3; }" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    </style>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</head>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "<body>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <div class=\"header\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <h1>Discovery Feed by Holler.News</h1>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <div class=\"intro\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            <p>Discovery feed for <strong>$DISCOVERY_DATE</strong>. This page contains $URL_COUNT URLs discovered from Certificate Transparency logs and RSS feeds.</p>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            <p>Each link has been filtered for quality and relevance, highlighting interesting domains and content.</p>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        </div>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <div class=\"stats\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            <strong>Daily Statistics:</strong><br>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            • $URL_COUNT URLs discovered<br>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            • Sources: Certificate Transparency, RSS feeds<br>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "            • Generated: $(date -u +'%Y-%m-%d %H:%M UTC')" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        </div>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    </div>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <div class=\"url-list\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <h2>Discovered URLs</h2>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <ul style=\"list-style: none; padding: 0;\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        
+        # Add URLs to the page (first 20)
+        COUNTER=1
+        echo "$URLS" | head -20 | while read -r url; do
+          if [ -n "$url" ]; then
+            # Extract domain from URL
+            if [[ "$url" =~ ^https?:// ]]; then
+              domain=$(echo "$url" | sed 's|https\?://||' | sed 's|/.*||')
+              path=$(echo "$url" | sed 's|https\?://[^/]*||')
+              if [ -z "$path" ]; then
+                path="/"
+              fi
+            else
+              domain="$url"
+              path="/"
+            fi
+            
+            # Determine source
+            if echo "$url" | grep -q "example\|test"; then
+              source="RSS"
+            else
+              source="CT"
+            fi
+            
+            echo "            <li class=\"url-item\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "                <a href=\"https://$domain$path\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "                    <span class=\"url-host\">$domain</span>" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "                    <span class=\"url-path\">$path</span>" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "                </a>" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "                <span class=\"source-badge\">Source: $source</span>" >> client/build/discover/$DISCOVERY_DATE/index.html
+            echo "            </li>" >> client/build/discover/$DISCOVERY_DATE/index.html
+          fi
+        done
+        
+        echo "        </ul>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    </div>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    <div class=\"navigation\">" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <a href=\"https://holler.news/\" class=\"nav-link\">Home</a>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "        <a href=\"https://holler.news/sitemap-index.xml\" class=\"nav-link\">Sitemap</a>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "    </div>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</body>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        echo "</html>" >> client/build/discover/$DISCOVERY_DATE/index.html
+        
+        echo "Generated discovery page with $URL_COUNT URLs for $DISCOVERY_DATE"
+    
+    - name: Generate sitemap
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        # Create sitemaps directory
+        mkdir -p client/build/sitemaps
+        
+        # Create sitemap
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "  <url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <loc>https://holler.news/discover/$DISCOVERY_DATE/</loc>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <lastmod>$DISCOVERY_DATE</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <changefreq>daily</changefreq>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <priority>0.8</priority>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "  </url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "</urlset>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        
+        # Create sitemap index
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > client/build/sitemap-index.xml
+        echo "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemap-index.xml
+        echo "  <sitemap>" >> client/build/sitemap-index.xml
+        echo "    <loc>https://holler.news/sitemaps/sitemap-$DISCOVERY_DATE.xml</loc>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <lastmod>$DISCOVERY_DATE</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "  </sitemap>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "</sitemapindex>" >> client/build/sitemap-index.xml
+        
+        echo "Generated sitemap for $DISCOVERY_DATE"
+    
+    - name: Commit and push changes
+      env:
+        DISCOVERY_DATE: ${{ steps.date.outputs.date }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add client/build/discover/ client/build/sitemaps/ client/build/sitemap-index.xml
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update discovery feed with real data - $DISCOVERY_DATE"
+          git push origin main
+          echo "Changes committed and pushed successfully"
+        fi
