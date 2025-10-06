@@ -6,7 +6,7 @@
   "deploy": {
     "startCommand": "cd server && NODE_ENV=production node --max-old-space-size=8192 index.js"
   },
-  "cron": {
-    "startCommand": "node railway-10-second-generation.js"
-  }
+        "cron": {
+          "startCommand": "node railway-mixed-generation.js"
+        }
 }

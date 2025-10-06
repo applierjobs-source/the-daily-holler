@@ -4,6 +4,11 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const cheerio = require('cheerio');
+
+// Import new services
+const GoogleNewsScraper = require('./google-news-scraper');
+const PatwahTranslator = require('./patwah-translator');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -2066,6 +2071,39 @@ async function initDatabase() {
       ALTER TABLE articles 
       ADD COLUMN IF NOT EXISTS eventbrite_url TEXT
     `);
+    
+    // Add author column if it doesn't exist
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS author TEXT DEFAULT 'The Daily Holler'
+    `);
+    
+    // Add columns for Google News + Patois articles
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS original_title TEXT
+    `);
+    
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS original_content TEXT
+    `);
+    
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS original_source TEXT
+    `);
+    
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS original_url TEXT
+    `);
+    
+    await pool.query(`
+      ALTER TABLE articles 
+      ADD COLUMN IF NOT EXISTS word_count INTEGER
+    `);
+    
     console.log('✅ Database initialized');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
@@ -3533,6 +3571,118 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
   }
 });
 
+// Google News + Patois article generation endpoint
+app.post('/api/generate-news-patois-article', async (req, res) => {
+  try {
+    const { cityName, state, cityId } = req.body;
+    
+    if (!cityName || !state) {
+      return res.status(400).json({
+        success: false,
+        error: 'cityName and state are required'
+      });
+    }
+    
+    console.log(`🌍 Generating Google News + Patois article for ${cityName}, ${state}...`);
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'OpenAI API key not configured'
+      });
+    }
+    
+    // Import our modules
+    const { getNewsForCity } = require('./google-news-scraper');
+    const { translateNewsArticle, createPatoisNewsArticle } = require('./patois-translator');
+    
+    // Get news for the city
+    const newsResult = await getNewsForCity(cityName, state);
+    
+    if (!newsResult.success) {
+      console.log(`⚠️ No news found for ${cityName}, ${state}: ${newsResult.error}`);
+      return res.json({
+        success: false,
+        error: newsResult.error,
+        cityName,
+        state
+      });
+    }
+    
+    // Translate the article to Patois
+    const translation = await translateNewsArticle(newsResult.article);
+    
+    if (!translation.success) {
+      console.log(`⚠️ Translation failed for ${cityName}, ${state}: ${translation.error}`);
+      return res.json({
+        success: false,
+        error: `Translation failed: ${translation.error}`,
+        cityName,
+        state
+      });
+    }
+    
+    // Create the article for database
+    const articleData = createPatoisNewsArticle(translation, cityName, state);
+    
+    // Save to database
+    const result = await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, author, theme, is_today, published_at, created_at, original_title, original_content, original_source, original_url, word_count)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      RETURNING id, slug
+    `, [
+      articleData.title,
+      articleData.content,
+      articleData.city,
+      articleData.state,
+      articleData.slug,
+      articleData.author,
+      articleData.theme,
+      articleData.is_today,
+      articleData.published_at,
+      articleData.created_at,
+      articleData.original_title,
+      articleData.original_content,
+      articleData.original_source,
+      articleData.original_url,
+      articleData.word_count
+    ]);
+    
+    const article = result.rows[0];
+    
+    console.log(`✅ Google News + Patois article created for ${cityName}, ${state}: ${article.slug}`);
+    
+    res.json({
+      success: true,
+      article: {
+        id: article.id,
+        slug: article.slug,
+        title: articleData.title,
+        city: cityName,
+        state: state,
+        theme: 'google-news-patois',
+        wordCount: articleData.word_count,
+        originalSource: articleData.original_source,
+        originalUrl: articleData.original_url
+      },
+      translation: {
+        originalTitle: translation.original.title,
+        patoisTitle: translation.patois.title,
+        wordCount: translation.wordCount
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error generating Google News + Patois article:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate article',
+      details: error.message
+    });
+  }
+});
+
 // Single article generation endpoint for targeted generation
 app.post('/api/generate-single-article', async (req, res) => {
   try {
@@ -3683,6 +3833,104 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
   }
 });
 
+// Google News generation endpoint with Patwah translation
+app.post('/api/generate-google-news-article', async (req, res) => {
+  try {
+    const { cityName, state, cityId } = req.body;
+    
+    if (!cityName || !state) {
+      return res.status(400).json({
+        success: false,
+        error: 'cityName and state are required'
+      });
+    }
+    
+    console.log(`🏙️ Generating Google News article for ${cityName}, ${state}...`);
+    
+    // Check if OpenAI API key is available for translation
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'OpenAI API key not configured for translation'
+      });
+    }
+    
+    // Initialize services
+    const newsScraper = new GoogleNewsScraper();
+    const patwahTranslator = new PatwahTranslator();
+    
+    // Scrape Google News for the city
+    const newsArticle = await newsScraper.getMostRelevantNews(cityName, state);
+    
+    if (!newsArticle) {
+      console.log(`⚠️ No relevant Google News found for ${cityName}, ${state} - skipping`);
+      return res.json({
+        success: false,
+        error: 'No relevant Google News found',
+        cityName,
+        state
+      });
+    }
+    
+    console.log(`📰 Found news: "${newsArticle.title}" from ${newsArticle.source}`);
+    
+    // Create Patwah news article
+    const patwahArticle = await patwahTranslator.createPatwahNewsArticle(
+      newsArticle, 
+      cityName, 
+      state
+    );
+    
+    // Generate unique slug
+    const baseSlug = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${patwahArticle.headline.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim('-')}`;
+    const timestamp = Date.now();
+    const slug = `${baseSlug}-${timestamp}`;
+    
+    // Insert into database
+    await pool.query(`
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, eventbrite_url, author, language)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `, [
+      patwahArticle.headline,
+      patwahArticle.content,
+      cityName,
+      state,
+      slug,
+      'google-news',
+      true,
+      new Date(),
+      patwahArticle.originalUrl || '',
+      'Google News (Translated to Patwah)',
+      'patwah'
+    ]);
+    
+    console.log(`✅ Created Google News article in Patwah for ${cityName}, ${state}`);
+    
+    res.json({
+      success: true,
+      message: `Google News article created successfully for ${cityName}, ${state}`,
+      article: {
+        title: patwahArticle.headline,
+        city: cityName,
+        state: state,
+        slug: slug,
+        language: 'patwah',
+        source: newsArticle.source,
+        originalUrl: newsArticle.url
+      }
+    });
+    
+  } catch (error) {
+    console.error(`❌ Error generating Google News article for ${req.body.cityName}:`, error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      cityName: req.body.cityName,
+      state: req.body.state
+    });
+  }
+});
+
 // Daily generation is now handled by Railway cron job at 8:30 PM UTC (3:30 PM CDT)
 // Removed local generation functions to prevent conflicts with cron job
 
@@ -3751,12 +3999,12 @@ if (isProduction) {
   });
 }
 
-// Article generation background task
+// Article generation background task - alternates between event news and Google news
 async function startArticleGeneration() {
   console.log('🚀 Starting background article generation...');
   
-  // Import the article generation logic
-  const { generateArticleForCity, fetchCities } = require('../railway-10-second-generation.js');
+  // Import the mixed article generation logic
+  const { generateArticleForCity, fetchCities, makeRequest } = require('../railway-mixed-generation.js');
   
   try {
     // Fetch all cities
@@ -3766,15 +4014,17 @@ async function startArticleGeneration() {
       return;
     }
     
-           console.log(`🔄 Starting 2-second generation for ${cities.length} cities`);
-           console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 2) / 3600)} hours (${cities.length} cities × 2 seconds ÷ 3600 seconds/hour)`);
+    console.log(`🔄 Starting 2-second generation for ${cities.length} cities`);
+    console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 2) / 3600)} hours (${cities.length} cities × 2 seconds ÷ 3600 seconds/hour)`);
+    console.log(`📰 Alternating between Event News and Google News with Patwah translation`);
     
     let cityIndex = 0;
     let totalGenerated = 0;
     let totalFailed = 0;
     let isProcessing = false; // Prevent concurrent processing
+    let useGoogleNews = false; // Toggle between event news and Google news
     
-    // Generate 1 article every 10 seconds indefinitely
+    // Generate 1 article every 2 seconds indefinitely
     setInterval(async () => {
       // Prevent concurrent processing
       if (isProcessing) {
@@ -3786,36 +4036,75 @@ async function startArticleGeneration() {
       
       try {
         const currentCity = cities[cityIndex];
+        const articleType = useGoogleNews ? 'Google News (Patwah)' : 'Event News';
         
-        console.log(`\n⏰ ${new Date().toISOString()} - Generating article ${totalGenerated + 1}`);
+        console.log(`\n⏰ ${new Date().toISOString()} - Generating ${articleType} article ${totalGenerated + 1}`);
         console.log(`🏙️ Processing: ${currentCity.name}, ${currentCity.state} (City ${cityIndex + 1}/${cities.length})`);
         
-        const result = await generateArticleForCity(currentCity);
+        let result;
+        
+        if (useGoogleNews) {
+          // Generate Google News article with Patwah translation
+          result = await generateGoogleNewsArticleForCity(currentCity);
+        } else {
+          // Generate Event News article (existing logic)
+          result = await generateArticleForCity(currentCity);
+        }
         
         if (result.success) {
           totalGenerated++;
-          console.log(`✅ Success! Total generated: ${totalGenerated} | City index: ${cityIndex}`);
+          console.log(`✅ ${articleType} Success! Total generated: ${totalGenerated} | City index: ${cityIndex}`);
         } else {
           totalFailed++;
-          console.log(`❌ Failed! Total failed: ${totalFailed} | City index: ${cityIndex} | Error: ${result.error || 'Unknown error'}`);
+          console.log(`❌ ${articleType} Failed! Total failed: ${totalFailed} | City index: ${cityIndex} | Error: ${result.error || 'Unknown error'}`);
         }
+        
+        // Toggle between event news and Google news
+        useGoogleNews = !useGoogleNews;
         
         // ALWAYS move to next city (even on failure)
         cityIndex = (cityIndex + 1) % cities.length;
-        console.log(`🔄 Next city index: ${cityIndex}`);
+        console.log(`🔄 Next city index: ${cityIndex} | Next type: ${useGoogleNews ? 'Google News (Patwah)' : 'Event News'}`);
         
       } catch (error) {
         console.error('❌ Error in article generation:', error.message);
         // Move to next city even on error
         cityIndex = (cityIndex + 1) % cities.length;
         console.log(`🔄 Next city index after error: ${cityIndex}`);
-             } finally {
-               isProcessing = false;
-             }
-           }, 2000); // 2 seconds
+      } finally {
+        isProcessing = false;
+      }
+    }, 2000); // 2 seconds
     
   } catch (error) {
     console.error('❌ Failed to start article generation:', error.message);
+  }
+}
+
+// Helper function to generate Google News article for a city
+async function generateGoogleNewsArticleForCity(city) {
+  try {
+    console.log(`🏙️ Generating Google News article for ${city.name}, ${city.state}...`);
+    
+    const response = await makeRequest(`${process.env.API_BASE_URL || 'https://holler.news'}/api/generate-google-news-article`, {
+      method: 'POST',
+      body: {
+        cityName: city.name,
+        state: city.state,
+        cityId: city.id
+      }
+    });
+    
+    if (response && response.success) {
+      console.log(`✅ Google News article created for ${city.name}, ${city.state}`);
+      return { success: true, city: city.name, state: city.state, type: 'google-news' };
+    } else {
+      console.log(`⚠️ Google News article generation failed for ${city.name}, ${city.state}: ${response?.error || 'Unknown error'}`);
+      return { success: false, city: city.name, state: city.state, error: response?.error, type: 'google-news' };
+    }
+  } catch (error) {
+    console.log(`❌ Error generating Google News article for ${city.name}, ${city.state}: ${error.message}`);
+    return { success: false, city: city.name, state: city.state, error: error.message, type: 'google-news' };
   }
 }
 
