@@ -3833,6 +3833,56 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
   }
 });
 
+// Environment variables test endpoint
+app.get('/api/test-env', async (req, res) => {
+  try {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const nodeEnv = process.env.NODE_ENV;
+    const port = process.env.PORT;
+    const corsOrigin = process.env.CORS_ORIGIN;
+    
+    const envStatus = {
+      openaiKeySet: !!openaiKey,
+      openaiKeyLength: openaiKey ? openaiKey.length : 0,
+      openaiKeyPrefix: openaiKey ? openaiKey.substring(0, 10) + '...' : 'Not set',
+      nodeEnv: nodeEnv || 'Not set',
+      port: port || 'Not set',
+      corsOrigin: corsOrigin || 'Not set',
+      timestamp: new Date().toISOString()
+    };
+    
+    // Test OpenAI connection if key is available
+    if (openaiKey) {
+      try {
+        const OpenAI = require('openai');
+        const openai = new OpenAI({
+          apiKey: openaiKey
+        });
+        envStatus.openaiConnection = 'Success';
+        envStatus.patwahTranslationReady = true;
+      } catch (error) {
+        envStatus.openaiConnection = `Error: ${error.message}`;
+        envStatus.patwahTranslationReady = false;
+      }
+    } else {
+      envStatus.openaiConnection = 'No API key';
+      envStatus.patwahTranslationReady = false;
+    }
+    
+    res.json({
+      success: true,
+      message: 'Environment variables status',
+      environment: envStatus
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Google News generation endpoint with Patwah translation
 app.post('/api/generate-google-news-article', async (req, res) => {
   try {

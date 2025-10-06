@@ -7,9 +7,12 @@ const OpenAI = require('openai');
 
 class PatwahTranslator {
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
+    this.hasApiKey = !!process.env.OPENAI_API_KEY;
+    if (this.hasApiKey) {
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+    }
   }
 
   /**
@@ -20,6 +23,11 @@ class PatwahTranslator {
    */
   async translateToPatwah(text, context = '') {
     try {
+      if (!this.hasApiKey) {
+        console.log('⚠️ OpenAI API key not available, returning original text');
+        return text;
+      }
+
       if (!text || typeof text !== 'string') {
         throw new Error('Invalid text provided for translation');
       }

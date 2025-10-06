@@ -160,7 +160,36 @@ async function generateArticleForCity(city) {
 }
 
 /**
- * Main generation loop - generates 1 article every 2 seconds
+ * Generate Google News article for a city
+ */
+async function generateGoogleNewsArticleForCity(city) {
+  try {
+    console.log(`🏙️ Generating Google News article for ${city.name}, ${city.state}...`);
+    
+    const response = await makeRequest(`${API_BASE_URL}/api/generate-google-news-article`, {
+      method: 'POST',
+      body: {
+        cityName: city.name,
+        state: city.state,
+        cityId: city.id
+      }
+    });
+    
+    if (response && response.success) {
+      console.log(`✅ Google News article created for ${city.name}, ${city.state}`);
+      return { success: true, city: city.name, state: city.state, type: 'google-news' };
+    } else {
+      console.log(`⚠️ Google News article generation failed for ${city.name}, ${city.state}: ${response?.error || 'Unknown error'}`);
+      return { success: false, city: city.name, state: city.state, error: response?.error, type: 'google-news' };
+    }
+  } catch (error) {
+    console.log(`❌ Error generating Google News article for ${city.name}, ${city.state}: ${error.message}`);
+    return { success: false, city: city.name, state: city.state, error: error.message, type: 'google-news' };
+  }
+}
+
+/**
+ * Main generation loop - generates 1 article every 2 seconds, alternating between event news and Google news
  */
 async function start2SecondGeneration() {
   try {
@@ -168,7 +197,7 @@ async function start2SecondGeneration() {
     const connectionOk = await testAPIConnection();
     if (!connectionOk) {
       console.log('❌ API connection failed. Retrying in 30 seconds...');
-      setTimeout(start10SecondGeneration, 30000);
+      setTimeout(start2SecondGeneration, 30000);
       return;
     }
     
@@ -182,10 +211,12 @@ async function start2SecondGeneration() {
     
     console.log(`🔄 Starting 2-second generation for ${cities.length} cities`);
     console.log(`⏰ Each city will get a new article every ~${Math.round((cities.length * 2) / 3600)} hours (${cities.length} cities × 2 seconds ÷ 3600 seconds/hour)`);
+    console.log(`📰 Alternating between Event News and Google News with Patwah translation`);
     
     let cityIndex = 0;
     let totalGenerated = 0;
     let totalFailed = 0;
+    let useGoogleNews = false; // Toggle between event news and Google news
     
     // Generate 1 article every 2 seconds indefinitely
     while (true) {
@@ -201,23 +232,37 @@ async function start2SecondGeneration() {
           continue;
         }
       }
-      const startTime = Date.now();
       
-      console.log(`\n⏰ ${new Date().toISOString()} - Generating article ${totalGenerated + 1}`);
+      const startTime = Date.now();
+      const articleType = useGoogleNews ? 'Google News (Patwah)' : 'Event News';
+      
+      console.log(`\n⏰ ${new Date().toISOString()} - Generating ${articleType} article ${totalGenerated + 1}`);
       console.log(`🏙️ Processing: ${currentCity.name}, ${currentCity.state}`);
       
-      const result = await generateArticleForCity(currentCity);
+      let result;
+      
+      if (useGoogleNews) {
+        // Generate Google News article with Patwah translation
+        result = await generateGoogleNewsArticleForCity(currentCity);
+      } else {
+        // Generate Event News article (existing logic)
+        result = await generateArticleForCity(currentCity);
+      }
       
       if (result.success) {
         totalGenerated++;
-        console.log(`✅ Success! Total generated: ${totalGenerated}`);
+        console.log(`✅ ${articleType} Success! Total generated: ${totalGenerated}`);
       } else {
         totalFailed++;
-        console.log(`❌ Failed! Total failed: ${totalFailed}`);
+        console.log(`❌ ${articleType} Failed! Total failed: ${totalFailed}`);
       }
+      
+      // Toggle between event news and Google news
+      useGoogleNews = !useGoogleNews;
       
       // Move to next city
       cityIndex = (cityIndex + 1) % cities.length;
+      console.log(`🔄 Next city index: ${cityIndex} | Next type: ${useGoogleNews ? 'Google News (Patwah)' : 'Event News'}`);
       
       // Calculate time to wait for next 2-second interval
       const elapsedTime = Date.now() - startTime;
@@ -231,7 +276,7 @@ async function start2SecondGeneration() {
     }
     
   } catch (error) {
-    console.error('💥 Fatal error in 10-second generation:', error.message);
+    console.error('💥 Fatal error in 2-second generation:', error.message);
     process.exit(1);
   }
 }
@@ -239,6 +284,7 @@ async function start2SecondGeneration() {
 // Export functions for use in other modules
 module.exports = {
   generateArticleForCity,
+  generateGoogleNewsArticleForCity,
   fetchCities,
   makeRequest
 };
