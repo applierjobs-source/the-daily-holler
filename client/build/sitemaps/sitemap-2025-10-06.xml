@@ -3,5 +3,10 @@
   <url>
     <loc>https://holler.news/discover/2025-10-06/</loc>
     <lastmod>2025-10-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
+    <loc>https://holler.news/sitemaps/sitemap-2025-10-06.xml</loc>
+    <lastmod>2025-10-06</lastmod>
+  </sitemap>
