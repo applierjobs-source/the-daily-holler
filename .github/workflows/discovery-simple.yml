@@ -49,215 +49,193 @@ jobs:
         DATABASE_URL: ${{ secrets.RAILWAY_DATABASE_URL }}
         DISCOVERY_DATE: ${{ steps.date.outputs.date }}
       run: |
-        cd holler-discovery
-        python3 -c "
-        import os
-        from pathlib import Path
+        # Create discovery directory
+        mkdir -p client/build/discover/$DISCOVERY_DATE
         
-        # Get date from environment variable
-        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
+        # Create index page
+        cat > client/build/discover/$DISCOVERY_DATE/index.html << 'INDEX_EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>$DISCOVERY_DATE - Discovery Feed by Holler.News</title>
+            <meta name="description" content="Discovery feed for $DISCOVERY_DATE with curated URLs.">
+            <meta name="robots" content="index, follow">
+            <link rel="canonical" href="https://holler.news/discover/$DISCOVERY_DATE/">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }
+                .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                .intro { margin-bottom: 20px; color: #666; }
+                .stats { background: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Discovery Feed by Holler.News</h1>
+                <div class="intro">
+                    <p>Discovery feed for <strong>$DISCOVERY_DATE</strong>. This page contains curated URLs discovered by our automated system.</p>
+                    <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
+                </div>
+                <div class="stats">
+                    <strong>Daily Statistics:</strong><br>
+                    • Test URLs discovered<br>
+                    • 1 pages of content<br>
+                    • Content from test sources
+                </div>
+            </div>
+            <div class="page-list">
+                <h2>Available Pages</h2>
+                <div class="page-item">
+                    <a href="https://holler.news/discover/$DISCOVERY_DATE/page-000001.html">
+                        <span class="page-number">Page 1</span>
+                    </a>
+                    <span class="page-stats">Test Links 1-5</span>
+                </div>
+            </div>
+            <div class="navigation">
+                <a href="https://holler.news/">Home</a> | 
+                <a href="https://holler.news/sitemap-index.xml">Sitemap</a>
+            </div>
+        </body>
+        </html>
+        INDEX_EOF
         
-        # Create test discovery directory
-        output_dir = Path(f'../client/build/discover/{discovery_date}')
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Create page 1
+        cat > client/build/discover/$DISCOVERY_DATE/page-000001.html << 'PAGE_EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Page 1 - $DISCOVERY_DATE - Discovery Feed by Holler.News</title>
+            <meta name="description" content="Discover 5 interesting URLs from $DISCOVERY_DATE, including pages from various sources.">
+            <meta name="robots" content="index, follow">
+            <link rel="canonical" href="https://holler.news/discover/$DISCOVERY_DATE/page-000001.html">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }
+                .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                .intro { margin-bottom: 20px; color: #666; }
+                .url-list { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                .url-item { margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }
+                .url-link { color: #0066cc; text-decoration: none; font-weight: 500; }
+                .url-link:hover { text-decoration: underline; }
+                .url-host { font-weight: 600; color: #333; }
+                .url-path { color: #666; }
+                .source-badge { display: inline-block; background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 8px; }
+                .navigation { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+                .nav-link { display: inline-block; padding: 8px 16px; margin: 0 8px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px; }
+                .nav-link:hover { background: #0052a3; }
+                .nav-link.disabled { background: #ccc; cursor: not-allowed; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Discovery Feed by Holler.News</h1>
+                <div class="intro">
+                    <p>Discovering interesting URLs from across the web on $DISCOVERY_DATE. This page contains 5 curated links, including content from various sources.</p>
+                    <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
+                </div>
+                <div class="page-info">
+                    Page 1 of 1 | Links 1-5
+                </div>
+            </div>
+            <div class="url-list">
+                <h2>Discovered URLs</h2>
+                <ul style="list-style: none; padding: 0;">
+                    <li class="url-item">
+                        <a href="https://example.com/research/paper.pdf" class="url-link" target="_blank" rel="noopener noreferrer">
+                            <span class="url-host">example.com</span>
+                            <span class="url-path">/research/paper.pdf</span>
+                        </a>
+                        <span class="source-badge">Source: CC</span>
+                    </li>
+                    <li class="url-item">
+                        <a href="https://news.example.com/breaking-story" class="url-link" target="_blank" rel="noopener noreferrer">
+                            <span class="url-host">news.example.com</span>
+                            <span class="url-path">/breaking-story</span>
+                        </a>
+                        <span class="source-badge">Source: RSS</span>
+                    </li>
+                    <li class="url-item">
+                        <a href="https://research.example.com/study" class="url-link" target="_blank" rel="noopener noreferrer">
+                            <span class="url-host">research.example.com</span>
+                            <span class="url-path">/study</span>
+                        </a>
+                        <span class="source-badge">Source: CT</span>
+                    </li>
+                    <li class="url-item">
+                        <a href="https://docs.example.com/guide.pdf" class="url-link" target="_blank" rel="noopener noreferrer">
+                            <span class="url-host">docs.example.com</span>
+                            <span class="url-path">/guide.pdf</span>
+                        </a>
+                        <span class="source-badge">Source: CC</span>
+                    </li>
+                    <li class="url-item">
+                        <a href="https://blog.example.com/insights" class="url-link" target="_blank" rel="noopener noreferrer">
+                            <span class="url-host">blog.example.com</span>
+                            <span class="url-path">/insights</span>
+                        </a>
+                        <span class="source-badge">Source: RSS</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="navigation">
+                <div class="page-info">
+                    Page 1 of 1 for $DISCOVERY_DATE
+                </div>
+                <span class="nav-link disabled">← Previous Page</span>
+                <a href="https://holler.news/discover/$DISCOVERY_DATE/" class="nav-link">Day Index</a>
+                <span class="nav-link disabled">Next Page →</span>
+            </div>
+        </body>
+        </html>
+        PAGE_EOF
         
-        # Create simple index page
-        index_html = f'''<!DOCTYPE html>
-<html lang=\"en\">
-<head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <title>{discovery_date} - Discovery Feed by Holler.News</title>
-    <meta name=\"description\" content=\"Discovery feed for {discovery_date} with curated URLs.\">
-    <meta name=\"robots\" content=\"index, follow\">
-    <link rel=\"canonical\" href=\"https://holler.news/discover/{discovery_date}/\">
-    <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }}
-        .header {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }}
-        .intro {{ margin-bottom: 20px; color: #666; }}
-        .stats {{ background: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; }}
-    </style>
-</head>
-<body>
-    <div class=\"header\">
-        <h1>Discovery Feed by Holler.News</h1>
-        <div class=\"intro\">
-            <p>Discovery feed for <strong>{discovery_date}</strong>. This page contains curated URLs discovered by our automated system.</p>
-            <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
-        </div>
-        <div class=\"stats\">
-            <strong>Daily Statistics:</strong><br>
-            • Test URLs discovered<br>
-            • 1 pages of content<br>
-            • Content from test sources
-        </div>
-    </div>
-    <div class=\"page-list\">
-        <h2>Available Pages</h2>
-        <div class=\"page-item\">
-            <a href=\"https://holler.news/discover/{discovery_date}/page-000001.html\">
-                <span class=\"page-number\">Page 1</span>
-            </a>
-            <span class=\"page-stats\">Test Links 1-5</span>
-        </div>
-    </div>
-    <div class=\"navigation\">
-        <a href=\"https://holler.news/\">Home</a> | 
-        <a href=\"https://holler.news/sitemap-index.xml\">Sitemap</a>
-    </div>
-</body>
-</html>'''
-        
-        # Create simple page 1
-        page_html = f'''<!DOCTYPE html>
-<html lang=\"en\">
-<head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <title>Page 1 - {discovery_date} - Discovery Feed by Holler.News</title>
-    <meta name=\"description\" content=\"Discover 5 interesting URLs from {discovery_date}, including pages from various sources.\">
-    <meta name=\"robots\" content=\"index, follow\">
-    <link rel=\"canonical\" href=\"https://holler.news/discover/{discovery_date}/page-000001.html\">
-    <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #333; }}
-        .header {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }}
-        .intro {{ margin-bottom: 20px; color: #666; }}
-        .url-list {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }}
-        .url-item {{ margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }}
-        .url-link {{ color: #0066cc; text-decoration: none; font-weight: 500; }}
-        .url-link:hover {{ text-decoration: underline; }}
-        .url-host {{ font-weight: 600; color: #333; }}
-        .url-path {{ color: #666; }}
-        .source-badge {{ display: inline-block; background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 8px; }}
-        .navigation {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }}
-        .nav-link {{ display: inline-block; padding: 8px 16px; margin: 0 8px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px; }}
-        .nav-link:hover {{ background: #0052a3; }}
-        .nav-link.disabled {{ background: #ccc; cursor: not-allowed; }}
-    </style>
-</head>
-<body>
-    <div class=\"header\">
-        <h1>Discovery Feed by Holler.News</h1>
-        <div class=\"intro\">
-            <p>Discovering interesting URLs from across the web on {discovery_date}. This page contains 5 curated links, including content from various sources.</p>
-            <p>Each link has been filtered for quality and relevance, removing parking pages and spam while highlighting documents, reports, and substantive content.</p>
-        </div>
-        <div class=\"page-info\">
-            Page 1 of 1 | Links 1-5
-        </div>
-    </div>
-    <div class=\"url-list\">
-        <h2>Discovered URLs</h2>
-        <ul style=\"list-style: none; padding: 0;\">
-            <li class=\"url-item\">
-                <a href=\"https://example.com/research/paper.pdf\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">
-                    <span class=\"url-host\">example.com</span>
-                    <span class=\"url-path\">/research/paper.pdf</span>
-                </a>
-                <span class=\"source-badge\">Source: CC</span>
-            </li>
-            <li class=\"url-item\">
-                <a href=\"https://news.example.com/breaking-story\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">
-                    <span class=\"url-host\">news.example.com</span>
-                    <span class=\"url-path\">/breaking-story</span>
-                </a>
-                <span class=\"source-badge\">Source: RSS</span>
-            </li>
-            <li class=\"url-item\">
-                <a href=\"https://research.example.com/study\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">
-                    <span class=\"url-host\">research.example.com</span>
-                    <span class=\"url-path\">/study</span>
-                </a>
-                <span class=\"source-badge\">Source: CT</span>
-            </li>
-            <li class=\"url-item\">
-                <a href=\"https://docs.example.com/guide.pdf\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">
-                    <span class=\"url-host\">docs.example.com</span>
-                    <span class=\"url-path\">/guide.pdf</span>
-                </a>
-                <span class=\"source-badge\">Source: CC</span>
-            </li>
-            <li class=\"url-item\">
-                <a href=\"https://blog.example.com/insights\" class=\"url-link\" target=\"_blank\" rel=\"noopener noreferrer\">
-                    <span class=\"url-host\">blog.example.com</span>
-                    <span class=\"url-path\">/insights</span>
-                </a>
-                <span class=\"source-badge\">Source: RSS</span>
-            </li>
-        </ul>
-    </div>
-    <div class=\"navigation\">
-        <div class=\"page-info\">
-            Page 1 of 1 for {discovery_date}
-        </div>
-        <span class=\"nav-link disabled\">← Previous Page</span>
-        <a href=\"https://holler.news/discover/{discovery_date}/\" class=\"nav-link\">Day Index</a>
-        <span class=\"nav-link disabled\">Next Page →</span>
-    </div>
-</body>
-</html>'''
-        
-        # Write files
-        (output_dir / 'index.html').write_text(index_html)
-        (output_dir / 'page-000001.html').write_text(page_html)
-        
-        print(f'Created test discovery files for {discovery_date}')
-        print(f'Files created: {list(output_dir.iterdir())}')
-        "
+        echo "Created test discovery files for $DISCOVERY_DATE"
+        echo "Files created:"
+        ls -la client/build/discover/$DISCOVERY_DATE/
     
     - name: Create test sitemap
       env:
         DISCOVERY_DATE: ${{ steps.date.outputs.date }}
       run: |
-        cd holler-discovery
-        python3 -c "
-        import os
-        from pathlib import Path
-        
-        # Get date from environment variable
-        discovery_date = os.environ.get('DISCOVERY_DATE', '2024-01-01')
-        
         # Create sitemaps directory
-        sitemaps_dir = Path('../client/build/sitemaps')
-        sitemaps_dir.mkdir(parents=True, exist_ok=True)
+        mkdir -p client/build/sitemaps
         
         # Create sitemap for the date
-        sitemap_content = f'''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">
-  <url>
-    <loc>https://holler.news/discover/{discovery_date}/</loc>
-    <lastmod>{discovery_date}T00:00:00Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://holler.news/discover/{discovery_date}/page-000001.html</loc>
-    <lastmod>{discovery_date}T00:00:00Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-</urlset>'''
+        cat > client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml << 'SITEMAP_EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://holler.news/discover/$DISCOVERY_DATE/</loc>
+            <lastmod>$DISCOVERY_DATET00:00:00Z</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+          </url>
+          <url>
+            <loc>https://holler.news/discover/$DISCOVERY_DATE/page-000001.html</loc>
+            <lastmod>$DISCOVERY_DATET00:00:00Z</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.7</priority>
+          </url>
+        </urlset>
+        SITEMAP_EOF
         
-        # Write sitemap
-        sitemap_file = sitemaps_dir / f'sitemap-{discovery_date}.xml'
-        sitemap_file.write_text(sitemap_content)
+        # Create sitemap index
+        cat > client/build/sitemap-index.xml << 'INDEX_EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <sitemap>
+            <loc>https://holler.news/sitemaps/sitemap-$DISCOVERY_DATE.xml</loc>
+            <lastmod>$DISCOVERY_DATET00:00:00Z</lastmod>
+          </sitemap>
+        </sitemapindex>
+        INDEX_EOF
         
-        # Update sitemap index
-        index_content = f'''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">
-  <sitemap>
-    <loc>https://holler.news/sitemaps/sitemap-{discovery_date}.xml</loc>
-    <lastmod>{discovery_date}T00:00:00Z</lastmod>
-  </sitemap>
-</sitemapindex>'''
-        
-        index_file = Path('../client/build/sitemap-index.xml')
-        index_file.write_text(index_content)
-        
-        print(f'Created sitemap files for {discovery_date}')
-        print(f'Sitemap: {sitemap_file}')
-        print(f'Index: {index_file}')
-        "
+        echo "Created sitemap files for $DISCOVERY_DATE"
+        echo "Sitemap: client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml"
+        echo "Index: client/build/sitemap-index.xml"
     
     - name: Commit and push changes
       env:
