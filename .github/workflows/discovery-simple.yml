@@ -204,13 +204,13 @@ jobs:
         echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "  <url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <loc>https://holler.news/discover/$DISCOVERY_DATE/</loc>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
-        echo "    <lastmod>$DISCOVERY_DATE"T00:00:00Z"</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <lastmod>$DISCOVERY_DATE\"T00:00:00Z\"</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <changefreq>daily</changefreq>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <priority>0.8</priority>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "  </url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "  <url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <loc>https://holler.news/discover/$DISCOVERY_DATE/page-000001.html</loc>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
-        echo "    <lastmod>$DISCOVERY_DATE"T00:00:00Z"</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
+        echo "    <lastmod>$DISCOVERY_DATE\"T00:00:00Z\"</lastmod>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <changefreq>daily</changefreq>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "    <priority>0.7</priority>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
         echo "  </url>" >> client/build/sitemaps/sitemap-$DISCOVERY_DATE.xml
@@ -221,7 +221,7 @@ jobs:
         echo "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> client/build/sitemap-index.xml
         echo "  <sitemap>" >> client/build/sitemap-index.xml
         echo "    <loc>https://holler.news/sitemaps/sitemap-$DISCOVERY_DATE.xml</loc>" >> client/build/sitemap-index.xml
-        echo "    <lastmod>$DISCOVERY_DATE"T00:00:00Z"</lastmod>" >> client/build/sitemap-index.xml
+        echo "    <lastmod>$DISCOVERY_DATE\"T00:00:00Z\"</lastmod>" >> client/build/sitemap-index.xml
         echo "  </sitemap>" >> client/build/sitemap-index.xml
         echo "</sitemapindex>" >> client/build/sitemap-index.xml
         
