@@ -78,8 +78,8 @@ class JobsScraper {
       });
 
       if (response.status === 403 || response.status === 429) {
-        console.log(`⚠️ Indeed blocked request for ${city.name} (${response.status}), falling back to mock data`);
-        return await this.generateMockIndeedJobs(city, maxJobs);
+        console.log(`⚠️ Indeed blocked request for ${city.name} (${response.status})`);
+        return { source: 'indeed', city: city, jobs: [] };
       }
 
       const $ = cheerio.load(response.data);
@@ -178,8 +178,8 @@ class JobsScraper {
       }
 
       if (jobs.length === 0) {
-        console.log(`⚠️ No jobs found on Indeed for ${city.name}, falling back to mock data`);
-        return await this.generateMockIndeedJobs(city, maxJobs);
+        console.log(`⚠️ No jobs found on Indeed for ${city.name}`);
+        return { source: 'indeed', city: city, jobs: [] };
       }
 
       console.log(`✅ Found ${jobs.length} Indeed jobs for ${city.name}, ${city.state}`);
@@ -193,85 +193,10 @@ class JobsScraper {
 
     } catch (error) {
       console.error(`❌ Error scraping Indeed for ${city.name}:`, error.message);
-      console.log(`⚠️ Falling back to mock data for ${city.name}`);
-      return await this.generateMockIndeedJobs(city, maxJobs);
+      return { source: 'indeed', city: city, jobs: [] };
     }
   }
 
-  // Fallback mock job generator
-  async generateMockIndeedJobs(city, maxJobs = 50) {
-    const jobs = [];
-    const jobTemplates = [
-      'Software Engineer',
-      'Marketing Manager',
-      'Sales Representative',
-      'Customer Service Representative',
-      'Data Analyst',
-      'Project Manager',
-      'Graphic Designer',
-      'Accountant',
-      'Human Resources Specialist',
-      'Operations Manager',
-      'Business Analyst',
-      'Web Developer',
-      'Content Writer',
-      'Administrative Assistant',
-      'Financial Advisor',
-      'Nurse',
-      'Teacher',
-      'Mechanic',
-      'Electrician',
-      'Plumber'
-    ];
-
-    const companyTemplates = [
-      'Tech Solutions Inc',
-      'Global Industries',
-      'Local Business Group',
-      'Innovation Corp',
-      'Community Services',
-      'Professional Services',
-      'Creative Agency',
-      'Healthcare Partners',
-      'Financial Services',
-      'Education Center'
-    ];
-
-    // Generate 3-8 jobs per city
-    const numJobs = Math.floor(Math.random() * 6) + 3;
-    
-    for (let i = 0; i < Math.min(numJobs, maxJobs); i++) {
-      const jobTitle = jobTemplates[Math.floor(Math.random() * jobTemplates.length)];
-      const company = companyTemplates[Math.floor(Math.random() * companyTemplates.length)];
-      const salary = Math.floor(Math.random() * 50000) + 30000; // $30k-$80k
-      const daysAgo = Math.floor(Math.random() * 14) + 1; // 1-14 days ago
-      
-      const postedDate = new Date();
-      postedDate.setDate(postedDate.getDate() - daysAgo);
-      
-      jobs.push({
-        id: `indeed_${city.id}_${Date.now()}_${i}`,
-        title: jobTitle,
-        company: company,
-        location: `${city.name}, ${city.state}`,
-        description: `Join our team as a ${jobTitle.toLowerCase()} in ${city.name}. Great opportunity for career growth and professional development.`,
-        postedDate: postedDate.toISOString(),
-        url: `https://www.indeed.com/viewjob?jk=${Math.random().toString(36).substr(2, 9)}`,
-        source: 'indeed',
-        salary: `$${salary.toLocaleString()}/year`,
-        type: this.inferJobType(jobTitle, ''),
-        category: this.inferJobCategory(jobTitle, '')
-      });
-    }
-
-    console.log(`✅ Generated ${jobs.length} Indeed-style jobs for ${city.name}, ${city.state}`);
-    
-    return {
-      source: 'indeed',
-      city: city,
-      jobs: jobs
-    };
-  }
 
   // Parse Indeed date format
   parseIndeedDate(dateText) {
