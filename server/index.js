@@ -3942,6 +3942,18 @@ app.post('/api/generate-google-news-article', async (req, res) => {
     
     console.log(`📰 Found news: "${newsArticle.title}" from ${newsArticle.source}`);
     
+    // Skip patwah translation if this is a fallback article (fake news)
+    if (newsArticle.isFallback) {
+      console.log(`⚠️ Skipping patwah translation for fallback article: "${newsArticle.title}"`);
+      return res.json({
+        success: false,
+        error: 'Skipping patwah translation for fallback article',
+        cityName,
+        state,
+        reason: 'fallback_article'
+      });
+    }
+    
     // Create Patwah news article
     const patwahArticle = await patwahTranslator.createPatwahNewsArticle(
       newsArticle, 
