@@ -1,15 +1,13 @@
-const https = require('https');
-const cheerio = require('cheerio');
+const NewsScraper = require('./news-scraper');
 
 /**
  * Google News Scraper
- * Scrapes the latest news articles from Google News for a specific city
+ * Uses the enhanced NewsScraper for better news retrieval
  */
 
 class GoogleNewsScraper {
   constructor() {
-    this.baseUrl = 'https://news.google.com';
-    this.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+    this.newsScraper = new NewsScraper();
   }
 
   /**
@@ -230,75 +228,24 @@ class GoogleNewsScraper {
    */
   async getMostRelevantNews(cityName, state) {
     try {
-      const articles = await this.scrapeNewsForCity(cityName, state);
+      console.log(`🔍 Getting news for ${cityName}, ${state} using enhanced scraper...`);
       
-      if (articles.length === 0) {
-        console.log(`⚠️ No relevant news found for ${cityName}, ${state}, using fallback`);
-        return this.getFallbackNews(cityName, state);
+      const article = await this.newsScraper.getNewsForCity(cityName, state);
+      
+      if (article) {
+        console.log(`✅ Found news for ${cityName}, ${state}: "${article.title}"`);
+        return article;
+      } else {
+        console.log(`⚠️ No news found for ${cityName}, ${state}`);
+        return null;
       }
       
-      const mostRelevant = articles[0];
-      console.log(`✅ Found most relevant news for ${cityName}, ${state}: "${mostRelevant.title}"`);
-      
-      return mostRelevant;
-      
     } catch (error) {
-      console.error(`❌ Error getting most relevant news for ${cityName}, ${state}:`, error.message);
-      console.log(`🔄 Using fallback news for ${cityName}, ${state}`);
-      return this.getFallbackNews(cityName, state);
+      console.error(`❌ Error getting news for ${cityName}, ${state}:`, error.message);
+      return null;
     }
   }
 
-  /**
-   * Generate fallback news when scraping fails
-   * @param {string} cityName - City name
-   * @param {string} state - State abbreviation
-   * @returns {Object} Fallback news article
-   */
-  getFallbackNews(cityName, state) {
-    const fallbackNews = [
-      {
-        title: `${cityName} Community Events Bring Residents Together`,
-        snippet: `Local residents in ${cityName}, ${state} are coming together for various community events this week. The city continues to see strong community engagement with local organizations hosting events throughout the area.`,
-        source: 'Local News Network',
-        publishedAt: new Date().toISOString(),
-        url: `https://example.com/news/${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-        cityName: cityName,
-        state: state,
-        relevance: 100,
-        isFallback: true
-      },
-      {
-        title: `${cityName} Sees Continued Growth in Local Business Sector`,
-        snippet: `The business community in ${cityName}, ${state} is experiencing positive growth with new establishments opening and existing businesses expanding their operations. Local officials are optimistic about the economic outlook.`,
-        source: 'Business Today',
-        publishedAt: new Date().toISOString(),
-        url: `https://example.com/business/${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-        cityName: cityName,
-        state: state,
-        relevance: 95,
-        isFallback: true
-      },
-      {
-        title: `${cityName} Residents Enjoy Seasonal Activities and Local Attractions`,
-        snippet: `With the changing seasons, residents of ${cityName}, ${state} are taking advantage of local parks, recreational facilities, and community centers. The city offers numerous opportunities for outdoor activities and family fun.`,
-        source: 'Community Times',
-        publishedAt: new Date().toISOString(),
-        url: `https://example.com/community/${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-        cityName: cityName,
-        state: state,
-        relevance: 90,
-        isFallback: true
-      }
-    ];
-
-    // Return a random fallback news item
-    const randomIndex = Math.floor(Math.random() * fallbackNews.length);
-    const selectedNews = fallbackNews[randomIndex];
-    
-    console.log(`📰 Using fallback news for ${cityName}, ${state}: "${selectedNews.title}"`);
-    return selectedNews;
-  }
 }
 
 module.exports = GoogleNewsScraper;
