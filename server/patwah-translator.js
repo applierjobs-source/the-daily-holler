@@ -263,7 +263,7 @@ Dis kind a news important fi we community because it show we how things a go inn
 ---
 
 **Original News Source:** ${translatedArticle.source}
-**Original Article:** ${translatedArticle.originalUrl}
+**Original Article:** ${translatedArticle.url}
 **Published:** ${timestamp}
 **Language:** Jamaican Patois (Patwah)
 **Translated by:** The Daily Holler Patwah Team`;
