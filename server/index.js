@@ -3037,6 +3037,142 @@ app.get('/sitemap.xml', async (req, res) => {
 }
 });
 
+// IndexNow API integration for Bing - Updated 2025-10-07
+const INDEXNOW_KEY = '3b3002e1947f479c964658673b0c75d2';
+const INDEXNOW_KEY_LOCATION = 'https://holler.news/3b3002e1947f479c964658673b0c75d2.txt';
+
+async function submitUrlsToIndexNow(urls) {
+  try {
+    console.log(`🔄 Submitting ${urls.length} URLs to IndexNow...`);
+    
+    const payload = {
+      host: 'holler.news',
+      key: INDEXNOW_KEY,
+      keyLocation: INDEXNOW_KEY_LOCATION,
+      urlList: urls
+    };
+
+    const response = await fetch('https://api.indexnow.org/IndexNow', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      console.log(`✅ Successfully submitted ${urls.length} URLs to IndexNow`);
+      return { success: true, submitted: urls.length };
+    } else {
+      console.error(`❌ IndexNow submission failed: ${response.status} ${response.statusText}`);
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+  } catch (error) {
+    console.error('❌ IndexNow submission error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Endpoint to manually submit URLs to IndexNow
+app.post('/api/submit-to-indexnow', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    
+    if (!urls || !Array.isArray(urls)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'urls array is required' 
+      });
+    }
+
+    // Ensure URLs are absolute and belong to holler.news
+    const validUrls = urls
+      .map(url => {
+        if (url.startsWith('http')) {
+          return url;
+        } else if (url.startsWith('/')) {
+          return `https://holler.news${url}`;
+        } else {
+          return `https://holler.news/${url}`;
+        }
+      })
+      .filter(url => url.includes('holler.news'));
+
+    const result = await submitUrlsToIndexNow(validUrls);
+    
+    res.json({
+      success: result.success,
+      submitted: result.submitted || validUrls.length,
+      error: result.error || null,
+      urls: validUrls
+    });
+  } catch (error) {
+    console.error('❌ Error in IndexNow submission endpoint:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Endpoint to submit recent articles to IndexNow
+app.post('/api/submit-recent-articles', async (req, res) => {
+  try {
+    const { limit = 50 } = req.body;
+    
+    console.log(`🔄 Fetching ${limit} recent articles for IndexNow submission...`);
+    
+    // Get recent articles from database
+    const result = await pool.query(`
+      SELECT id, city, state, slug, created_at 
+      FROM articles 
+      ORDER BY created_at DESC 
+      LIMIT $1
+    `, [parseInt(limit)]);
+    
+    const urls = result.rows.map(article => {
+      // Generate article URL based on your URL structure
+      if (article.city && article.state) {
+        const citySlug = `${article.city.toLowerCase().replace(/\s+/g, '-')}-${article.state.toLowerCase()}`;
+        return `https://holler.news/cities/${citySlug}/events/${article.slug}`;
+      }
+      return `https://holler.news/article/${article.id}`;
+    });
+
+    // Add main pages
+    const mainPages = [
+      'https://holler.news/',
+      'https://holler.news/news',
+      'https://holler.news/cities',
+      'https://holler.news/jobs',
+      'https://holler.news/about'
+    ];
+
+    const allUrls = [...mainPages, ...urls];
+    const submissionResult = await submitUrlsToIndexNow(allUrls);
+    
+    res.json({
+      success: submissionResult.success,
+      submitted: submissionResult.submitted || allUrls.length,
+      error: submissionResult.error || null,
+      articleCount: result.rows.length,
+      totalUrls: allUrls.length
+    });
+  } catch (error) {
+    console.error('❌ Error submitting recent articles to IndexNow:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Serve Bing IndexNow verification key file
+app.get('/3b3002e1947f479c964658673b0c75d2.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send('3b3002e1947f479c964658673b0c75d2');
+});
+
 // Generate robots.txt
 app.get('/robots.txt', (req, res) => {
   const robots = `User-agent: *
@@ -3554,6 +3690,15 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
         created++;
         console.log(`✅ Created article ${created}/${batchCities.length} for ${city.name}`);
         
+        // Submit new article URL to IndexNow for faster indexing
+        try {
+          const citySlug = `${city.name.toLowerCase().replace(/\s+/g, '-')}-${city.state.toLowerCase()}`;
+          const articleUrl = `https://holler.news/cities/${citySlug}/events/${slug}`;
+          await submitUrlsToIndexNow([articleUrl]);
+        } catch (indexNowError) {
+          console.error(`⚠️ Failed to submit to IndexNow for ${city.name} (non-critical):`, indexNowError.message);
+        }
+        
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
         
@@ -3828,6 +3973,16 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
     ]);
     
     console.log(`✅ Created article for ${cityName}, ${state}`);
+    
+    // Submit new article URL to IndexNow for faster indexing
+    try {
+      const citySlug = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+      const articleUrl = `https://holler.news/cities/${citySlug}/events/${slug}`;
+      await submitUrlsToIndexNow([articleUrl]);
+      console.log(`🔍 Submitted new article to IndexNow: ${articleUrl}`);
+    } catch (indexNowError) {
+      console.error('⚠️ Failed to submit to IndexNow (non-critical):', indexNowError.message);
+    }
     
     res.json({
       success: true,
