@@ -2219,7 +2219,7 @@ app.get('/api/news/today', async (req, res) => {
 app.get('/api/news/city/:cityId', async (req, res) => {
   try {
     const { cityId } = req.params;
-    const { limit = 20 } = req.query;
+    const { limit } = req.query;
     
     // Get cities data from file
     const citiesData = await fs.readFile(CITIES_FILE, 'utf8');
@@ -2231,18 +2231,34 @@ app.get('/api/news/city/:cityId', async (req, res) => {
       return res.status(404).json({ error: 'City not found' });
     }
     
+    // Get total count of articles for this city first
+    const countResult = await pool.query(`
+      SELECT COUNT(*) FROM articles 
+      WHERE city = $1 AND state = $2
+    `, [city.name, city.state]);
+    
+    const totalCount = parseInt(countResult.rows[0].count);
+    
     // Get articles from database for this city
-    const result = await pool.query(`
+    let query = `
       SELECT *, published_at as "publishedAt" FROM articles 
       WHERE city = $1 AND state = $2
-      ORDER BY created_at DESC 
-      LIMIT $3
-    `, [city.name, city.state, parseInt(limit)]);
+      ORDER BY created_at DESC
+    `;
+    let queryParams = [city.name, city.state];
+    
+    // Add limit only if specified
+    if (limit) {
+      query += ` LIMIT $3`;
+      queryParams.push(parseInt(limit));
+    }
+    
+    const result = await pool.query(query, queryParams);
     
     res.json({
       articles: result.rows,
       count: result.rows.length,
-      totalCount: result.rows.length,
+      totalCount: totalCount,
       cityId: cityId
     });
   } catch (error) {
