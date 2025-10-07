@@ -3,4 +3,3 @@ Allow: /
 Allow: /discover/
 
 Sitemap: https://holler.news/sitemap.xml
-Sitemap: https://holler.news/sitemap-index.xml

@@ -78,8 +78,9 @@ const Home = () => {
     <div className="news-page">
       
       <div className="news-header">
-        <h1>📰 Latest News</h1>
-        <p>Find Local Events and Things to Do in Your City</p>
+        <h1>📰 The Daily Holler - Local Events & Activities</h1>
+        <p>Find Local Events and Things to Do in 1,690+ US Cities</p>
+        <p>Discover hidden gems, community activities, and local happenings in your area. Updated every 10 seconds with fresh content.</p>
         {totalArticles > 0 && (
           <div className="news-stats">
             <span>{totalArticles} articles available</span>
@@ -87,18 +88,45 @@ const Home = () => {
         )}
       </div>
 
+      {/* SEO-friendly content that's always visible */}
+      <div className="seo-content">
+        <h2>What is The Daily Holler?</h2>
+        <p>The Daily Holler is your go-to platform for discovering local events and activities across 1,690+ American cities. We help you find community events, entertainment, workshops, and local happenings in your area.</p>
+        
+        <h3>Popular Categories</h3>
+        <div className="category-grid">
+          <div className="category-item">🎪 Community Events</div>
+          <div className="category-item">🎵 Entertainment</div>
+          <div className="category-item">🏃‍♀️ Sports & Fitness</div>
+          <div className="category-item">🎨 Arts & Culture</div>
+          <div className="category-item">🍽️ Food & Dining</div>
+          <div className="category-item">👨‍💼 Business & Networking</div>
+        </div>
+        
+        <h3>How It Works</h3>
+        <p>Our platform continuously scans for local events and activities, providing you with up-to-date information about what's happening in your city. Whether you're looking for weekend activities, professional networking events, or family-friendly entertainment, we've got you covered.</p>
+      </div>
+
       {loading && todayArticles.length === 0 && (
-        <div className="loading">Loading articles...</div>
+        <div className="loading">
+          <h3>Loading Latest Events...</h3>
+          <p>Fetching the most recent local activities and events for you.</p>
+        </div>
       )}
 
       {error && (
-        <div className="error">Error: {error}</div>
+        <div className="error">
+          <h3>Unable to Load Events</h3>
+          <p>We're having trouble loading the latest events. Please try refreshing the page.</p>
+          <button className="btn" onClick={() => window.location.reload()}>Refresh Page</button>
+        </div>
       )}
       
       {!loading && !error && todayArticles.length === 0 && (
         <div className="no-articles">
-          <h3>No articles available yet</h3>
-          <p>Check back later for the latest local events and activities!</p>
+          <h3>No Recent Events Available</h3>
+          <p>We're currently updating our event database. Check back in a few minutes for the latest local activities and events!</p>
+          <p>In the meantime, you can browse our city directory to explore events in specific locations.</p>
         </div>
       )}
 
