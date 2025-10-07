@@ -2284,7 +2284,12 @@ app.get('/api/articles/:id', async (req, res) => {
       created_at: article.created_at,
       theme: article.theme,
       is_today: article.is_today,
-      eventbrite_url: article.eventbrite_url
+      eventbrite_url: article.eventbrite_url,
+      original_url: article.original_url,
+      original_title: article.original_title,
+      original_content: article.original_content,
+      original_source: article.original_source,
+      language: article.language || 'english'
     };
     
     res.json(transformedArticle);
@@ -2327,7 +2332,12 @@ app.get('/api/articles/by-slug/:slug', async (req, res) => {
       created_at: article.created_at,
       theme: article.theme,
       is_today: article.is_today,
-      eventbrite_url: article.eventbrite_url
+      eventbrite_url: article.eventbrite_url,
+      original_url: article.original_url,
+      original_title: article.original_title,
+      original_content: article.original_content,
+      original_source: article.original_source,
+      language: article.language || 'english'
     };
     
     res.json(transformedArticle);

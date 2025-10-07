@@ -146,6 +146,52 @@ const PostDetail = () => {
             <span className="tag">{article.state}</span>
           </div>
           
+          {/* Show original article information for patwah articles */}
+          {article.language === 'patwah' && (article.original_source || article.original_url) && (
+            <div className="original-article-info" style={{
+              marginTop: '20px',
+              padding: '15px',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderRadius: '8px',
+              fontSize: '14px',
+              lineHeight: '1.6'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold', color: '#495057' }}>
+                Original Article Information
+              </h4>
+              {article.original_source && (
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Original News Source:</strong> {article.original_source}
+                </p>
+              )}
+              {article.original_title && (
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Original Title:</strong> {article.original_title}
+                </p>
+              )}
+              {article.original_url && (
+                <p style={{ margin: '5px 0' }}>
+                  <strong>Original Article:</strong>{' '}
+                  <a 
+                    href={article.original_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ color: '#007bff', textDecoration: 'underline' }}
+                  >
+                    Read Original Article
+                  </a>
+                </p>
+              )}
+              <p style={{ margin: '10px 0 5px 0', fontStyle: 'italic', color: '#6c757d' }}>
+                <strong>Language:</strong> Jamaican Patois (Patwah)
+              </p>
+              <p style={{ margin: '5px 0 0 0', fontStyle: 'italic', color: '#6c757d' }}>
+                <strong>Translated by:</strong> The Daily Holler Patwah Team
+              </p>
+            </div>
+          )}
+          
           <div className="article-actions">
             <Link to={`/cities/${citySlug}`} className="btn btn-outline">
               More {article.cityName} News
