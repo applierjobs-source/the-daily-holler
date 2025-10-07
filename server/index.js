@@ -10,6 +10,9 @@ const cheerio = require('cheerio');
 const GoogleNewsScraper = require('./google-news-scraper');
 const PatwahTranslator = require('./patwah-translator');
 
+// Import generation utilities
+const { makeRequest } = require('../railway-mixed-generation.js');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -3943,8 +3946,8 @@ app.post('/api/generate-google-news-article', async (req, res) => {
     
     // Insert into database
     await pool.query(`
-      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, eventbrite_url, author, language)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO articles (title, content, city, state, slug, theme, is_today, published_at, original_url, author, language, original_title, original_content, original_source)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     `, [
       patwahArticle.headline,
       patwahArticle.content,
@@ -3956,7 +3959,10 @@ app.post('/api/generate-google-news-article', async (req, res) => {
       new Date(),
       patwahArticle.originalUrl || '',
       'Google News (Translated to Patwah)',
-      'patwah'
+      'patwah',
+      patwahArticle.originalTitle || '',
+      patwahArticle.originalContent || '',
+      patwahArticle.source || ''
     ]);
     
     console.log(`✅ Created Google News article in Patwah for ${cityName}, ${state}`);
@@ -4059,7 +4065,7 @@ async function startArticleGeneration() {
   console.log('🚀 Starting background article generation...');
   
   // Import the mixed article generation logic
-  const { generateArticleForCity, fetchCities, makeRequest } = require('../railway-mixed-generation.js');
+  const { generateArticleForCity, fetchCities } = require('../railway-mixed-generation.js');
   
   try {
     // Fetch all cities
