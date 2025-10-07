@@ -260,10 +260,13 @@ Mi a tell yuh bout dis news from ${cityName}, ${state}. Dis story come from ${tr
 
 Dis kind a news important fi we community because it show we how things a go inna di area. Mi want fi make sure everybaddy can understand what a gwaan, so mi translate it fi yuh inna we own language.
 
-Source: ${translatedArticle.originalUrl}
-Published: ${timestamp}
-Language: Jamaican Patois (Patwah)
-Translated by: The Daily Holler Patwah Team`;
+---
+
+**Original News Source:** ${translatedArticle.source}
+**Original Article:** ${translatedArticle.originalUrl}
+**Published:** ${timestamp}
+**Language:** Jamaican Patois (Patwah)
+**Translated by:** The Daily Holler Patwah Team`;
   }
 
   /**
