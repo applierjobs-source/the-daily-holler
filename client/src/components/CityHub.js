@@ -75,8 +75,23 @@ const CityHub = ({ cities }) => {
 
   useEffect(() => {
     if (!citySlug) return;
+    
+    // Wait for cities to be loaded
+    if (cities.length === 0) {
+      console.log('Cities not loaded yet, waiting...');
+      return;
+    }
+
+    // Debug logging
+    console.log('Debug CityHub useEffect:', {
+      citySlug,
+      citiesLoaded: cities.length,
+      category
+    });
 
     const { cityName, state } = parseCitySlug(citySlug);
+    console.log('Debug parseCitySlug result:', { cityName, state });
+    
     if (!cityName || !state) {
       setError('Invalid city URL');
       setLoading(false);
@@ -88,6 +103,13 @@ const CityHub = ({ cities }) => {
       c.name.toLowerCase() === cityName.toLowerCase() && 
       c.state === state
     );
+
+    console.log('Debug city search:', {
+      searchingFor: { cityName, state },
+      citiesAvailable: cities.length,
+      foundCity: foundCity ? foundCity.name : 'NOT FOUND',
+      firstFewCities: cities.slice(0, 3).map(c => ({ name: c.name, state: c.state }))
+    });
 
     if (!foundCity) {
       setError('City not found');
