@@ -68,7 +68,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/cities" element={<CitySelection />} />
-          <Route path="/cities/:citySlug/all" element={<div>TEST ALL ROUTE WORKS</div>} />
+          <Route path="/cities/:citySlug/all" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug/:category" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug" element={<CityHub cities={cities} />} />
           <Route path="/cities/:citySlug/events/:articleSlug" element={<PostDetail />} />

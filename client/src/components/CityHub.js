@@ -3,9 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { generateArticleUrl, parseCitySlug } from '../utils/slugUtils';
 import { Helmet } from 'react-helmet';
 
-const CityHub = ({ cities }) => {
+const CityHub = ({ cities = [] }) => {
   console.log('=== CITYHUB COMPONENT LOADED ===', { cities: cities?.length });
   const { citySlug, category } = useParams();
+  console.log('=== PARAMS ===', { citySlug, category });
+  
   const [city, setCity] = useState(null);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,18 +22,11 @@ const CityHub = ({ cities }) => {
 
   // Determine if we should show all articles
   const showAllArticles = category === 'all';
-  const articlesToShow = showAllArticles ? 20 : 6;
+  console.log('=== SHOW ALL CHECK ===', { category, showAllArticles });
 
-  console.log('CityHub Debug:', {
-    citySlug,
-    category,
-    showAllArticles,
-    articlesToShow,
-    citiesCount: cities.length
-  });
-
-  // TEMPORARY ALERT FOR DEBUGGING
+  // TEMPORARY ALERT FOR DEBUGGING - MOVED UP
   if (category === 'all') {
+    console.log('ALERT SHOULD FIRE NOW!');
     alert('VIEW ALL ROUTE DETECTED! Category: ' + category);
   }
 
