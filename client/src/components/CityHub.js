@@ -18,35 +18,6 @@ const CityHub = ({ cities }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesPerPage] = useState(20);
 
-
-  useEffect(() => {
-    if (!citySlug) return;
-
-    const { cityName, state } = parseCitySlug(citySlug);
-    if (!cityName || !state) {
-      setError('Invalid city URL');
-      setLoading(false);
-      return;
-    }
-
-    // Find city by name and state
-    const foundCity = cities.find(c => 
-      c.name.toLowerCase() === cityName.toLowerCase() && 
-      c.state === state
-    );
-
-    if (!foundCity) {
-      setError('City not found');
-      setLoading(false);
-      return;
-    }
-
-    setCity(foundCity);
-    setShowAllArticles(category === 'all');
-    setCurrentPage(1);
-    loadCityData(foundCity);
-  }, [citySlug, cities, category, loadCityData]);
-
   const loadCityData = useCallback(async (cityData) => {
     try {
       setLoading(true);
@@ -92,6 +63,34 @@ const CityHub = ({ cities }) => {
       setLoading(false);
     }
   }, [category]);
+
+  useEffect(() => {
+    if (!citySlug) return;
+
+    const { cityName, state } = parseCitySlug(citySlug);
+    if (!cityName || !state) {
+      setError('Invalid city URL');
+      setLoading(false);
+      return;
+    }
+
+    // Find city by name and state
+    const foundCity = cities.find(c => 
+      c.name.toLowerCase() === cityName.toLowerCase() && 
+      c.state === state
+    );
+
+    if (!foundCity) {
+      setError('City not found');
+      setLoading(false);
+      return;
+    }
+
+    setCity(foundCity);
+    setShowAllArticles(category === 'all');
+    setCurrentPage(1);
+    loadCityData(foundCity);
+  }, [citySlug, cities, category, loadCityData]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
