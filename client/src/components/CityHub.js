@@ -4,15 +4,11 @@ import { generateArticleUrl, parseCitySlug } from '../utils/slugUtils';
 import { Helmet } from 'react-helmet';
 
 const CityHub = ({ cities = [] }) => {
-  console.log('=== CITYHUB COMPONENT LOADED ===', { cities: cities?.length });
   const { citySlug, category } = useParams();
   
   // CHECK THE ACTUAL URL PATH
   const currentPath = window.location.pathname;
   const isAllRoute = currentPath.endsWith('/all');
-  
-  console.log('=== PARAMS ===', { citySlug, category });
-  console.log('=== URL CHECK ===', { currentPath, isAllRoute });
   
   const [city, setCity] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -28,13 +24,8 @@ const CityHub = ({ cities = [] }) => {
 
   // Determine if we should show all articles - USE URL CHECK INSTEAD OF CATEGORY
   const showAllArticles = isAllRoute || category === 'all';
-  console.log('=== SHOW ALL CHECK ===', { category, isAllRoute, showAllArticles });
 
-  // TEMPORARY ALERT FOR DEBUGGING
-  if (showAllArticles) {
-    console.log('ALERT SHOULD FIRE NOW!');
-    alert('VIEW ALL ROUTE DETECTED! isAllRoute: ' + isAllRoute + ', category: ' + category);
-  }
+  // View All functionality is working!
 
   const loadCityData = useCallback(async (cityData) => {
     try {

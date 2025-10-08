@@ -21,11 +21,9 @@ function AppContent() {
 
   useEffect(() => {
     // Load cities
-    console.log('App.js: Loading cities...');
     fetch('/api/cities?limit=10000')
       .then(res => res.json())
       .then(citiesResponse => {
-        console.log('App.js: Cities loaded:', citiesResponse.cities?.length);
         setCities(citiesResponse.cities);
         setLoading(false);
       })
