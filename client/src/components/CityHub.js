@@ -18,6 +18,14 @@ const CityHub = ({ cities }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesPerPage] = useState(20);
 
+  console.log('CityHub component mounted/rendered:', {
+    citySlug,
+    category,
+    showAllArticles,
+    citiesCount: cities.length,
+    timestamp: new Date().toISOString()
+  });
+
   const loadCityData = useCallback(async (cityData) => {
     try {
       setLoading(true);
@@ -371,7 +379,17 @@ const CityHub = ({ cities }) => {
       {/* All Articles Link - only show on regular city page */}
       {!showAllArticles && articles.length > 6 && (
         <div className="view-all">
-          <Link to={`/cities/${citySlug}/all`} className="btn btn-outline">
+          <Link 
+            to={`/cities/${citySlug}/all`} 
+            className="btn btn-outline"
+            onClick={() => {
+              console.log('View All button clicked!', {
+                citySlug,
+                targetUrl: `/cities/${citySlug}/all`,
+                currentUrl: window.location.pathname
+              });
+            }}
+          >
             View All {stats.totalArticles} Articles
           </Link>
         </div>
