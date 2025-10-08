@@ -72,6 +72,13 @@ const CityHub = ({ cities }) => {
       return;
     }
 
+    console.log('CityHub useEffect - Debug:', {
+      citySlug,
+      category,
+      showAllArticles: category === 'all',
+      citiesLoaded: cities.length
+    });
+
     const { cityName, state } = parseCitySlug(citySlug);
     
     if (!cityName || !state) {
@@ -122,13 +129,30 @@ const CityHub = ({ cities }) => {
 
   // Pagination logic
   const getPaginatedArticles = () => {
+    console.log('getPaginatedArticles - Debug:', {
+      showAllArticles,
+      totalArticles: articles.length,
+      currentPage,
+      articlesPerPage,
+      category
+    });
+    
     if (!showAllArticles) {
+      console.log('Returning first 6 articles (not showAllArticles)');
       return articles.slice(0, 6);
     }
     
     const startIndex = (currentPage - 1) * articlesPerPage;
     const endIndex = startIndex + articlesPerPage;
-    return articles.slice(startIndex, endIndex);
+    const result = articles.slice(startIndex, endIndex);
+    
+    console.log('Returning paginated articles:', {
+      startIndex,
+      endIndex,
+      resultLength: result.length
+    });
+    
+    return result;
   };
 
   const getTotalPages = () => {
