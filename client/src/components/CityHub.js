@@ -6,7 +6,13 @@ import { Helmet } from 'react-helmet';
 const CityHub = ({ cities = [] }) => {
   console.log('=== CITYHUB COMPONENT LOADED ===', { cities: cities?.length });
   const { citySlug, category } = useParams();
+  
+  // CHECK THE ACTUAL URL PATH
+  const currentPath = window.location.pathname;
+  const isAllRoute = currentPath.endsWith('/all');
+  
   console.log('=== PARAMS ===', { citySlug, category });
+  console.log('=== URL CHECK ===', { currentPath, isAllRoute });
   
   const [city, setCity] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -20,14 +26,14 @@ const CityHub = ({ cities = [] }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesPerPage] = useState(20);
 
-  // Determine if we should show all articles
-  const showAllArticles = category === 'all';
-  console.log('=== SHOW ALL CHECK ===', { category, showAllArticles });
+  // Determine if we should show all articles - USE URL CHECK INSTEAD OF CATEGORY
+  const showAllArticles = isAllRoute || category === 'all';
+  console.log('=== SHOW ALL CHECK ===', { category, isAllRoute, showAllArticles });
 
-  // TEMPORARY ALERT FOR DEBUGGING - MOVED UP
-  if (category === 'all') {
+  // TEMPORARY ALERT FOR DEBUGGING
+  if (showAllArticles) {
     console.log('ALERT SHOULD FIRE NOW!');
-    alert('VIEW ALL ROUTE DETECTED! Category: ' + category);
+    alert('VIEW ALL ROUTE DETECTED! isAllRoute: ' + isAllRoute + ', category: ' + category);
   }
 
   const loadCityData = useCallback(async (cityData) => {
