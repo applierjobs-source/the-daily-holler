@@ -38,6 +38,15 @@ const CityHub = ({ cities }) => {
         
         setArticles(cityArticles);
         
+        // Debug logging
+        console.log('Debug loadCityData:', {
+          category,
+          showAllArticles: category === 'all',
+          totalArticlesFromAPI: data.articles.length,
+          filteredArticles: cityArticles.length,
+          categoryFilter: category && category !== 'all' ? category : 'none'
+        });
+        
         // Calculate stats
         const totalArticles = cityArticles.length;
         const recentArticles = cityArticles.filter(article => {
@@ -122,7 +131,21 @@ const CityHub = ({ cities }) => {
     
     const startIndex = (currentPage - 1) * articlesPerPage;
     const endIndex = startIndex + articlesPerPage;
-    return articles.slice(startIndex, endIndex);
+    const paginatedArticles = articles.slice(startIndex, endIndex);
+    
+    // Debug logging
+    console.log('Debug pagination:', {
+      showAllArticles,
+      totalArticles: articles.length,
+      currentPage,
+      articlesPerPage,
+      startIndex,
+      endIndex,
+      paginatedCount: paginatedArticles.length,
+      totalPages: getTotalPages()
+    });
+    
+    return paginatedArticles;
   };
 
   const getTotalPages = () => {
