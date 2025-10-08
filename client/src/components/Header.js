@@ -71,6 +71,15 @@ const Header = () => {
             </li>
             <li>
               <Link 
+                to="/weather-cams" 
+                className={isActive('/weather-cams') ? 'active' : ''}
+                onClick={closeMobileMenu}
+              >
+                📹 Weather Cams
+              </Link>
+            </li>
+            <li>
+              <Link 
                 to="/about" 
                 className={isActive('/about') ? 'active' : ''}
                 onClick={closeMobileMenu}

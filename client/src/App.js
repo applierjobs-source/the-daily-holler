@@ -12,6 +12,7 @@ import Privacy from './components/Privacy';
 import About from './components/About';
 import Jobs from './components/Jobs';
 import TestArticle from './components/TestArticle';
+import WeatherCams from './components/WeatherCams';
 import './App.css';
 
 function AppContent() {
@@ -76,6 +77,7 @@ function AppContent() {
           <Route path="/news" element={<News cities={cities} />} />
           <Route path="/news/:cityId" element={<News cities={cities} />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/weather-cams" element={<WeatherCams />} />
           <Route path="/about" element={<About />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
