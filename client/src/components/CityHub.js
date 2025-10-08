@@ -356,10 +356,10 @@ const CityHub = ({ cities = [] }) => {
       {/* All Articles Link - only show on regular city page */}
       {!showAllArticles && articles.length > 6 && (
         <div className="view-all">
-          <Link 
-            to={`/cities/${citySlug}/all`} 
+          <a 
+            href={`/cities/${citySlug}/all`} 
             className="btn btn-outline"
-            onClick={() => {
+            onClick={(e) => {
               console.log('View All button clicked!', {
                 citySlug,
                 targetUrl: `/cities/${citySlug}/all`,
@@ -368,7 +368,7 @@ const CityHub = ({ cities = [] }) => {
             }}
           >
             View All {stats.totalArticles} Articles
-          </Link>
+          </a>
         </div>
       )}
     </div>
