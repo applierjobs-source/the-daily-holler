@@ -14,16 +14,19 @@ const CityHub = ({ cities }) => {
     recentArticles: 0,
     categories: []
   });
-  const [showAllArticles, setShowAllArticles] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesPerPage] = useState(20);
 
-  console.log('CityHub component mounted/rendered:', {
+  // Determine if we should show all articles
+  const showAllArticles = category === 'all';
+  const articlesToShow = showAllArticles ? 20 : 6;
+
+  console.log('CityHub Debug:', {
     citySlug,
     category,
     showAllArticles,
-    citiesCount: cities.length,
-    timestamp: new Date().toISOString()
+    articlesToShow,
+    citiesCount: cities.length
   });
 
   const loadCityData = useCallback(async (cityData) => {
@@ -80,13 +83,6 @@ const CityHub = ({ cities }) => {
       return;
     }
 
-    console.log('CityHub useEffect - Debug:', {
-      citySlug,
-      category,
-      showAllArticles: category === 'all',
-      citiesLoaded: cities.length
-    });
-
     const { cityName, state } = parseCitySlug(citySlug);
     
     if (!cityName || !state) {
@@ -108,7 +104,6 @@ const CityHub = ({ cities }) => {
     }
 
     setCity(foundCity);
-    setShowAllArticles(category === 'all');
     setCurrentPage(1);
     loadCityData(foundCity);
   }, [citySlug, cities, category, loadCityData]);
@@ -135,32 +130,14 @@ const CityHub = ({ cities }) => {
     return colors[category] || colors['General'];
   };
 
-  // Pagination logic
-  const getPaginatedArticles = () => {
-    console.log('getPaginatedArticles - Debug:', {
-      showAllArticles,
-      totalArticles: articles.length,
-      currentPage,
-      articlesPerPage,
-      category
-    });
-    
-    if (!showAllArticles) {
-      console.log('Returning first 6 articles (not showAllArticles)');
-      return articles.slice(0, 6);
+  // Get articles to display
+  const getDisplayArticles = () => {
+    if (showAllArticles) {
+      const startIndex = (currentPage - 1) * articlesPerPage;
+      const endIndex = startIndex + articlesPerPage;
+      return articles.slice(startIndex, endIndex);
     }
-    
-    const startIndex = (currentPage - 1) * articlesPerPage;
-    const endIndex = startIndex + articlesPerPage;
-    const result = articles.slice(startIndex, endIndex);
-    
-    console.log('Returning paginated articles:', {
-      startIndex,
-      endIndex,
-      resultLength: result.length
-    });
-    
-    return result;
+    return articles.slice(0, 6);
   };
 
   const getTotalPages = () => {
@@ -244,7 +221,6 @@ const CityHub = ({ cities }) => {
         </div>
       </div>
 
-
       {/* Featured Articles */}
       {articles.length > 0 && (
         <div className="featured-articles">
@@ -253,7 +229,7 @@ const CityHub = ({ cities }) => {
             {category && category !== 'all' && ` - ${category.charAt(0).toUpperCase() + category.slice(1)}`}
           </h2>
           <div className="articles-grid">
-            {getPaginatedArticles().map((article, index) => (
+            {getDisplayArticles().map((article, index) => (
               <div key={article.id} className={`article-card ${index === 0 ? 'featured' : ''}`}>
                 <div className="article-meta">
                   <span 
