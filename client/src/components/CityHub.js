@@ -38,15 +38,6 @@ const CityHub = ({ cities }) => {
         
         setArticles(cityArticles);
         
-        // Debug logging
-        console.log('Debug loadCityData:', {
-          category,
-          showAllArticles: category === 'all',
-          totalArticlesFromAPI: data.articles.length,
-          filteredArticles: cityArticles.length,
-          categoryFilter: category && category !== 'all' ? category : 'none'
-        });
-        
         // Calculate stats
         const totalArticles = cityArticles.length;
         const recentArticles = cityArticles.filter(article => {
@@ -78,19 +69,10 @@ const CityHub = ({ cities }) => {
     
     // Wait for cities to be loaded
     if (cities.length === 0) {
-      console.log('Cities not loaded yet, waiting...');
       return;
     }
 
-    // Debug logging
-    console.log('Debug CityHub useEffect:', {
-      citySlug,
-      citiesLoaded: cities.length,
-      category
-    });
-
     const { cityName, state } = parseCitySlug(citySlug);
-    console.log('Debug parseCitySlug result:', { cityName, state });
     
     if (!cityName || !state) {
       setError('Invalid city URL');
@@ -103,13 +85,6 @@ const CityHub = ({ cities }) => {
       c.name.toLowerCase() === cityName.toLowerCase() && 
       c.state === state
     );
-
-    console.log('Debug city search:', {
-      searchingFor: { cityName, state },
-      citiesAvailable: cities.length,
-      foundCity: foundCity ? foundCity.name : 'NOT FOUND',
-      firstFewCities: cities.slice(0, 3).map(c => ({ name: c.name, state: c.state }))
-    });
 
     if (!foundCity) {
       setError('City not found');
@@ -153,21 +128,7 @@ const CityHub = ({ cities }) => {
     
     const startIndex = (currentPage - 1) * articlesPerPage;
     const endIndex = startIndex + articlesPerPage;
-    const paginatedArticles = articles.slice(startIndex, endIndex);
-    
-    // Debug logging
-    console.log('Debug pagination:', {
-      showAllArticles,
-      totalArticles: articles.length,
-      currentPage,
-      articlesPerPage,
-      startIndex,
-      endIndex,
-      paginatedCount: paginatedArticles.length,
-      totalPages: getTotalPages()
-    });
-    
-    return paginatedArticles;
+    return articles.slice(startIndex, endIndex);
   };
 
   const getTotalPages = () => {
