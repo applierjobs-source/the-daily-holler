@@ -4,6 +4,7 @@ import { generateArticleUrl, parseCitySlug } from '../utils/slugUtils';
 import { Helmet } from 'react-helmet';
 
 const CityHub = ({ cities }) => {
+  console.log('=== CITYHUB COMPONENT LOADED ===', { cities: cities?.length });
   const { citySlug, category } = useParams();
   const [city, setCity] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -28,6 +29,11 @@ const CityHub = ({ cities }) => {
     articlesToShow,
     citiesCount: cities.length
   });
+
+  // TEMPORARY ALERT FOR DEBUGGING
+  if (category === 'all') {
+    alert('VIEW ALL ROUTE DETECTED! Category: ' + category);
+  }
 
   const loadCityData = useCallback(async (cityData) => {
     try {
