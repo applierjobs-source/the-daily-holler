@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generateArticleUrl, parseCitySlug } from '../utils/slugUtils';
 import { Helmet } from 'react-helmet';
 
 const CityHub = ({ cities }) => {
-  const { citySlug } = useParams();
+  const { citySlug, category } = useParams();
   const [city, setCity] = useState(null);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +14,9 @@ const CityHub = ({ cities }) => {
     recentArticles: 0,
     categories: []
   });
+  const [showAllArticles, setShowAllArticles] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [articlesPerPage] = useState(20);
 
 
   useEffect(() => {
@@ -39,10 +42,12 @@ const CityHub = ({ cities }) => {
     }
 
     setCity(foundCity);
+    setShowAllArticles(category === 'all');
+    setCurrentPage(1);
     loadCityData(foundCity);
-  }, [citySlug, cities]);
+  }, [citySlug, cities, category, loadCityData]);
 
-  const loadCityData = async (cityData) => {
+  const loadCityData = useCallback(async (cityData) => {
     try {
       setLoading(true);
       
@@ -51,8 +56,14 @@ const CityHub = ({ cities }) => {
       
       if (response.ok) {
         const data = await response.json();
-        // Articles are already filtered by the API, no need to filter again
-        const cityArticles = data.articles;
+        let cityArticles = data.articles;
+        
+        // Filter by category if specified (and not 'all')
+        if (category && category !== 'all') {
+          cityArticles = cityArticles.filter(article => 
+            (article.category || 'General').toLowerCase() === category.toLowerCase()
+          );
+        }
         
         setArticles(cityArticles);
         
@@ -65,13 +76,13 @@ const CityHub = ({ cities }) => {
           return articleDate > weekAgo;
         }).length;
 
-        // Get unique categories from articles
-        const categories = [...new Set(cityArticles.map(article => article.category || 'General'))];
+        // Get unique categories from all articles (not filtered)
+        const allCategories = [...new Set(data.articles.map(article => article.category || 'General'))];
         
         setStats({
           totalArticles,
           recentArticles,
-          categories
+          categories: allCategories
         });
       }
     } catch (err) {
@@ -80,7 +91,7 @@ const CityHub = ({ cities }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [category]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -102,6 +113,26 @@ const CityHub = ({ cities }) => {
       'General': '#95a5a6'
     };
     return colors[category] || colors['General'];
+  };
+
+  // Pagination logic
+  const getPaginatedArticles = () => {
+    if (!showAllArticles) {
+      return articles.slice(0, 6);
+    }
+    
+    const startIndex = (currentPage - 1) * articlesPerPage;
+    const endIndex = startIndex + articlesPerPage;
+    return articles.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    return Math.ceil(articles.length / articlesPerPage);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -180,9 +211,12 @@ const CityHub = ({ cities }) => {
       {/* Featured Articles */}
       {articles.length > 0 && (
         <div className="featured-articles">
-          <h2>Latest News from {city.name}</h2>
+          <h2>
+            {showAllArticles ? `All Articles from ${city.name}` : `Latest News from ${city.name}`}
+            {category && category !== 'all' && ` - ${category.charAt(0).toUpperCase() + category.slice(1)}`}
+          </h2>
           <div className="articles-grid">
-            {articles.slice(0, 6).map((article, index) => (
+            {getPaginatedArticles().map((article, index) => (
               <div key={article.id} className={`article-card ${index === 0 ? 'featured' : ''}`}>
                 <div className="article-meta">
                   <span 
@@ -269,8 +303,44 @@ const CityHub = ({ cities }) => {
         </div>
       </div>
 
-      {/* All Articles Link */}
-      {articles.length > 6 && (
+      {/* Pagination */}
+      {showAllArticles && getTotalPages() > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Showing {((currentPage - 1) * articlesPerPage) + 1} to {Math.min(currentPage * articlesPerPage, articles.length)} of {articles.length} articles
+          </div>
+          <div className="pagination-controls">
+            <button 
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="btn btn-outline"
+            >
+              Previous
+            </button>
+            <span className="pagination-pages">
+              {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`btn ${currentPage === page ? 'btn-primary' : 'btn-outline'}`}
+                >
+                  {page}
+                </button>
+              ))}
+            </span>
+            <button 
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === getTotalPages()}
+              className="btn btn-outline"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* All Articles Link - only show on regular city page */}
+      {!showAllArticles && articles.length > 6 && (
         <div className="view-all">
           <Link to={`/cities/${citySlug}/all`} className="btn btn-outline">
             View All {stats.totalArticles} Articles
