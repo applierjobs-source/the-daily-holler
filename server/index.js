@@ -4197,12 +4197,9 @@ if (isProduction) {
     const date = req.params.date;
     const filePath = path.join(staticPath, 'discover', date, 'index.html');
     
-    console.log('Discovery route hit:', { date, filePath, exists: require('fs').existsSync(filePath) });
-    
     if (require('fs').existsSync(filePath)) {
       res.sendFile(filePath);
     } else {
-      console.log('Discovery page not found:', filePath);
       res.status(404).send('Discovery page not found');
     }
   });
@@ -4211,12 +4208,9 @@ if (isProduction) {
     const date = req.params.date;
     const filePath = path.join(staticPath, 'discover', date, 'index.html');
     
-    console.log('Discovery route hit (with slash):', { date, filePath, exists: require('fs').existsSync(filePath) });
-    
     if (require('fs').existsSync(filePath)) {
       res.sendFile(filePath);
     } else {
-      console.log('Discovery page not found (with slash):', filePath);
       res.status(404).send('Discovery page not found');
     }
   });
@@ -4226,12 +4220,9 @@ if (isProduction) {
     const page = req.params.page;
     const filePath = path.join(staticPath, 'discover', date, page);
     
-    console.log('Discovery page route hit:', { date, page, filePath, exists: require('fs').existsSync(filePath) });
-    
     if (require('fs').existsSync(filePath)) {
       res.sendFile(filePath);
     } else {
-      console.log('Discovery page not found:', filePath);
       res.status(404).send('Discovery page not found');
     }
   });
