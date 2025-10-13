@@ -12,6 +12,7 @@ const PatwahTranslator = require('./patwah-translator');
 
 // Import generation utilities
 const { makeRequest } = require('../railway-mixed-generation.js');
+const { updateSitemap } = require('../utils/sitemap-manager');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -2967,8 +2968,48 @@ app.get('/sitemap.xml', async (req, res) => {
            <priority>0.7</priority>
          </url>`;
 
-    // Articles are accessible through city pages, no need to include in sitemap
-    console.log('📄 Articles accessible through city pages - not included in sitemap');
+    // Add all articles from database
+    try {
+      console.log('📰 Fetching articles for sitemap...');
+      const articlesResult = await pool.query(`
+        SELECT 
+          id, 
+          title, 
+          city, 
+          state, 
+          slug, 
+          published_at,
+          created_at
+        FROM articles 
+        ORDER BY published_at DESC, id DESC
+      `);
+      
+      console.log(`📄 Found ${articlesResult.rows.length} articles to add to sitemap`);
+      
+      articlesResult.rows.forEach(article => {
+        const citySlug = article.city 
+          ? article.city.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
+          : 'unknown';
+        const stateSlug = article.state 
+          ? article.state.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
+          : 'unknown';
+        const articleSlug = article.slug || `article-${article.id}`;
+        const lastmod = article.published_at || article.created_at || now;
+        const lastmodDate = new Date(lastmod).toISOString().split('T')[0];
+        
+        sitemap += `
+  <url>
+    <loc>${baseUrl}/news/${stateSlug}/${citySlug}/${articleSlug}</loc>
+    <lastmod>${lastmodDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+      });
+      
+      console.log(`✅ Added ${articlesResult.rows.length} articles to sitemap`);
+    } catch (error) {
+      console.error('❌ Error fetching articles for sitemap:', error.message);
+    }
 
     // Add city pages
     try {
@@ -3725,6 +3766,17 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
     }
     
     console.log(`✅ Batch generation completed - ${created} articles created, ${failed} failed`);
+    
+    // Update sitemap if any articles were created
+    if (created > 0) {
+      try {
+        console.log('🗺️  Updating sitemap with new articles...');
+        await updateSitemap(pool);
+      } catch (sitemapError) {
+        console.error('⚠️ Failed to update sitemap (non-critical):', sitemapError.message);
+      }
+    }
+    
     res.json({
       success: true,
       message: `Batch generation completed - ${created} articles created, ${failed} failed`,
@@ -3831,6 +3883,14 @@ app.post('/api/generate-news-patois-article', async (req, res) => {
     const article = result.rows[0];
     
     console.log(`✅ Google News + Patois article created for ${cityName}, ${state}: ${article.slug}`);
+    
+    // Update sitemap
+    try {
+      console.log('🗺️  Updating sitemap with new article...');
+      await updateSitemap(pool);
+    } catch (sitemapError) {
+      console.error('⚠️ Failed to update sitemap (non-critical):', sitemapError.message);
+    }
     
     res.json({
       success: true,
@@ -4000,6 +4060,14 @@ Write about the real Eventbrite event "${eventDetails.title}" that will happen i
       console.error('⚠️ Failed to submit to IndexNow (non-critical):', indexNowError.message);
     }
     
+    // Update sitemap
+    try {
+      console.log('🗺️  Updating sitemap with new article...');
+      await updateSitemap(pool);
+    } catch (sitemapError) {
+      console.error('⚠️ Failed to update sitemap (non-critical):', sitemapError.message);
+    }
+    
     res.json({
       success: true,
       message: `Article created successfully for ${cityName}, ${state}`,
@@ -4147,6 +4215,14 @@ app.post('/api/generate-google-news-article', async (req, res) => {
     ]);
     
     console.log(`✅ Created Google News article in Patwah for ${cityName}, ${state}`);
+    
+    // Update sitemap
+    try {
+      console.log('🗺️  Updating sitemap with new article...');
+      await updateSitemap(pool);
+    } catch (sitemapError) {
+      console.error('⚠️ Failed to update sitemap (non-critical):', sitemapError.message);
+    }
     
     res.json({
       success: true,
